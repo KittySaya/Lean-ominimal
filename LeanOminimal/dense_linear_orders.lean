@@ -1,4 +1,4 @@
-import mathlib
+import Mathlib
 
 open Set
 open FirstOrder
@@ -219,6 +219,12 @@ lemma boundintdef {X L} (a b:X) [DLO X] [Language.Structure L X] : isDefinable L
  sorry
 
 lemma singletontdef {X L} (b:X) [DLO X] [Language.Structure L X] : isDefinable L (singleton b):= by
+ simp
+ unfold Definable₁
+ unfold Definable
+ sorry
+
+lemma uniondef {X L} (U V : Set X) [DLO X] [Language.Structure L X] : isDefinable L U -> isDefinable L V -> isDefinable L (U ∪ V):= by
  simp
  unfold Definable₁
  unfold Definable
