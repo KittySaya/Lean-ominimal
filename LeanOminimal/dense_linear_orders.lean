@@ -136,14 +136,14 @@ def singletons (a : X): Set X :=
 --   | union  : finite_unions_of_intervals → finite_unions_of_intervals → finite_unions_of_intervals
 
 -- Maybe making it map to Prop *is* better? ...I actually just rewrote what you already had, if only just slightly more clearly. - Lily
-inductive is_finite_union_of_intervalsP : Set X -> Prop where
+inductive is_finite_union_of_intervalsP : Set X → Prop where
   | empty   : is_finite_union_of_intervalsP ∅
-  | entire  : is_finite_union_of_intervalsP univ
-  | bounded : (a : X) -> (b : X) -> is_finite_union_of_intervalsP (boundint a b)
-  | lower   : (a : X) -> is_finite_union_of_intervalsP (lowerint a)
-  | upper   : (a : X) -> is_finite_union_of_intervalsP (upperint a)
-  | point   : (a : X) -> is_finite_union_of_intervalsP (singletons a)
-  | union   : ∀ U V : Set X, is_finite_union_of_intervalsP U -> is_finite_union_of_intervalsP V -> is_finite_union_of_intervalsP (U ∪ V)
+  -- | entire  : is_finite_union_of_intervalsP univ -- Not needed, logically follows from the others.
+  | bounded : (a : X) → (b : X) → is_finite_union_of_intervalsP (boundint a b)
+  | lower   : (a : X) → is_finite_union_of_intervalsP (lowerint a)
+  | upper   : (a : X) → is_finite_union_of_intervalsP (upperint a)
+  | point   : (a : X) → is_finite_union_of_intervalsP (singletons a)
+  | union   : ∀ U V : Set X, is_finite_union_of_intervalsP U → is_finite_union_of_intervalsP V → is_finite_union_of_intervalsP (U ∪ V)
 
 @[simp]
 lemma union_preserves_finite_union {U V : Set X} (hu : is_finite_union_of_intervalsP U) (hv : is_finite_union_of_intervalsP V) : is_finite_union_of_intervalsP (U ∪ V) := by
@@ -209,26 +209,51 @@ instance : DLO ℝ  where
 
 
 
-lemma upperintdef {X L} (b:X) [DLO X] [Language.Structure L X] : isDefinable L (upperint b):= by
+lemma definable_emptyInterval     {X L}         [DLO X] [Language.Structure L X] : isDefinable L (∅ : Set X):=    by
   sorry
 
-lemma lowerintdef {X L} (b:X) [DLO X] [Language.Structure L X] : isDefinable L (lowerint b):= by
- sorry
+lemma definable_upperInterval     {X L} (b:X)   [DLO X] [Language.Structure L X] : isDefinable L (upperint b):=   by
+  sorry
 
-lemma boundintdef {X L} (a b:X) [DLO X] [Language.Structure L X] : isDefinable L (boundint a b):= by
- sorry
+lemma definable_lowerInterval     {X L} (b:X)   [DLO X] [Language.Structure L X] : isDefinable L (lowerint b):=   by
+  sorry
 
-lemma singletontdef {X L} (b:X) [DLO X] [Language.Structure L X] : isDefinable L (singleton b):= by
+lemma definable_boundInterval     {X L} (a b:X) [DLO X] [Language.Structure L X] : isDefinable L (boundint a b):= by
+  sorry
+
+lemma definable_singletonInterval {X L} (b:X)   [DLO X] [Language.Structure L X] : isDefinable L (singleton b):=  by
+  simp
+  unfold Definable₁
+  unfold Definable
+  sorry
+
+lemma definable_unionInterval {X L} (U V : Set X) [DLO X] [Language.Structure L X] : isDefinable L U → isDefinable L V → isDefinable L (U ∪ V):= by
  simp
  unfold Definable₁
  unfold Definable
+ intro U_definable
+ intro V_definable
+ rcases U_definable with ⟨φ, hφ⟩
+ rcases V_definable with ⟨ψ, hψ⟩
+--  use (φ ∨ ψ)
+
  sorry
 
-lemma uniondef {X L} (U V : Set X) [DLO X] [Language.Structure L X] : isDefinable L U -> isDefinable L V -> isDefinable L (U ∪ V):= by
- simp
- unfold Definable₁
- unfold Definable
- sorry
+
+-- This errors without the sorry. Why?
+theorem finite_unions_are_definable {X L} [DLO X] [Language.Structure L X] : ∀U : Set X, is_finite_union_of_intervalsP U → isDefinable L U := by
+  intro U is_finite_union
+  rcases is_finite_union with _ | ⟨a, b⟩ | a | b | x | ⟨U, V, hU, hV⟩
+  · exact definable_emptyInterval
+  · exact definable_boundInterval a b
+  · exact definable_lowerInterval a
+  · exact definable_upperInterval b
+  · exact definable_singletonInterval x
+  ·
+    sorry
+    -- apply definable_unionInterval U V
+    -- exact finite_unions_are_definable U hU
+    -- exact finite_unions_are_definable V hV
 
 
 
