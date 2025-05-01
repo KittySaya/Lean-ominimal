@@ -23,7 +23,7 @@ def lt (a b : X) [order X] : Prop :=
   ord (λ i => if i=0 then a else b)
 end order
 
-infix:50 " <₀  " => order.lt
+infix:50 " <₀ " => order.lt
 notation x " >₀ " y => y <₀ x
 
 class DLO (X:Type) extends order X where
@@ -75,7 +75,7 @@ inductive FuncSymbol : ℕ → Type
 
 @[simp]
 def Lord : Language where
-   Functions := FuncSymbol 
+   Functions := FuncSymbol
    Relations := λ n => if n = 2 then ordsymbol else Empty
 
 
@@ -91,7 +91,7 @@ instance Rord : order ℝ where
  instance Rstruc : Language.Structure Lord ℝ  where
    funMap {n} := λ f =>
     match f with
-    | FuncSymbol.const r => λ _ => r 
+    | FuncSymbol.const r => λ _ => r
    RelMap {n:ℕ } := λ _ f =>
     match n with
     | 2=>
@@ -144,26 +144,26 @@ lemma boundintdefR (a b:ℝ): isDefinable Lord (boundint a b):= by
  unfold Definable₁
  unfold Definable
  let var := @Term.var (Lord[[univ (α := ℝ)]])  (Fin 1) 0
- let φ1 : Lord[[↑univ]].Formula (Fin 1) := Relations.formula (Sum.inl ordsymbol.lt) (fun (n: Fin 2) => if n=0 then (constR a ) else var) 
+ let φ1 : Lord[[↑univ]].Formula (Fin 1) := Relations.formula (Sum.inl ordsymbol.lt) (fun (n: Fin 2) => if n=0 then (constR a ) else var)
 
- let φ2 : Lord[[↑univ]].Formula (Fin 1) := Relations.formula (Sum.inl ordsymbol.lt) (fun (n: Fin 2) => if n=0 then var else (constR b )) 
+ let φ2 : Lord[[↑univ]].Formula (Fin 1) := Relations.formula (Sum.inl ordsymbol.lt) (fun (n: Fin 2) => if n=0 then var else (constR b ))
  use φ1 ⊓ φ2
 
  ext x
  simp
 
  constructor
- simp 
+ simp
  intro ass1 ass2
  constructor
  apply ass1
  apply ass2
- rintro ⟨ass1, ass2⟩ 
+ rintro ⟨ass1, ass2⟩
  constructor
  apply ass1
  apply ass2
 
- 
+
 --set_option pp.explicit true
 lemma upperintdef (b:ℝ ) : isDefinable Lord  (upperint b):= by
  simp only [isDefinable]
@@ -171,33 +171,33 @@ lemma upperintdef (b:ℝ ) : isDefinable Lord  (upperint b):= by
  unfold Definable
  let var := @Term.var (Lord[[univ (α := ℝ)]])  (Fin 1) 0
  let φ : Lord[[↑univ]].Formula (Fin 1) := Relations.formula (Sum.inl ordsymbol.lt) ![var, constR b]
- use φ 
+ use φ
  ext x
  constructor
  intro ass
  apply ass
  intro ass
  apply ass
- 
+
 
 lemma lowerintdef (a:ℝ ) : isDefinable Lord  (lowerint a):= by
  simp only [isDefinable]
  unfold Definable₁
  unfold Definable
  let var := @Term.var (Lord[[univ (α := ℝ)]])  (Fin 1) 0
- let φ : Lord[[↑univ]].Formula (Fin 1) := Relations.formula (Sum.inl ordsymbol.lt) (fun (n: Fin 2) => if n=0 then (constR a ) else var) 
- use φ 
+ let φ : Lord[[↑univ]].Formula (Fin 1) := Relations.formula (Sum.inl ordsymbol.lt) (fun (n: Fin 2) => if n=0 then (constR a ) else var)
+ use φ
  simp
  ext x
  simp
- constructor 
+ constructor
  intro ass
  apply ass
- intro ass 
+ intro ass
  apply ass
 
 
- 
+
 
 instance RealOmin : Ominimal ℝ Lord where
 defsets := by  sorry
