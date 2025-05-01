@@ -240,20 +240,16 @@ lemma definable_unionInterval {X L} (U V : Set X) [DLO X] [Language.Structure L 
  sorry
 
 
--- This errors without the sorry. Why?
-theorem finite_unions_are_definable {X L} [DLO X] [Language.Structure L X] : ∀U : Set X, is_finite_union_of_intervalsP U → isDefinable L U := by
+theorem finite_unions_are_definable (X : Type) (L : Language) [DLO X] [Language.Structure L X] : ∀U : Set X, is_finite_union_of_intervalsP U → isDefinable L U := by
   intro U is_finite_union
-  rcases is_finite_union with _ | ⟨a, b⟩ | a | b | x | ⟨U, V, hU, hV⟩
+  induction' is_finite_union with a b a b x A B _ _ A_ih B_ih
   · exact definable_emptyInterval
   · exact definable_boundInterval a b
   · exact definable_lowerInterval a
   · exact definable_upperInterval b
   · exact definable_singletonInterval x
-  ·
-    sorry
-    -- apply definable_unionInterval U V
-    -- exact finite_unions_are_definable U hU
-    -- exact finite_unions_are_definable V hV
+  · apply definable_unionInterval A B
+    assumption'
 
 
 
