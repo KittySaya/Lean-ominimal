@@ -389,36 +389,45 @@ namespace FirstOrder
 namespace Language
 variable (L : Language) (α)
 
-inductive QFBoundedFormula : ℕ → Type _
-  | falsum {n} : QFBoundedFormula n
-  | equal {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : QFBoundedFormula n
-  | rel {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : QFBoundedFormula n
+
+inductive QFBoundedFormula  (L:Language)(α:Type) : ℕ → Type _
+  | falsum {n} : QFBoundedFormula L α n
+  | equal {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : QFBoundedFormula L α n
+  | rel {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : QFBoundedFormula L α n
   /-- The implication between two bounded formulas -/
-  | imp {n} (f₁ f₂ : QFBoundedFormula n) : QFBoundedFormula n
+  | imp {n} (f₁ f₂ : QFBoundedFormula L α n) : QFBoundedFormula L α n
 
 variable {L α}
 
-def QFBoundedFormula.toBoundedFormula {n} : (L.QFBoundedFormula α n) → L.BoundedFormula α n
+def QFBoundedFormula.toBoundedFormula {n} : (QFBoundedFormula L α n) → L.BoundedFormula α n
   | .falsum => .falsum
   | .equal t₁ t₂ => .equal t₁ t₂
   | .imp f₁ f₂ => .imp f₁.toBoundedFormula f₂.toBoundedFormula
   | .rel R ts => .rel R ts
 
-def QFBoundedFormula.not {n} (f : L.QFBoundedFormula α n) : L.QFBoundedFormula α n :=
+def QFBoundedFormula.not {n} (f : QFBoundedFormula L α n) : QFBoundedFormula L α n :=
   f.imp .falsum
 
-def QFBoundedFormula.and {n} (f₁ f₂ : L.QFBoundedFormula α n) : L.QFBoundedFormula α n :=
+def QFBoundedFormula.and {n} (f₁ f₂ : QFBoundedFormula L α n) : QFBoundedFormula L α n :=
   (f₁.imp f₂.not).not
 
-def QFBoundedFormula.or {n} (f₁ f₂ : L.QFBoundedFormula α n) : L.QFBoundedFormula α n :=
+def QFBoundedFormula.or {n} (f₁ f₂ : QFBoundedFormula L α n) : QFBoundedFormula L α n :=
   (f₁.and f₂).not
 
 
-def QFBoundedFormula.realise (f : L.QFBoundedFormula α n) (X : Type*) (i : α → X) [L.Structure X] : Set (Fin n → X) :=
-  {x | f.toBoundedFormula.Realize i x}
+def QFBoundedFormula.Realize (f : QFBoundedFormula L α n) (X : Type*) (i : α → X) [L.Structure X](x:Fin n → X) :=
+ f.toBoundedFormula.Realize i x
 
 -------------------------------
 
+def BoundedFormula.toQFBoundedFormula {n} :  L.BoundedFormula α n → (QFBoundedFormula L α n):= sorry
+
+
+
+
+
+lemma BoundedFormula.toQFBoundedFormula_iff {n}{X:Type} [Language.Structure L X]  (f: L.BoundedFormula α n) (i : α → X) (x:Fin n→ X) :
+ f.Realize i x ↔ (BoundedFormula.toQFBoundedFormula f).toBoundedFormula.Realize i x:= by sorry
 
 instance Real_Ominimal : Ominimal ℝ order_language where
   definable_sets := by sorry
