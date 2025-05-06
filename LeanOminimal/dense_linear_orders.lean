@@ -399,41 +399,41 @@ inductive QFBoundedFormula  (L:Language)(α:Type) : ℕ → Type _
 
 variable {L α}
 
-def QFBoundedFormula.toBoundedFormula {n} : (QFBoundedFormula L α n) → L.BoundedFormula α n
+def QFBoundedFormula.toBoundedFormula {n : ℕ} : (QFBoundedFormula L α n) → L.BoundedFormula α n
   | .falsum => .falsum
   | .equal t₁ t₂ => .equal t₁ t₂
   | .imp f₁ f₂ => .imp f₁.toBoundedFormula f₂.toBoundedFormula
   | .rel R ts => .rel R ts
 
-def QFBoundedFormula.not {n} (f : QFBoundedFormula L α n) : QFBoundedFormula L α n :=
+def QFBoundedFormula.not {n : ℕ} (f : QFBoundedFormula L α n) : QFBoundedFormula L α n :=
   f.imp .falsum
 
-def QFBoundedFormula.and {n} (f₁ f₂ : QFBoundedFormula L α n) : QFBoundedFormula L α n :=
+def QFBoundedFormula.and {n : ℕ} (f₁ f₂ : QFBoundedFormula L α n) : QFBoundedFormula L α n :=
   (f₁.imp f₂.not).not
 
-def QFBoundedFormula.or {n} (f₁ f₂ : QFBoundedFormula L α n) : QFBoundedFormula L α n :=
+def QFBoundedFormula.or {n : ℕ} (f₁ f₂ : QFBoundedFormula L α n) : QFBoundedFormula L α n :=
   (f₁.and f₂).not
 
 
-def QFBoundedFormula.Realize (f : QFBoundedFormula L α n) (X : Type*) (i : α → X) [L.Structure X](x:Fin n → X) :=
+def QFBoundedFormula.Realize {n : ℕ} (f : QFBoundedFormula L α n) (X : Type*) (i : α → X) [L.Structure X](x:Fin n → X) :=
  f.toBoundedFormula.Realize i x
 
 -------------------------------
 
 
 
-lemma BoundedFormula.toQFBoundedFormula_iff {n}{X:Type} [Language.Structure L X]  (f: L.BoundedFormula α n) (i : α → X) (x:Fin n→ X) :
- f.Realize i x ↔ (BoundedFormula.toQFBoundedFormula f).toBoundedFormula.Realize i x:= by sorry
+-- lemma BoundedFormula.toQFBoundedFormula_iff {n}{X:Type} [Language.Structure L X]  (f: L.BoundedFormula α n) (i : α → X) (x:Fin n→ X) :
+--  f.Realize i x ↔ (BoundedFormula.toQFBoundedFormula f).toBoundedFormula.Realize i x:= by sorry
 
 instance Real_Ominimal : Ominimal ℝ order_language where
   definable_sets := by sorry
 
 
-inductive BigAnd (n : ℕ) : (Fin n → Prop) → Prop
+inductive BigAnd : (n : ℕ) → (Fin n → Prop) → Prop
   | zero : BigAnd 0 (λ_ => True)
   | succ {n : ℕ} (P : Fin (n + 1) → Prop) : P 0 → BigAnd n (λ i => P i.succ) → BigAnd (n + 1) P
 
-lemma existential_over_disjunction (a : ℝ) (f : Fin n → ℝ) (g : Fin m → ℝ) :
+lemma existential_over_disjunction {n m : ℕ} (a : ℝ) (f : Fin n → ℝ) (g : Fin m → ℝ) :
     ∃x : ℝ, (BigAnd _ (fun (i : Fin n) => f i < x) ∧ BigAnd _ (fun (i : Fin m) => x < g i) ↔
               BigAnd _ (fun (i : Fin m) => (BigAnd _ fun (j : Fin n) => f j < g i))) := by
   sorry
