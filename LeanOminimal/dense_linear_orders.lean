@@ -420,10 +420,6 @@ def QFBoundedFormula.Realize (f : QFBoundedFormula L α n) (X : Type*) (i : α �
 
 -------------------------------
 
-def BoundedFormula.toQFBoundedFormula {n} :  L.BoundedFormula α n → (QFBoundedFormula L α n):= sorry
-
-
-
 
 
 lemma BoundedFormula.toQFBoundedFormula_iff {n}{X:Type} [Language.Structure L X]  (f: L.BoundedFormula α n) (i : α → X) (x:Fin n→ X) :
@@ -431,3 +427,13 @@ lemma BoundedFormula.toQFBoundedFormula_iff {n}{X:Type} [Language.Structure L X]
 
 instance Real_Ominimal : Ominimal ℝ order_language where
   definable_sets := by sorry
+
+
+inductive BigAnd (n : ℕ) : (Fin n → Prop) → Prop
+  | zero : BigAnd 0 (λ_ => True)
+  | succ {n : ℕ} (P : Fin (n + 1) → Prop) : P 0 → BigAnd n (λ i => P i.succ) → BigAnd (n + 1) P
+
+lemma existential_over_disjunction (a : ℝ) (f : Fin n → ℝ) (g : Fin m → ℝ) :
+    ∃x : ℝ, (BigAnd _ (fun (i : Fin n) => f i < x) ∧ BigAnd _ (fun (i : Fin m) => x < g i) ↔
+              BigAnd _ (fun (i : Fin m) => (BigAnd _ fun (j : Fin n) => f j < g i))) := by
+  sorry
