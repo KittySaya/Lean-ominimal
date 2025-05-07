@@ -214,8 +214,8 @@ lemma definable_emptyInterval               : isDefinable order_language (∅ : 
 
   use φ
   ext x
-  simp only [Fin.isValue, mem_empty_iff_false, setOf_false, order_language, top_eq_univ, Rstruc,
-    ↓dreduceIte, real_order, Bool.false_eq_true, mem_setOf_eq, false_iff]
+  simp only [Fin.isValue, mem_empty_iff_false, setOf_false, order_language, top_eq_univ, real_DLO.Rstruc,
+    ↓dreduceIte, real_DLO.real_order, Bool.false_eq_true, mem_setOf_eq, false_iff]
   by_contra h
   have zero_isnot_one : ¬((1 : ℝ) = 0) := by
     exact one_ne_zero
@@ -275,8 +275,8 @@ lemma definable_boundInterval     (a b : ℝ) : isDefinable order_language (inte
 
   use φ1 ⊓ φ2
   ext x
-  simp only [intervals.boundInterval, order.lt, instDLOReal, real_order, Fin.isValue, ↓reduceIte, one_ne_zero,
-    mem_setOf_eq, order_language, top_eq_univ, Rstruc, ↓dreduceIte, Bool.false_eq_true,
+  simp only [intervals.boundInterval, order.lt, real_DLO.instDLOReal, real_DLO.real_order, Fin.isValue, ↓reduceIte, one_ne_zero,
+    mem_setOf_eq, order_language, top_eq_univ, real_DLO.Rstruc, ↓dreduceIte, Bool.false_eq_true,
     Formula.realize_inf]
 
   constructor
@@ -488,7 +488,7 @@ lemma existential_over_disjunction {n m : ℕ} (A : Fin n → ℝ) (B : Fin m �
       · apply BigAnd_succ
         · apply BigAnd_succ
           · apply lt_trans (b := x)
-            · apply x_beats_A 0
+            ·
               sorry
             · sorry
           · sorry
