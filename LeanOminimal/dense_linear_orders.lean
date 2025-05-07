@@ -421,6 +421,15 @@ def QFBoundedFormula.Realize {n : ℕ} (f : QFBoundedFormula L α n) (X : Type*)
 -------------------------------
 
 
+lemma existential_over_equal  {X:Type}(a:X)(f: X→ Prop) : (∃ x : X,  (x=a∧ f x)) ↔ f a := by 
+constructor
+intro ass 
+rcases ass with ⟨x,h1, h2 ⟩ 
+rw [← h1]
+apply h2
+intro ass
+use a
+
 
 -- lemma BoundedFormula.toQFBoundedFormula_iff {n}{X:Type} [Language.Structure L X]  (f: L.BoundedFormula α n) (i : α → X) (x:Fin n→ X) :
 --  f.Realize i x ↔ (BoundedFormula.toQFBoundedFormula f).toBoundedFormula.Realize i x:= by sorry
