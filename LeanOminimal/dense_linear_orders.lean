@@ -362,6 +362,44 @@ namespace FirstOrder
 namespace Language
 variable (L : Language) (α)
 
+inductive ImpAllFreeFormula (L:Language)(α:Type) : ℕ → Type _
+  | falsum {n} : ImpAllFreeFormula L α n
+  | equal {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : ImpAllFreeFormula L α n
+  | rel {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : ImpAllFreeFormula L α n
+  | not {n} (f : ImpAllFreeFormula L α n) : ImpAllFreeFormula L α n 
+  | or (f₁ f₂ : ImpAllFreeFormula L α n) : ImpAllFreeFormula L α n 
+  | and (f₁ f₂ : ImpAllFreeFormula L α n) : ImpAllFreeFormula L α n  
+  | exists {n} (f : ImpAllFreeFormula L α (n + 1)) : ImpAllFreeFormula L α n
+
+/-
+inductive BoundedFormula : ℕ → Type max u v u'
+  | falsum {n} : BoundedFormula n
+  | equal {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : BoundedFormula n
+  | rel {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : BoundedFormula n
+  /-- The implication between two bounded formulas -/
+  | imp {n} (f₁ f₂ : BoundedFormula n) : BoundedFormula n
+  /-- The universal quantifier over bounded formulas -/
+  | all {n} (f : BoundedFormula (n + 1)) : BoundedFormula n
+-/
+
+def ImpAllFreeFormula.toBounded : ImpAllFreeFormula L α n → BoundedFormula L α n
+  | .falsum => .falsum
+  | .equal t₁ t₂ => .equal t₁ t₂
+  | .rel R ts => .rel R ts
+  | .not f => (f.toBounded).imp .falsum 
+  | .or f₁ f₂ => ((f₁.not).toBounded).imp f₂.toBounded
+  | .and f₁ f₂ => ((f₁.not).or (f₂.not).not).toBounded
+  | .exists f => (((f.toBounded).not).all).not
+variable {L α}
+
+def BoundedFormula.toImpAllFreeFormula : BoundedFormula L α n → ImpAllFreeFormula L α n
+  | .falsum => .falsum
+  | .equal t₁ t₂ => .equal t₁ t₂
+  | .rel R ts => .rel R ts
+  | .imp f₁ f₂ => ((f₁.toImpAllFreeFormula).not).or f₂.toImpAllFreeFormula
+  | .all f => (((f.toImpAllFreeFormula).not).exists).not
+
+/- lemma f.Realize i x ↔ (BoundedFormula.toImpAllFreeFormula f).toBoundedFormula.Realize i x:= by sorry -/
 
 /--
 The type of Quantifier Free bounded formulae
