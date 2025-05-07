@@ -105,36 +105,6 @@ def upperInterval (b : X): Set X :=
 def singletonInterval (a : X): Set X :=
   {x:X | x=a}
 
--- @[simp]
--- def interval_union (U : Set X) (V : Set X) :=
---   U ∪ V
-
--- infix:50 " ∪ " => interval_union
-
--- lemma interval_union_symm (U : Set X) (V : Set X) : U ∪ V = V ∪ U := by
---   sorry
-
-
--- Should this really be Prop? I'm not sure myself.
--- We want to express the idea that something is a finite union of intervals.
--- Will need to think how to properly express that.
--- Also I changed the name, but now it might be too long. - Lily
--- inductive fintervals {X : Type} [DLO X] : Set X → Prop
---   | bound (a b : X) : fintervals (boundint a b)
---   | lower (a : X)   : fintervals (lowerint a)
---   | upper (b : X)   : fintervals (upperint b)
---   | point (a : X)   : fintervals (singletons a)
---   | union : ∀ U V : Set X , fintervals U → fintervals V → fintervals (U ∪ V)
-
--- I rewrote the finite_unions_of_intervals to be more apparant, but am missing the property that makes them what they are. Will see what I can do.
--- inductive is_finite_unions_of_intervals {X : Type} [DLO X] where
---   | empty  : finite_unions_of_intervals
---   | entire : finite_unions_of_intervals
---   | simple : X -> X ->  finite_unions_of_intervals
---   | lower  : X -> finite_unions_of_intervals
---   | upper  : X -> finite_unions_of_intervals
---   | point  : X -> finite_unions_of_intervals
---   | union  : finite_unions_of_intervals → finite_unions_of_intervals → finite_unions_of_intervals
 
 -- Maybe making it map to Prop *is* better? ...I actually just rewrote what you already had, if only just slightly more clearly. - Lily
 inductive is_finite_union_of_intervalsP : Set X → Prop where
@@ -145,6 +115,7 @@ inductive is_finite_union_of_intervalsP : Set X → Prop where
   | upper   : (a : X) → is_finite_union_of_intervalsP (upperInterval a)
   | point   : (a : X) → is_finite_union_of_intervalsP (singletonInterval a)
   | union   : ∀ U V : Set X, is_finite_union_of_intervalsP U → is_finite_union_of_intervalsP V → is_finite_union_of_intervalsP (U ∪ V)
+
 
 @[simp]
 lemma union_preserves_finite_union {U V : Set X} (hu : is_finite_union_of_intervalsP U) (hv : is_finite_union_of_intervalsP V) : is_finite_union_of_intervalsP (U ∪ V) := by
@@ -212,6 +183,7 @@ instance : DLO ℝ  where
   no_r_end := by intro x; exact ⟨x + 1, by simp⟩
   no_l_end := by intro x; exact ⟨x - 1, by simp⟩
 
+end real_DLO
 
 open FirstOrder.Language
 
@@ -383,6 +355,7 @@ theorem finite_unions_are_definable : ∀U : Set ℝ, intervals.is_finite_union_
   · apply definable_unionInterval A B
     assumption'
 
+end
 
 
 namespace FirstOrder
@@ -421,28 +394,105 @@ def QFBoundedFormula.Realize {n : ℕ} (f : QFBoundedFormula L α n) (X : Type*)
 -------------------------------
 
 
-lemma existential_over_equal  {X:Type}(a:X)(f: X→ Prop) : (∃ x : X,  (x=a∧ f x)) ↔ f a := by 
-constructor
-intro ass 
-rcases ass with ⟨x,h1, h2 ⟩ 
-rw [← h1]
-apply h2
-intro ass
-use a
-
-
 -- lemma BoundedFormula.toQFBoundedFormula_iff {n}{X:Type} [Language.Structure L X]  (f: L.BoundedFormula α n) (i : α → X) (x:Fin n→ X) :
 --  f.Realize i x ↔ (BoundedFormula.toQFBoundedFormula f).toBoundedFormula.Realize i x:= by sorry
 
 instance Real_Ominimal : Ominimal ℝ order_language where
   definable_sets := by sorry
 
-
+/--
+BigAnd formalizes the notion of ∧ to work with an arbitrary number of propositions.
+That is, if there's an empty list of propositions, it holds,
+and if it's not empty, it holds if all values are evaluated to true.
+-/
 inductive BigAnd : (n : ℕ) → (Fin n → Prop) → Prop
-  | zero : BigAnd 0 (λ_ => True)
-  | succ {n : ℕ} (P : Fin (n + 1) → Prop) : P 0 → BigAnd n (λ i => P i.succ) → BigAnd (n + 1) P
+  | zero (P : Fin 0 → Prop ) : BigAnd 0 P --Modified this; we want this to hold for arbitrary P, not just the specific λ _ => True.
+  | succ {n : ℕ} (P : Fin (n + 1) → Prop) :
+      P 0 → BigAnd n (fun i => P i.succ) → BigAnd (n + 1) P --If P 0 is true, and we know BigAnd of the list starting at index 1, it holds for the entire list.
 
-lemma existential_over_disjunction {n m : ℕ} (a : ℝ) (f : Fin n → ℝ) (g : Fin m → ℝ) :
-    ∃x : ℝ, (BigAnd _ (fun (i : Fin n) => f i < x) ∧ BigAnd _ (fun (i : Fin m) => x < g i) ↔
-              BigAnd _ (fun (i : Fin m) => (BigAnd _ fun (j : Fin n) => f j < g i))) := by
-  sorry
+section BigAnd
+
+@[simp]
+lemma BigAnd_empty (P : Fin 0 → Prop) : BigAnd 0 P := by
+  exact BigAnd.zero P
+
+-- @[simp] --Don't know if this would work
+lemma BigAnd_succ {n : ℕ} (P : Fin (n + 1) → Prop) (h0 : P 0) (ih : BigAnd n (fun i => P i.succ)) : BigAnd (n + 1) P := by
+  exact BigAnd.succ P h0 ih
+
+@[simp]
+lemma BigAnd_allTrue (n : ℕ) : BigAnd n fun _ => True := by
+  induction' n with n ih
+  · exact BigAnd_empty _
+  · apply BigAnd_succ _ trivial
+    exact ih
+
+@[simp]
+lemma BigAnd_allProven (n : ℕ) (P : Fin n → Prop) (all_proven : ∀ i : Fin n, P i) : BigAnd n P := by
+  have P_is_essentially_truth_function : P = fun _ => True := by
+    ext i
+    exact iff_true_intro (all_proven i)
+  subst P_is_essentially_truth_function
+  exact BigAnd_allTrue n
+
+lemma BigAnd_elimination {n : ℕ} {P : Fin n → Prop} (bigand_P : BigAnd n P) (i : Fin n) : P i := by
+  induction' n with n ih
+  · exfalso
+    apply Nat.not_lt_zero i
+    exact i.isLt
+
+  · have i_cases : ↑i < n ∨ ↑i = n := by
+      apply Nat.lt_succ_iff_lt_or_eq.mp
+      exact i.isLt
+
+    rcases i_cases with lt_n | is_n
+    · sorry
+    · sorry
+
+
+
+
+
+lemma existential_over_equal {X : Type} (a : X) (P : X → Prop) : (∃ x : X,  (x=a ∧ P x)) ↔ P a := by
+  constructor
+  · intro h
+    rcases h with ⟨x, ⟨x_eq_a, f_x⟩⟩
+    subst x_eq_a
+    apply f_x
+  · intro h
+    use a
+
+/--
+Given an array of n real numbers A and another array of m real numbers B, we have the following equivalence:
+
+· There exists a real number x such that x is larger than every number in A but smaller than every number in B.
+
+· Any number in A is smaller than any number in B.
+-/
+lemma existential_over_disjunction {n m : ℕ} (A : Fin n → ℝ) (B : Fin m → ℝ) : --The name makes little sense if I look at my interpretation of the formula. Also, why did it originally have an argument a? I don't see it.
+    (∃x : ℝ, BigAnd _ (fun (i : Fin n) => A i < x) ∧ BigAnd _ (fun (i : Fin m) => x < B i)) ↔
+              BigAnd _ (fun (i : Fin m) => (BigAnd _ fun (j : Fin n) => A j < B i)) := by
+
+  constructor
+  · intro h
+    rcases h with ⟨x, ⟨x_beats_A, x_isbeatenby_B⟩⟩
+    induction' m with m ihm
+    · exact BigAnd_empty _
+    · induction' n with n ihn
+      · apply BigAnd_succ (fun i ↦ BigAnd 0 fun j ↦ A j < B i)
+        · exact BigAnd_empty _
+        · apply BigAnd_allProven
+          intro i
+          exact BigAnd_empty _
+
+      · apply BigAnd_succ
+        · apply BigAnd_succ
+          · apply lt_trans (b := x)
+            · apply x_beats_A 0
+              sorry
+            · sorry
+          · sorry
+        ·
+          sorry
+  · intro h
+    sorry
