@@ -363,12 +363,16 @@ namespace Language
 variable (L : Language) (α)
 
 
-inductive QFBoundedFormula  (L:Language)(α:Type) : ℕ → Type _
+/--
+The type of Quantifier Free bounded formulae
+-/
+inductive QFBoundedFormula (L:Language) (α:Type) : ℕ → Type _
   | falsum {n} : QFBoundedFormula L α n
-  | equal {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : QFBoundedFormula L α n
-  | rel {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : QFBoundedFormula L α n
+  | equal  {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : QFBoundedFormula L α n
+  | rel    {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : QFBoundedFormula L α n
   /-- The implication between two bounded formulas -/
-  | imp {n} (f₁ f₂ : QFBoundedFormula L α n) : QFBoundedFormula L α n
+  | imp    {n} (f₁ f₂ : QFBoundedFormula L α n) : QFBoundedFormula L α n
+
 
 variable {L α}
 
@@ -407,49 +411,72 @@ and if it's not empty, it holds if all values are evaluated to true.
 -/
 inductive BigAnd : (n : ℕ) → (Fin n → Prop) → Prop
   | zero (P : Fin 0 → Prop ) : BigAnd 0 P --Modified this; we want this to hold for arbitrary P, not just the specific λ _ => True.
-  | succ {n : ℕ} (P : Fin (n + 1) → Prop) :
-      P 0 → BigAnd n (fun i => P i.succ) → BigAnd (n + 1) P --If P 0 is true, and we know BigAnd of the list starting at index 1, it holds for the entire list.
+  | succ {m : ℕ} (P : Fin (m + 1) → Prop) :
+      P 0 → BigAnd m (fun i => P i.succ) → BigAnd (m + 1) P --If P 0 is true, and we know BigAnd of the list starting at index 1, it holds for the entire list.
 
 section BigAnd
 
 @[simp]
-lemma BigAnd_empty (P : Fin 0 → Prop) : BigAnd 0 P := by
+lemma BigAnd.ofEmpty (P : Fin 0 → Prop) : BigAnd 0 P := by
   exact BigAnd.zero P
 
+/--
+In order to prove that BigAnd (n + 1) P holds,
+where P is a function from Fin (n + 1) to Prop,
+it suffices to show that:
+
+· P 0 holds
+
+· BigAnd n (fun i => P i.succ) holds
+-/
 -- @[simp] --Don't know if this would work
-lemma BigAnd_succ {n : ℕ} (P : Fin (n + 1) → Prop) (h0 : P 0) (ih : BigAnd n (fun i => P i.succ)) : BigAnd (n + 1) P := by
+lemma BigAnd.SuccDef {n : ℕ} (P : Fin (n + 1) → Prop) (h0 : P 0) (ih : BigAnd n (fun i => P i.succ)) : BigAnd (n + 1) P := by
   exact BigAnd.succ P h0 ih
 
 @[simp]
-lemma BigAnd_allTrue (n : ℕ) : BigAnd n fun _ => True := by
+lemma BigAnd.ofAllTrue (n : ℕ) : BigAnd n fun _ => True := by
   induction' n with n ih
-  · exact BigAnd_empty _
-  · apply BigAnd_succ _ trivial
+  · exact BigAnd.ofEmpty _
+  · apply BigAnd.SuccDef _ trivial
     exact ih
 
 @[simp]
-lemma BigAnd_allProven (n : ℕ) (P : Fin n → Prop) (all_proven : ∀ i : Fin n, P i) : BigAnd n P := by
+lemma BigAnd.ofAllProven (n : ℕ) (P : Fin n → Prop) (all_proven : ∀ i : Fin n, P i) : BigAnd n P := by
   have P_is_essentially_truth_function : P = fun _ => True := by
     ext i
     exact iff_true_intro (all_proven i)
   subst P_is_essentially_truth_function
-  exact BigAnd_allTrue n
+  exact BigAnd.ofAllTrue n
 
-lemma BigAnd_elimination {n : ℕ} {P : Fin n → Prop} (bigand_P : BigAnd n P) (i : Fin n) : P i := by
+lemma BigAnd.eliminationAtIndex {n : ℕ} {P : Fin n → Prop} (bigand_P : BigAnd n P) (i : Fin n) : P i := by
   induction' n with n ih
   · exfalso
     apply Nat.not_lt_zero i
     exact i.isLt
 
-  · have i_cases : ↑i < n ∨ ↑i = n := by
-      apply Nat.lt_succ_iff_lt_or_eq.mp
-      exact i.isLt
+  · have i_cases : i = 0 ∨ 0 < i := by
+      convert Nat.eq_zero_or_pos i
+      exact Iff.symm Fin.val_eq_zero_iff
 
-    rcases i_cases with lt_n | is_n
-    · sorry
-    · sorry
+    rcases bigand_P with _ | ⟨_, P_zero, bigand_succ⟩
+    rcases i_cases with is_nill | is_pos
+    · subst is_nill
+      assumption
 
+    · clear n
+      specialize ih (P := (fun j => P j.succ)) bigand_succ
 
+      let j := i.pred (ne_of_gt is_pos)
+
+      have jsucc_eq_i : j.succ = i := by
+        refine Eq.symm (Fin.eq_of_val_eq ?_)
+        unfold j
+        symm
+        apply Nat.succ_pred (ne_of_gt is_pos)
+
+      specialize ih j
+      rw [jsucc_eq_i] at ih
+      trivial
 
 
 
@@ -477,22 +504,30 @@ lemma existential_over_disjunction {n m : ℕ} (A : Fin n → ℝ) (B : Fin m �
   · intro h
     rcases h with ⟨x, ⟨x_beats_A, x_isbeatenby_B⟩⟩
     induction' m with m ihm
-    · exact BigAnd_empty _
+    · exact BigAnd.ofEmpty _
     · induction' n with n ihn
-      · apply BigAnd_succ (fun i ↦ BigAnd 0 fun j ↦ A j < B i)
-        · exact BigAnd_empty _
-        · apply BigAnd_allProven
+      · apply BigAnd.SuccDef (fun i ↦ BigAnd 0 fun j ↦ A j < B i)
+        · exact BigAnd.ofEmpty _
+        · apply BigAnd.ofAllProven
           intro i
-          exact BigAnd_empty _
+          exact BigAnd.ofEmpty _
 
-      · apply BigAnd_succ
-        · apply BigAnd_succ
+      · apply BigAnd.SuccDef
+        · apply BigAnd.SuccDef
           · apply lt_trans (b := x)
-            ·
-              sorry
-            · sorry
-          · sorry
-        ·
-          sorry
+            · exact BigAnd.eliminationAtIndex x_beats_A 0
+            · exact BigAnd.eliminationAtIndex x_isbeatenby_B 0
+          · refine BigAnd.ofAllProven n (fun i ↦ A i.succ < B 0) ?_
+            intro i
+            · apply lt_trans (b := x)
+              · exact BigAnd.eliminationAtIndex x_beats_A i.succ
+              · exact BigAnd.eliminationAtIndex x_isbeatenby_B 0
+
+        · apply ihm (fun j => B j.succ)
+          apply BigAnd.ofAllProven m _
+          intro i
+          apply BigAnd.eliminationAtIndex x_isbeatenby_B i.succ
+
+
   · intro h
     sorry
