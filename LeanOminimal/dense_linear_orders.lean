@@ -359,6 +359,241 @@ end
 
 namespace FirstOrder
 namespace Language
+
+
+
+inductive Literal (L:Language)(α:Type) : ℕ → Type _
+  | equal {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : Literal L α n
+  | rel {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : Literal L α n
+  | not {n} (f:Literal L α n): Literal L α n
+
+
+inductive ImpAllFreeFormula (L:Language)(α:Type) : ℕ → Type _
+  | falsum {n} : ImpAllFreeFormula L α n
+  | equal {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : ImpAllFreeFormula L α n
+  | rel {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : ImpAllFreeFormula L α n
+  | not {n} (f : ImpAllFreeFormula L α n) : ImpAllFreeFormula L α n 
+  | or {n}(f₁ f₂ : ImpAllFreeFormula L α n) : ImpAllFreeFormula L α n 
+  | and {n}(f₁ f₂ : ImpAllFreeFormula L α n) : ImpAllFreeFormula L α n  
+  | exists {n} (f : ImpAllFreeFormula L α (n + 1)) : ImpAllFreeFormula L α n
+
+/-
+inductive BoundedFormula : ℕ → Type max u v u'
+  | falsum {n} : BoundedFormula n
+  | equal {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : BoundedFormula n
+  | rel {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : BoundedFormula n
+  /-- The implication between two bounded formulas -/
+  | imp {n} (f₁ f₂ : BoundedFormula n) : BoundedFormula n
+  /-- The universal quantifier over bounded formulas -/
+  | all {n} (f : BoundedFormula (n + 1)) : BoundedFormula n
+-/
+
+def ImpAllFreeFormula.toBounded {L}{α}{n} : ImpAllFreeFormula L α n → BoundedFormula L α n
+  | .falsum => .falsum
+  | .equal t₁ t₂ => .equal t₁ t₂
+  | .rel R ts => .rel R ts
+  | .not f => (f.toBounded).imp .falsum 
+  | .or f₁ f₂ => ((f₁.not).toBounded).imp f₂.toBounded
+  | .and f₁ f₂ => ((f₁.not).or (f₂.not).not).toBounded
+  | .exists f => (((f.toBounded).not).all).not
+variable {L α}
+
+def BoundedFormula.toImpAllFreeFormula {L}{α} {n} : BoundedFormula L α n → ImpAllFreeFormula L α n
+  | .falsum => .falsum
+  | .equal t₁ t₂ => .equal t₁ t₂
+  | .rel R ts => .rel R ts
+  | .imp f₁ f₂ => ((f₁.toImpAllFreeFormula).not).or f₂.toImpAllFreeFormula
+  | .all f => (((f.toImpAllFreeFormula).not).exists).not
+
+/- lemma f.Realize i x ↔ (BoundedFormula.toImpAllFreeFormula f).toBoundedFormula.Realize i x:= by sorry -/
+
+/--
+The type of Quantifier Free bounded formulae
+-/
+inductive QFImpAllFreeFormula (L:Language)(α:Type) : ℕ → Type _
+  | falsum {n} : QFImpAllFreeFormula L α n
+  | equal {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : QFImpAllFreeFormula L α n
+  | rel {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : QFImpAllFreeFormula L α n
+  | not {n} (f : ImpAllFreeFormula L α n) : QFImpAllFreeFormula L α n 
+  | or {n}(f₁ f₂ : ImpAllFreeFormula L α n) : QFImpAllFreeFormula L α n 
+  | and {n}(f₁ f₂ : ImpAllFreeFormula L α n) : QFImpAllFreeFormula L α n  
+ 
+
+
+
+
+
+
+
+-------------------------------
+
+
+-- lemma BoundedFormula.toQFBoundedFormula_iff {n}{X:Type} [Language.Structure L X]  (f: L.BoundedFormula α n) (i : α → X) (x:Fin n→ X) :
+--  f.Realize i x ↔ (BoundedFormula.toQFBoundedFormula f).toBoundedFormula.Realize i x:= by sorry
+
+instance Real_Ominimal : Ominimal ℝ order_language where
+  definable_sets := by sorry
+
+/--
+BigAnd formalizes the notion of ∧ to work with an arbitrary number of propositions.
+That is, if there's an empty list of propositions, it holds,
+and if it's not empty, it holds if all values are evaluated to true.
+-/
+inductive BigAnd : (n : ℕ) → (Fin n → Prop) → Prop
+  | zero (P : Fin 0 → Prop ) : BigAnd 0 P --Modified this; we want this to hold for arbitrary P, not just the specific λ _ => True.
+  | succ {m : ℕ} (P : Fin (m + 1) → Prop) :
+      P 0 → BigAnd m (fun i => P i.succ) → BigAnd (m + 1) P --If P 0 is true, and we know BigAnd of the list starting at index 1, it holds for the entire list.
+
+section BigAnd
+
+@[simp]
+lemma BigAnd.ofEmpty (P : Fin 0 → Prop) : BigAnd 0 P := by
+  exact BigAnd.zero P
+
+/--
+In order to prove that BigAnd (n + 1) P holds,
+where P is a function from Fin (n + 1) to Prop,
+it suffices to show that:
+
+· P 0 holds
+
+· BigAnd n (fun i => P i.succ) holds
+-/
+-- @[simp] --Don't know if this would work
+lemma BigAnd.SuccDef {n : ℕ} (P : Fin (n + 1) → Prop) (h0 : P 0) (ih : BigAnd n (fun i => P i.succ)) : BigAnd (n + 1) P := by
+  exact BigAnd.succ P h0 ih
+
+@[simp]
+lemma BigAnd.ofAllTrue (n : ℕ) : BigAnd n fun _ => True := by
+  induction' n with n ih
+  · exact BigAnd.ofEmpty _
+  · apply BigAnd.SuccDef _ trivial
+    exact ih
+
+@[simp]
+lemma BigAnd.ofAllProven (n : ℕ) (P : Fin n → Prop) (all_proven : ∀ i : Fin n, P i) : BigAnd n P := by
+  have P_is_essentially_truth_function : P = fun _ => True := by
+    ext i
+    exact iff_true_intro (all_proven i)
+  subst P_is_essentially_truth_function
+  exact BigAnd.ofAllTrue n
+
+lemma BigAnd.eliminationAtIndex {n : ℕ} {P : Fin n → Prop} (bigand_P : BigAnd n P) (i : Fin n) : P i := by
+  induction' n with n ih
+  · exfalso
+    apply Nat.not_lt_zero i
+    exact i.isLt
+
+  · have i_cases : i = 0 ∨ 0 < i := by
+      convert Nat.eq_zero_or_pos i
+      exact Iff.symm Fin.val_eq_zero_iff
+
+    rcases bigand_P with _ | ⟨_, P_zero, bigand_succ⟩
+    rcases i_cases with is_nill | is_pos
+    · subst is_nill
+      assumption
+
+    · clear n
+      specialize ih (P := (fun j => P j.succ)) bigand_succ
+
+      let j := i.pred (ne_of_gt is_pos)
+
+      have jsucc_eq_i : j.succ = i := by
+        refine Eq.symm (Fin.eq_of_val_eq ?_)
+        unfold j
+        symm
+        apply Nat.succ_pred (ne_of_gt is_pos)
+
+      specialize ih j
+      rw [jsucc_eq_i] at ih
+      trivial
+
+
+
+lemma existential_over_equal {X : Type} (a : X) (P : X → Prop) : (∃ x : X,  (x=a ∧ P x)) ↔ P a := by
+  constructor
+  · intro h
+    rcases h with ⟨x, ⟨x_eq_a, f_x⟩⟩
+    subst x_eq_a
+    apply f_x
+  · intro h
+    use a
+
+/--
+Given an array of n real numbers A and another array of m real numbers B, we have the following equivalence:
+
+· There exists a real number x such that x is larger than every number in A but smaller than every number in B.
+
+· Any number in A is smaller than any number in B.
+-/
+lemma existential_over_disjunction {n m : ℕ} (A : Fin n → ℝ) (B : Fin m → ℝ) : --The name makes little sense if I look at my interpretation of the formula. Also, why did it originally have an argument a? I don't see it.
+    (∃x : ℝ, BigAnd _ (fun (i : Fin n) => A i < x) ∧ BigAnd _ (fun (i : Fin m) => x < B i)) ↔
+              BigAnd _ (fun (i : Fin m) => (BigAnd _ fun (j : Fin n) => A j < B i)) := by
+
+  constructor
+  · intro h
+    rcases h with ⟨x, ⟨x_beats_A, x_isbeatenby_B⟩⟩
+    induction' m with m ihm
+    · exact BigAnd.ofEmpty _
+    · induction' n with n ihn
+      · apply BigAnd.SuccDef (fun i ↦ BigAnd 0 fun j ↦ A j < B i)
+        · exact BigAnd.ofEmpty _
+        · apply BigAnd.ofAllProven
+          intro i
+          exact BigAnd.ofEmpty _
+
+      · apply BigAnd.SuccDef
+        · apply BigAnd.SuccDef
+          · apply lt_trans (b := x)
+            · exact BigAnd.eliminationAtIndex x_beats_A 0
+            · exact BigAnd.eliminationAtIndex x_isbeatenby_B 0
+          · refine BigAnd.ofAllProven n (fun i ↦ A i.succ < B 0) ?_
+            intro i
+            · apply lt_trans (b := x)
+              · exact BigAnd.eliminationAtIndex x_beats_A i.succ
+              · exact BigAnd.eliminationAtIndex x_isbeatenby_B 0
+
+        · apply ihm (fun j => B j.succ)
+          apply BigAnd.ofAllProven m _
+          intro i
+          apply BigAnd.eliminationAtIndex x_isbeatenby_B i.succ
+
+
+  · intro h
+    sorry
+
+def Literal.toImpAllFreeFormula {L}{α} {n} : Literal L α n → ImpAllFreeFormula L α n
+  | .equal t₁ t₂ => .equal t₁ t₂
+  | .rel R ts => .rel R ts
+  | .not f => .not f.toImpAllFreeFormula
+
+
+      
+def BigAndFormula {L : Language} {α : Type} {m : ℕ} :
+    ∀ (n : ℕ), (Fin n → Literal L α m) → ImpAllFreeFormula L α m
+  | 0, _ => .falsum
+  | n+1, f =>
+    let head := f 0
+    let tail := fun i : Fin n => f i.succ
+    head.toImpAllFreeFormula.and (BigAndFormula n tail)
+
+def reducible_formula {n:ℕ }{α:Type }{m:ℕ }(f: Fin (n) → Literal order_language α (m+1)): ImpAllFreeFormula order_language α m:=
+ (BigAndFormula (n) f).exists
+ 
+
+
+def  ImpAllFree.Realize : ∀ {l} (_f : L.BoundedFormula α l) (_v : α → M) (_xs : Fin l → M), Prop
+  | _, falsum, _v, _xs => False
+  | _, equal t₁ t₂, v, xs => t₁.realize (Sum.elim v xs) = t₂.realize (Sum.elim v xs)
+  | _, rel R ts, v, xs => RelMap R fun i => (ts i).realize (Sum.elim v xs)
+  | _, imp f₁ f₂, v, xs => Realize f₁ v xs → Realize f₂ v xs
+  | _, all f, v, xs => ∀ x : M, Realize f v (snoc xs x)
+
+end
+
+
+namespace FirstOrder
+namespace Language
 variable (L : Language) (α)
 
 inductive ImpAllFreeFormula (L:Language)(α:Type) : ℕ → Type _
