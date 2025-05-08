@@ -305,7 +305,7 @@ lemma definable_singletonInterval (b : ℝ) : isDefinable order_language (single
   rfl
 
 
-lemma definable_unionInterval {X L} (U V : Set X) [DLO X] [Language.Structure L X] : isDefinable L U → isDefinable L V → isDefinable L (U ∪ V):= by
+lemma definable_unionInterval {X L} (U V : Set X) [DLO X] [Language.Structure L X] : isDefinable L U → isDefinable L V → isDefinable L (U ∪ V) := by
   simp
   unfold Definable₁
   unfold Definable
@@ -352,8 +352,7 @@ theorem finite_unions_are_definable : ∀U : Set ℝ, intervals.is_finite_union_
   · exact definable_lowerInterval a
   · exact definable_upperInterval b
   · exact definable_singletonInterval x
-  · apply definable_unionInterval A B
-    assumption'
+  · exact definable_unionInterval A B A_ih B_ih
 
 end
 
@@ -366,9 +365,9 @@ inductive ImpAllFreeFormula (L:Language)(α:Type) : ℕ → Type _
   | falsum {n} : ImpAllFreeFormula L α n
   | equal {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : ImpAllFreeFormula L α n
   | rel {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : ImpAllFreeFormula L α n
-  | not {n} (f : ImpAllFreeFormula L α n) : ImpAllFreeFormula L α n 
-  | or (f₁ f₂ : ImpAllFreeFormula L α n) : ImpAllFreeFormula L α n 
-  | and (f₁ f₂ : ImpAllFreeFormula L α n) : ImpAllFreeFormula L α n  
+  | not {n} (f : ImpAllFreeFormula L α n) : ImpAllFreeFormula L α n
+  | or (f₁ f₂ : ImpAllFreeFormula L α n) : ImpAllFreeFormula L α n
+  | and (f₁ f₂ : ImpAllFreeFormula L α n) : ImpAllFreeFormula L α n
   | exists {n} (f : ImpAllFreeFormula L α (n + 1)) : ImpAllFreeFormula L α n
 
 /-
@@ -386,7 +385,7 @@ def ImpAllFreeFormula.toBounded : ImpAllFreeFormula L α n → BoundedFormula L 
   | .falsum => .falsum
   | .equal t₁ t₂ => .equal t₁ t₂
   | .rel R ts => .rel R ts
-  | .not f => (f.toBounded).imp .falsum 
+  | .not f => (f.toBounded).imp .falsum
   | .or f₁ f₂ => ((f₁.not).toBounded).imp f₂.toBounded
   | .and f₁ f₂ => ((f₁.not).or (f₂.not).not).toBounded
   | .exists f => (((f.toBounded).not).all).not
@@ -439,12 +438,16 @@ def QFBoundedFormula.Realize {n : ℕ} (f : QFBoundedFormula L α n) (X : Type*)
 -- lemma BoundedFormula.toQFBoundedFormula_iff {n}{X:Type} [Language.Structure L X]  (f: L.BoundedFormula α n) (i : α → X) (x:Fin n→ X) :
 --  f.Realize i x ↔ (BoundedFormula.toQFBoundedFormula f).toBoundedFormula.Realize i x:= by sorry
 
+/--
+The master plan
+-/
 instance Real_Ominimal : Ominimal ℝ order_language where
   definable_sets := by sorry
 
+
 /--
 BigAnd formalizes the notion of ∧ to work with an arbitrary number of propositions.
-That is, if there's an empty list of propositions, it holds,
+That is, if there's an empty list of propositions, it holds;
 and if it's not empty, it holds if all values are evaluated to true.
 -/
 inductive BigAnd : (n : ℕ) → (Fin n → Prop) → Prop
@@ -452,10 +455,10 @@ inductive BigAnd : (n : ℕ) → (Fin n → Prop) → Prop
   | succ {m : ℕ} (P : Fin (m + 1) → Prop) :
       P 0 → BigAnd m (fun i => P i.succ) → BigAnd (m + 1) P --If P 0 is true, and we know BigAnd of the list starting at index 1, it holds for the entire list.
 
-section BigAnd
+namespace BigAnd
 
 @[simp]
-lemma BigAnd.ofEmpty (P : Fin 0 → Prop) : BigAnd 0 P := by
+lemma ofEmpty (P : Fin 0 → Prop) : BigAnd 0 P := by
   exact BigAnd.zero P
 
 /--
@@ -468,25 +471,25 @@ it suffices to show that:
 · BigAnd n (fun i => P i.succ) holds
 -/
 -- @[simp] --Don't know if this would work
-lemma BigAnd.SuccDef {n : ℕ} (P : Fin (n + 1) → Prop) (h0 : P 0) (ih : BigAnd n (fun i => P i.succ)) : BigAnd (n + 1) P := by
+lemma SuccDef {n : ℕ} (P : Fin (n + 1) → Prop) (h0 : P 0) (ih : BigAnd n (fun i => P i.succ)) : BigAnd (n + 1) P := by
   exact BigAnd.succ P h0 ih
 
 @[simp]
-lemma BigAnd.ofAllTrue (n : ℕ) : BigAnd n fun _ => True := by
+lemma ofAllTrue (n : ℕ) : BigAnd n fun _ => True := by
   induction' n with n ih
   · exact BigAnd.ofEmpty _
   · apply BigAnd.SuccDef _ trivial
     exact ih
 
 @[simp]
-lemma BigAnd.ofAllProven (n : ℕ) (P : Fin n → Prop) (all_proven : ∀ i : Fin n, P i) : BigAnd n P := by
+lemma ofAllProven (n : ℕ) (P : Fin n → Prop) (all_proven : ∀ i : Fin n, P i) : BigAnd n P := by
   have P_is_essentially_truth_function : P = fun _ => True := by
     ext i
     exact iff_true_intro (all_proven i)
   subst P_is_essentially_truth_function
   exact BigAnd.ofAllTrue n
 
-lemma BigAnd.eliminationAtIndex {n : ℕ} {P : Fin n → Prop} (bigand_P : BigAnd n P) (i : Fin n) : P i := by
+lemma eliminationAtIndex {n : ℕ} {P : Fin n → Prop} (bigand_P : BigAnd n P) (i : Fin n) : P i := by
   induction' n with n ih
   · exfalso
     apply Nat.not_lt_zero i
@@ -516,6 +519,8 @@ lemma BigAnd.eliminationAtIndex {n : ℕ} {P : Fin n → Prop} (bigand_P : BigAn
       rw [jsucc_eq_i] at ih
       trivial
 
+end BigAnd
+
 
 
 lemma existential_over_equal {X : Type} (a : X) (P : X → Prop) : (∃ x : X,  (x=a ∧ P x)) ↔ P a := by
@@ -527,6 +532,8 @@ lemma existential_over_equal {X : Type} (a : X) (P : X → Prop) : (∃ x : X,  
   · intro h
     use a
 
+set_option linter.unusedTactic false in
+set_option linter.unreachableTactic false in
 /--
 Given an array of n real numbers A and another array of m real numbers B, we have the following equivalence:
 
@@ -567,5 +574,88 @@ lemma existential_over_disjunction {n m : ℕ} (A : Fin n → ℝ) (B : Fin m �
           apply BigAnd.eliminationAtIndex x_isbeatenby_B i.succ
 
 
-  · intro h
-    sorry
+  · have nonempty_finset_of_nezero {k : ℕ} (k_nonzero : ¬(k = 0)) : Nonempty (Fin k) := by
+      refine Fin.pos_iff_nonempty.mp (Nat.zero_lt_of_ne_zero k_nonzero)
+
+    intro h
+    by_cases n_val : n = 0
+    · subst n_val
+      by_cases m_val : m = 0
+      · subst m_val
+        use 2.71828182846 * 3.14159
+        exact ⟨BigAnd.ofEmpty _, BigAnd.ofEmpty _⟩
+
+      · -- let B_min := Finset.inf' (Finset.image B Finset.univ) (by simp [nonempty_finset_of_nezero, m_val]) id
+        let B_min := Finset.min' (Finset.image B Finset.univ) (by simp [nonempty_finset_of_nezero, m_val])
+
+        have B_min_is_minimum (i: Fin m) : B_min ≤ B i := by
+          apply Finset.min'_le _ (B i) (mem_image_univ_iff_mem_range.mpr (mem_range_self i))
+
+        rcases DLO.no_l_end B_min with ⟨B_min', B_min'_lt_B_min⟩
+        dsimp at B_min'_lt_B_min
+        use B_min'
+        constructor
+        · exact BigAnd.ofEmpty _
+
+        · apply BigAnd.ofAllProven
+          intro i
+          apply lt_of_lt_of_le B_min'_lt_B_min
+          exact B_min_is_minimum i
+
+    · let A_max := Finset.max' (Finset.image A Finset.univ) (by simp [nonempty_finset_of_nezero, n_val])
+      have A_max_is_maximum (i: Fin n) : A i ≤ A_max := by
+          apply Finset.le_max' _ _ (mem_image_univ_iff_mem_range.mpr (mem_range_self i))
+
+      by_cases m_val : m = 0
+      · subst m_val
+        rcases DLO.no_r_end A_max with ⟨A_max', A_max'_gt_A_max⟩
+        dsimp at A_max'_gt_A_max
+        use A_max'
+        constructor
+        · apply BigAnd.ofAllProven
+          intro i
+          apply lt_of_le_of_lt _ A_max'_gt_A_max
+          exact A_max_is_maximum i
+
+        · exact BigAnd.ofEmpty _
+
+      · let B_min := Finset.min' (Finset.image B Finset.univ) (by simp [nonempty_finset_of_nezero, m_val])
+        have B_min_is_minimum (i: Fin m) : B_min ≤ B i := by
+          apply Finset.min'_le _ _ (mem_image_univ_iff_mem_range.mpr (mem_range_self i))
+
+        have index_A_max_existence : ∃ i : Fin n, A i = A_max := by
+          have this : A_max ∈ (Finset.image A Finset.univ) := by
+            exact Finset.max'_mem _ _
+
+          rw [Finset.mem_image] at this
+          rcases this with ⟨i, ⟨hi_left, hi_right⟩⟩
+          use i
+
+        have index_B_min_existence : ∃ i : Fin m, B i = B_min := by
+          have this : B_min ∈ (Finset.image B Finset.univ) := by
+            exact Finset.min'_mem _ _
+
+          rw [Finset.mem_image] at this
+          rcases this with ⟨i, ⟨hi_left, hi_right⟩⟩
+          use i
+
+        have A_max_lt_B_min : A_max < B_min := by
+          rcases index_A_max_existence with ⟨index_A_max, hiA⟩
+          rcases index_B_min_existence with ⟨index_B_min, hiB⟩
+          apply lt_of_eq_of_lt hiA.symm
+          apply lt_of_lt_of_eq _ hiB
+          apply BigAnd.eliminationAtIndex (BigAnd.eliminationAtIndex h index_B_min) index_A_max
+
+        rcases DLO.dense A_max B_min A_max_lt_B_min with ⟨middlevalue, ⟨mid_gt_A, mid_lt_B⟩⟩
+        dsimp at mid_gt_A
+        dsimp at mid_lt_B
+
+        use middlevalue
+        constructor
+        · apply BigAnd.ofAllProven
+          intro i
+          exact lt_of_le_of_lt (A_max_is_maximum i) mid_gt_A
+
+        · apply BigAnd.ofAllProven
+          intro i
+          exact lt_of_lt_of_le mid_lt_B (B_min_is_minimum i)
