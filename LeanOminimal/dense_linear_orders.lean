@@ -486,12 +486,6 @@ def ImpAllFreeFormula.Realize {L : Language} : ∀ {l} (_f : BoundedFormula L α
   | _, imp f₁ f₂, v, xs => Realize f₁ v xs → Realize f₂ v xs
   | _, all f, v, xs => ∀ x : M, Realize f v (snoc xs x)
 
-end Language
-end FirstOrder
-
-
-namespace FirstOrder
-namespace Language
 variable (L : Language) (α)
 
 /- lemma f.Realize i x ↔ (BoundedFormula.toImpAllFreeFormula f).toBoundedFormula.Realize i x:= by sorry -/
@@ -626,6 +620,10 @@ lemma of_equal {X : Type} (a : X) (P : X → Prop) : (∃ x : X,  (x=a ∧ P x))
   · intro h
     use a
 
+@[simp]
+lemma nonempty_finset_of_nezero {k : ℕ} (k_nonzero : ¬(k = 0)) : Nonempty (Fin k) := by
+  exact Fin.pos_iff_nonempty.mp (Nat.zero_lt_of_ne_zero k_nonzero)
+
 set_option linter.unusedTactic false in
 set_option linter.unreachableTactic false in
 /--
@@ -668,10 +666,7 @@ lemma of_disjunction {n m : ℕ} (A : Fin n → ℝ) (B : Fin m → ℝ) : --The
           apply BigAnd.eliminationAtIndex x_isbeatenby_B i.succ
 
 
-  · have nonempty_finset_of_nezero {k : ℕ} (k_nonzero : ¬(k = 0)) : Nonempty (Fin k) := by
-      refine Fin.pos_iff_nonempty.mp (Nat.zero_lt_of_ne_zero k_nonzero)
-
-    intro h
+  · intro h
     by_cases n_val : n = 0
     · subst n_val
       by_cases m_val : m = 0
@@ -679,8 +674,7 @@ lemma of_disjunction {n m : ℕ} (A : Fin n → ℝ) (B : Fin m → ℝ) : --The
         use 2.71828182846 * 3.14159
         exact ⟨BigAnd.ofEmpty _, BigAnd.ofEmpty _⟩
 
-      · -- let B_min := Finset.inf' (Finset.image B Finset.univ) (by simp [nonempty_finset_of_nezero, m_val]) id
-        let B_min := Finset.min' (Finset.image B Finset.univ) (by simp [nonempty_finset_of_nezero, m_val])
+      · let B_min := Finset.min' (Finset.image B Finset.univ) (by simp [nonempty_finset_of_nezero, m_val])
 
         have B_min_is_minimum (i: Fin m) : B_min ≤ B i := by
           apply Finset.min'_le _ (B i) (mem_image_univ_iff_mem_range.mpr (mem_range_self i))
