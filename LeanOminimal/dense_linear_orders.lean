@@ -11,23 +11,31 @@ def funcomb {n : ℕ} {m : ℕ} {X : Type} (f: Fin n → X) (b: Fin m → X): Fi
     else b ⟨k.val - n, Nat.sub_lt_left_of_lt_add (Nat.le_of_not_lt hk) (Fin.is_lt k)⟩
 
 
--- Step 10: Defining the dense linear order (DLO)
-section DLO_definition
+-- Section 1: Defining the order
+section order_definition
 
 class order (X : Type) where
   ord : (Fin 2 → X) → Prop
 
 namespace order
+
 variable {X : Type} [order X]
 
 @[simp]
 def lt (a b : X) [order X] : Prop :=
   ord (λ i => if i=0 then a else b)
+
 end order
 
 infix:50 " <₀ " => order.lt
 notation x " >₀ " y => y <₀ x
 
+end order_definition
+
+
+
+-- Section 2: Defining a dense linear order (DLO)
+section DLO_definition
 class DLO (X:Type) extends order X where
   irrefl:   ∀x: X,     ¬(x<₀x)
   trans:    ∀x y z: X, x<₀y → y<₀z → x<₀z  --I changed this to be double implication, which Lean usually uses.
@@ -36,8 +44,10 @@ class DLO (X:Type) extends order X where
   no_r_end: ∀x: X, ∃y: X, x<₀y
   no_l_end: ∀x: X, ∃w: X, w<₀x
 
+
 namespace DLO
 
+-- Basic lemma's.
 -- Every dense linear order is asymetric.
 @[simp]
 lemma asymm {X : Type} [DLO X] (x y : X) : ¬(x <₀ y ∧ y <₀ x) := by
@@ -46,7 +56,6 @@ lemma asymm {X : Type} [DLO X] (x y : X) : ¬(x <₀ y ∧ y <₀ x) := by
   apply DLO.trans x y x
   exact h.left
   exact h.right
-
 
 -- A different way to characterise no end points.
 @[simp]
@@ -83,37 +92,42 @@ lemma no_right_extrema {X} [DLO X] : ¬∃y : X, ∀z : X, y = z ∨ y >₀ z :=
 
 
 end DLO
+end DLO_definition
 
--- I think this namespace might be done better. We will see. -- Lily
-namespace intervals
+
+-- Section 3: Intervals
+section intervals
+namespace DLO.interval
 
 variable {X : Type} [DLO X]
 
 @[simp]
-def boundInterval (a b : X ): Set X :=
+def bounded (a b : X ): Set X :=
   {x:X | a<₀x ∧ x<₀b }
 
 @[simp]
-def lowerInterval (a : X): Set X :=
+def lower (a : X): Set X :=
   {x:X | a<₀x }
 
 @[simp]
-def upperInterval (b : X): Set X :=
+def upper (b : X): Set X :=
   {x:X | x<₀b }
 
 @[simp]
-def singletonInterval (a : X): Set X :=
+def singleton (a : X): Set X :=
   {x:X | x=a}
 
 
--- Maybe making it map to Prop *is* better? ...I actually just rewrote what you already had, if only just slightly more clearly. - Lily
+/--
+This property expresses the fact that a subset of X is a finite union of intervals or singletons.
+-/
 inductive is_finite_union_of_intervalsP : Set X → Prop where
   | empty   : is_finite_union_of_intervalsP ∅
   -- | entire  : is_finite_union_of_intervalsP univ -- Not needed, logically follows from the others.
-  | bounded : (a : X) → (b : X) → is_finite_union_of_intervalsP (boundInterval a b)
-  | lower   : (a : X) → is_finite_union_of_intervalsP (lowerInterval a)
-  | upper   : (a : X) → is_finite_union_of_intervalsP (upperInterval a)
-  | point   : (a : X) → is_finite_union_of_intervalsP (singletonInterval a)
+  | bounded : (a : X) → (b : X) → is_finite_union_of_intervalsP (bounded a b)
+  | lower   : (a : X) → is_finite_union_of_intervalsP (lower a)
+  | upper   : (a : X) → is_finite_union_of_intervalsP (upper a)
+  | point   : (a : X) → is_finite_union_of_intervalsP (singleton a)
   | union   : ∀ U V : Set X, is_finite_union_of_intervalsP U → is_finite_union_of_intervalsP V → is_finite_union_of_intervalsP (U ∪ V)
 
 
@@ -121,29 +135,34 @@ inductive is_finite_union_of_intervalsP : Set X → Prop where
 lemma union_preserves_finite_union {U V : Set X} (hu : is_finite_union_of_intervalsP U) (hv : is_finite_union_of_intervalsP V) : is_finite_union_of_intervalsP (U ∪ V) := by
   exact is_finite_union_of_intervalsP.union U V hu hv
 
-lemma finite_sets_are_finite_union {U : Set X} (h: Finite U) : is_finite_union_of_intervalsP U := by
-  -- induction Set.toFinset U using Finset.induction_on
-  -- show (V : Finset X) : is_finite_union_of_intervalsP V
-  rw [finite_iff_exists_equiv_fin] at h
-  rcases h with ⟨n, hn⟩
-  induction' n with n ih
-  · have u_is_empty : U = ∅ := by
-      sorry
-    subst u_is_empty
-    exact is_finite_union_of_intervalsP.empty
-  .
-    rcases hn
+-- -- Maybe skip this one? If we can't find a proof; it's not mandatory.
+-- lemma finite_sets_are_finite_union {U : Set X} (h: Finite U) : is_finite_union_of_intervalsP U := by
+--   -- induction Set.toFinset U using Finset.induction_on
+--   -- show (V : Finset X) : is_finite_union_of_intervalsP V
+--   rw [finite_iff_exists_equiv_fin] at h
+--   rcases h with ⟨n, hn⟩
+--   induction' n with n ih
+--   · have u_is_empty : U = ∅ := by
+--       sorry
+--     subst u_is_empty
+--     exact is_finite_union_of_intervalsP.empty
+--   .
+--     rcases hn
 
-    sorry
+--    sorry
 
+end DLO.interval
 end intervals
 
+
+-- Section 4: Definability
+section definability
 @[simp]
 def isDefinable {X:Type} (L : Language) (U : Set X) [Language.Structure L X] : Prop :=
   Definable₁ (⊤ : Set X ) L U
 
 class Ominimal (X:Type) (L : Language) extends DLO X, Language.Structure L X  where
-  definable_sets: ∀ (U: Set (X)), isDefinable L U  ↔ intervals.is_finite_union_of_intervalsP U
+  definable_sets: ∀ (U: Set (X)), isDefinable L U  ↔ DLO.interval.is_finite_union_of_intervalsP U
 
 
 --- Defining (ℝ ,<₀) as an Lstructure and trying to prove o-minimality
@@ -156,7 +175,7 @@ def order_language : Language where
    Relations := λ n => if n = 2 then ordsymbol else Empty
 
 
-noncomputable section
+noncomputable section reals
 namespace real_DLO
 @[simp]
 instance real_order : order ℝ where
@@ -183,7 +202,6 @@ instance : DLO ℝ  where
   no_r_end := by intro x; exact ⟨x + 1, by simp⟩
   no_l_end := by intro x; exact ⟨x - 1, by simp⟩
 
-end real_DLO
 
 open FirstOrder.Language
 
@@ -223,7 +241,7 @@ lemma definable_emptyInterval               : isDefinable order_language (∅ : 
   exact Eq.symm ((fun {x} ↦ EReal.coe_eq_one.mp) (congrArg Real.toEReal h))
 
 
-lemma definable_upperInterval     (a   : ℝ) : isDefinable order_language (intervals.upperInterval a):= by
+lemma definable_upperInterval     (a   : ℝ) : isDefinable order_language (DLO.interval.upper a):= by
   simp only [isDefinable]
   unfold Definable₁
   unfold Definable
@@ -242,7 +260,7 @@ lemma definable_upperInterval     (a   : ℝ) : isDefinable order_language (inte
     apply h
 
 
-lemma definable_lowerInterval     (  b : ℝ) : isDefinable order_language (intervals.lowerInterval b):= by
+lemma definable_lowerInterval     (  b : ℝ) : isDefinable order_language (DLO.interval.lower b):= by
   simp only [isDefinable]
   unfold Definable₁
   unfold Definable
@@ -261,7 +279,7 @@ lemma definable_lowerInterval     (  b : ℝ) : isDefinable order_language (inte
     apply h
 
 
-lemma definable_boundInterval     (a b : ℝ) : isDefinable order_language (intervals.boundInterval a b) := by
+lemma definable_boundInterval     (a b : ℝ) : isDefinable order_language (DLO.interval.bounded a b) := by
   simp only [isDefinable]
   unfold Definable₁
   unfold Definable
@@ -275,7 +293,7 @@ lemma definable_boundInterval     (a b : ℝ) : isDefinable order_language (inte
 
   use φ1 ⊓ φ2
   ext x
-  simp only [intervals.boundInterval, order.lt, real_DLO.instDLOReal, real_DLO.real_order, Fin.isValue, ↓reduceIte, one_ne_zero,
+  simp only [DLO.interval.bounded, order.lt, real_DLO.instDLOReal, real_DLO.real_order, Fin.isValue, ↓reduceIte, one_ne_zero,
     mem_setOf_eq, order_language, top_eq_univ, real_DLO.Rstruc, ↓dreduceIte, Bool.false_eq_true,
     Formula.realize_inf]
 
@@ -344,7 +362,7 @@ lemma definable_unionInterval {X L} (U V : Set X) [DLO X] [Language.Structure L 
       exact x_in_psiset
 
 
-theorem finite_unions_are_definable : ∀U : Set ℝ, intervals.is_finite_union_of_intervalsP U → isDefinable order_language U := by
+theorem finite_unions_are_definable : ∀U : Set ℝ, DLO.interval.is_finite_union_of_intervalsP U → isDefinable order_language U := by
   intro U is_finite_union
   induction' is_finite_union with a b a b x A B _ _ A_ih B_ih
   · exact definable_emptyInterval
@@ -354,9 +372,11 @@ theorem finite_unions_are_definable : ∀U : Set ℝ, intervals.is_finite_union_
   · exact definable_singletonInterval x
   · exact definable_unionInterval A B A_ih B_ih
 
-end
+end real_DLO
+end reals
+end definability
 
-
+-- Other sections?
 namespace FirstOrder
 namespace Language
 
@@ -408,7 +428,7 @@ def BoundedFormula.toImpAllFreeFormula {L}{α} {n} : BoundedFormula L α n → I
 /- lemma f.Realize i x ↔ (BoundedFormula.toImpAllFreeFormula f).toBoundedFormula.Realize i x:= by sorry -/
 
 /--
-The type of Quantifier Free bounded formulae
+The type of Quantifier Free bounded formulae without implications.
 -/
 inductive QFImpAllFreeFormula (L:Language)(α:Type) : ℕ → Type _
   | falsum {n} : QFImpAllFreeFormula L α n
@@ -459,7 +479,7 @@ def reducible_formula {n:ℕ }{α:Type }{m:ℕ }(f: Fin (n) → Literal order_la
 
 
 
-def ImpAllFree.Realize : ∀ {l} (_f : BoundedFormula L α l) (_v : α → M) (_xs : Fin l → M), Prop
+def ImpAllFreeFormula.Realize {L : Language} : ∀ {l} (_f : BoundedFormula L α l) (_v : α → ℝ) (_xs : Fin l → ℝ), Prop
   | _, falsum, _v, _xs => False
   | _, equal t₁ t₂, v, xs => t₁.realize (Sum.elim v xs) = t₂.realize (Sum.elim v xs)
   | _, rel R ts, v, xs => RelMap R fun i => (ts i).realize (Sum.elim v xs)
@@ -508,18 +528,16 @@ def QFBoundedFormula.or {n : ℕ} (f₁ f₂ : QFBoundedFormula L α n) : QFBoun
 def QFBoundedFormula.Realize {n : ℕ} (f : QFBoundedFormula L α n) (X : Type*) (i : α → X) [L.Structure X](x:Fin n → X) :=
  f.toBoundedFormula.Realize i x
 
+end Language
+end FirstOrder
 -------------------------------
 
 
 -- lemma BoundedFormula.toQFBoundedFormula_iff {n}{X:Type} [Language.Structure L X]  (f: L.BoundedFormula α n) (i : α → X) (x:Fin n→ X) :
 --  f.Realize i x ↔ (BoundedFormula.toQFBoundedFormula f).toBoundedFormula.Realize i x:= by sorry
 
-/--
-The master plan
--/
-instance Real_Ominimal : Ominimal ℝ order_language where
-  definable_sets := by sorry
 
+section Big_And_section
 
 /--
 BigAnd formalizes the notion of ∧ to work with an arbitrary number of propositions.
@@ -598,8 +616,8 @@ lemma eliminationAtIndex {n : ℕ} {P : Fin n → Prop} (bigand_P : BigAnd n P) 
 end BigAnd
 
 
-
-lemma existential_over_equal {X : Type} (a : X) (P : X → Prop) : (∃ x : X,  (x=a ∧ P x)) ↔ P a := by
+namespace existential_elimination
+lemma of_equal {X : Type} (a : X) (P : X → Prop) : (∃ x : X,  (x=a ∧ P x)) ↔ P a := by
   constructor
   · intro h
     rcases h with ⟨x, ⟨x_eq_a, f_x⟩⟩
@@ -617,7 +635,7 @@ Given an array of n real numbers A and another array of m real numbers B, we hav
 
 · Any number in A is smaller than any number in B.
 -/
-lemma existential_over_disjunction {n m : ℕ} (A : Fin n → ℝ) (B : Fin m → ℝ) : --The name makes little sense if I look at my interpretation of the formula. Also, why did it originally have an argument a? I don't see it.
+lemma of_disjunction {n m : ℕ} (A : Fin n → ℝ) (B : Fin m → ℝ) : --The name makes little sense if I look at my interpretation of the formula. Also, why did it originally have an argument a? I don't see it.
     (∃x : ℝ, BigAnd _ (fun (i : Fin n) => A i < x) ∧ BigAnd _ (fun (i : Fin m) => x < B i)) ↔
               BigAnd _ (fun (i : Fin m) => (BigAnd _ fun (j : Fin n) => A j < B i)) := by
 
@@ -735,3 +753,14 @@ lemma existential_over_disjunction {n m : ℕ} (A : Fin n → ℝ) (B : Fin m �
         · apply BigAnd.ofAllProven
           intro i
           exact lt_of_lt_of_le mid_lt_B (B_min_is_minimum i)
+
+
+end existential_elimination
+end Big_And_section
+
+
+/--
+The master plan
+-/
+instance Real_Ominimal : Ominimal ℝ order_language where
+  definable_sets := by sorry
