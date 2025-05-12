@@ -430,18 +430,13 @@ def BoundedFormula.toImpAllFreeFormula {L}{α} {n} : BoundedFormula L α n → I
 /--
 The type of Quantifier Free bounded formulae without implications.
 -/
-inductive QFImpAllFreeFormula (L:Language)(α:Type) : ℕ → Type _
+inductive QFImpAllFreeFormula (L : Language) (α : Type) : ℕ → Type _
   | falsum {n} : QFImpAllFreeFormula L α n
-  | equal {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : QFImpAllFreeFormula L α n
-  | rel {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : QFImpAllFreeFormula L α n
-  | not {n} (f : ImpAllFreeFormula L α n) : QFImpAllFreeFormula L α n
-  | or {n}(f₁ f₂ : ImpAllFreeFormula L α n) : QFImpAllFreeFormula L α n
-  | and {n}(f₁ f₂ : ImpAllFreeFormula L α n) : QFImpAllFreeFormula L α n
-
-
-
-
-
+  | equal  {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : QFImpAllFreeFormula L α n
+  | rel    {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : QFImpAllFreeFormula L α n
+  | not    {n} (f : QFImpAllFreeFormula L α n) : QFImpAllFreeFormula L α n
+  | or     {n} (f₁ f₂ : QFImpAllFreeFormula L α n) : QFImpAllFreeFormula L α n
+  | and    {n} (f₁ f₂ : QFImpAllFreeFormula L α n) : QFImpAllFreeFormula L α n
 
 
 
@@ -503,74 +498,102 @@ inductive QFBoundedFormula (L:Language) (α:Type) : ℕ → Type _
 
 variable {L α}
 
-def QFBoundedFormula.toBoundedFormula {n : ℕ} : (QFBoundedFormula L α n) → L.BoundedFormula α n
+namespace QFBoundedFormula
+
+def toBoundedFormula {n : ℕ} : (QFBoundedFormula L α n) → L.BoundedFormula α n
   | .falsum => .falsum
   | .equal t₁ t₂ => .equal t₁ t₂
   | .imp f₁ f₂ => .imp f₁.toBoundedFormula f₂.toBoundedFormula
   | .rel R ts => .rel R ts
 
-def QFBoundedFormula.not {n : ℕ} (f : QFBoundedFormula L α n) : QFBoundedFormula L α n :=
+def not {n : ℕ} (f : QFBoundedFormula L α n) : QFBoundedFormula L α n :=
   f.imp .falsum
 
-def QFBoundedFormula.and {n : ℕ} (f₁ f₂ : QFBoundedFormula L α n) : QFBoundedFormula L α n :=
+def and {n : ℕ} (f₁ f₂ : QFBoundedFormula L α n) : QFBoundedFormula L α n :=
   (f₁.imp f₂.not).not
 
-def QFBoundedFormula.or {n : ℕ} (f₁ f₂ : QFBoundedFormula L α n) : QFBoundedFormula L α n :=
+def or {n : ℕ} (f₁ f₂ : QFBoundedFormula L α n) : QFBoundedFormula L α n :=
   (f₁.and f₂).not
 
 
-def QFBoundedFormula.Realize {n : ℕ} (f : QFBoundedFormula L α n) (X : Type*) (i : α → X) [L.Structure X](x:Fin n → X) :=
+def Realize {n : ℕ} (f : QFBoundedFormula L α n) (X : Type*) (i : α → X) [L.Structure X](x:Fin n → X) :=
  f.toBoundedFormula.Realize i x
 
-
-def Big_and.toQFImpAllFreeFormula {α:Type }{n:ℕ }{m:ℕ } (f:Fin (n) → Literal order_language α (m)) : QFImpAllFreeFormula order_language α m := by 
- induction n with
-  | zero =>
-    exact QFImpAllFreeFormula.falsum
-  | succ n ih =>
-    
-    -- Split f into head and tail:
-    let f0 : Literal order_language α (m ) := f 0
-    let g : Fin n → Literal order_language α (m ) := 
-      λ i => f (Fin.succ i)
-
-    have qf_tail := @Big_and.toQFImpAllFreeFormula α n m g
-    
+end QFBoundedFormula
 
 
-    rcases f0 with ⟨ f1 ,f2⟩ | ⟨ R, f⟩ |  ⟨ t1, t2⟩ |  ⟨R , f  ⟩  | ⟨f ⟩ 
-    
-    let QF :=  QFImpAllFreeFormula.equal f1 f2
-    exact QF.and qf_tail
-    
-    let QF :=  QFImpAllFreeFormula.rel R f
-    exact QF.and qf_tail
+def Big_and.toQFImpAllFreeFormula {α : Type} {n m : ℕ} (f : Fin n → Literal order_language α m) : QFImpAllFreeFormula order_language α m := by
+  induction' n with k ih
+  · exact QFImpAllFreeFormula.not QFImpAllFreeFormula.falsum
 
-    rcases t1 with ⟨a1 ⟩ | ⟨_, _ ⟩ | ⟨_, _ ⟩   
-    rcases t2 with ⟨a2 ⟩  | ⟨_, _ ⟩ | ⟨_, _ ⟩ 
-    let or1 :=  @Term.var (order_language) (α ⊕ Fin m) a1
-    let or2 :=  @Term.var (order_language) (α ⊕ Fin m) a2
-    let QF1 := QFImpAllFreeFormula.rel (ordsymbol.lt) (fun (i:Fin 2)=>  if i=0 then or1 else or2  )
-    let QF2 := QFImpAllFreeFormula.rel (ordsymbol.lt) (fun (i:Fin 2)=> if i=0 then or2 else or1 )
-    let QF := QF1.or QF2
-    exact QF.and qf_tail
-    rename_i l 
-    by_cases neq: l=2
-    let ter1:= f ⟨0, by linarith⟩ 
-    let ter2 := f ⟨1, by linarith⟩ 
-    let QF1 := QFImpAllFreeFormula.rel (ordsymbol.lt) (fun (i:Fin 2)=>  if i=0 then ter2 else ter1  )
-    let QF2 := QFImpAllFreeFormula.equal ter1 ter2
-    let QF := QF1.or QF2
-    exact QF.and qf_tail
-    exfalso
-    have R_empty : order_language.Relations l = Empty := by
-     dsimp [order_language]
-     simp only [ne_eq] at neq
-     simp [dif_neg neq]
-    rw [R_empty] at R
-    exact R.elim 
-    exact f.toQFImpAllFreeFormula.and qf_tail 
-    termination_by n
+  -- Split f into head and tail:
+  let f0 : Literal order_language α m := f 0
+  let g : Fin k → Literal order_language α m :=
+    λ i => f (Fin.succ i)
+
+  rcases f0
+  · exact ih g
+  · exact ih g
+  · exact ih g
+
+
+
+-- def Big_and.toQFImpAllFreeFormula {α : Type} {n m : ℕ} (f : Fin n → Literal order_language α m) : QFImpAllFreeFormula order_language α m := by
+--   induction' n with k ih
+
+--   · exact QFImpAllFreeFormula.falsum --Shouldn't this be true? -Lily
+
+--   -- Split f into head and tail:
+--   let f0 : Literal order_language α m := f 0
+--   let g : Fin k → Literal order_language α m :=
+--     λ i => f (Fin.succ i)
+
+--   have qf_tail : order_language.QFImpAllFreeFormula α m := by
+--     exact @Big_and.toQFImpAllFreeFormula α k m g
+
+--   rcases f0 with ⟨f1, f2⟩ | ⟨R, f⟩ | ⟨t1, t2⟩ | ⟨R , f⟩  | ⟨f⟩
+
+--   · -- exact ih g --I got an error with the other solution...
+--     let QF :=  QFImpAllFreeFormula.equal f1 f2
+--     exact QF.and qf_tail
+
+--   · -- exact ih g
+--     let QF :=  QFImpAllFreeFormula.rel R f
+--     exact QF.and qf_tail
+
+--   · rcases t1 with a1 | ⟨_, _ ⟩ | ⟨_, _ ⟩
+--     rcases t2 with a2 | ⟨_, _ ⟩ | ⟨_, _ ⟩
+--     let or1 :=  @Term.var (order_language) (α ⊕ Fin m) a1
+--     let or2 :=  @Term.var (order_language) (α ⊕ Fin m) a2
+--     let QF1 := QFImpAllFreeFormula.rel (ordsymbol.lt) (fun (i:Fin 2)=> if i=0 then or1 else or2)
+--     let QF2 := QFImpAllFreeFormula.rel (ordsymbol.lt) (fun (i:Fin 2)=> if i=0 then or2 else or1)
+--     let QF := QFImpAllFreeFormula.or QF1 QF2
+--     exact QF.and qf_tail
+
+--   · rename_i l
+--     by_cases neq: l=2
+--     · let ter1 := f ⟨0, by linarith⟩
+--       let ter2 := f ⟨1, by linarith⟩
+--       let QF1 := QFImpAllFreeFormula.rel (ordsymbol.lt) (fun (i:Fin 2)=>  if i=0 then ter2 else ter1  )
+--       let QF2 := QFImpAllFreeFormula.equal ter1 ter2
+--       let QF := QF1.or QF2
+--       exact QF.and qf_tail
+
+--     exfalso
+--     have R_empty : order_language.Relations l = Empty := by
+--       (expose_names; exact congrFun L_1 l)
+--       -- -- The tactic below didn't work for me, so I got this using "apply?" - Lily
+--       -- dsimp [order_language]
+--       -- simp only [ne_eq] at neq
+--       -- simp [dif_neg neq]
+
+--     rw [R_empty] at R
+--     exact R.elim
+
+--   · exact ih g
+--     -- exact f.toQFImpAllFreeFormula.and qf_tail
+
+--   termination_by n
 
 
 end Language
