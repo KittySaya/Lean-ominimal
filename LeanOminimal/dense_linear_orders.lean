@@ -545,6 +545,7 @@ inductive Literalblock (L : Language) (α : Type) : ℕ → Type _
   | truth {n} : Literalblock L α n
   | equal {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : Literalblock L α n
   | rel   {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : Literalblock L α n
+
   | and   {n : ℕ} (f1 f2 : Literalblock L α n) : Literalblock L α n
   | or    {n : ℕ} (f1 f2 : Literalblock L α n) : Literalblock L α n
 
@@ -558,7 +559,7 @@ def Literalblock.toImpAllFreeFormula {n : ℕ} : (Literalblock L α n) → L.Imp
 
 
 
-def Big_and.toLiteralblock {α : Type} {m : ℕ}{n : ℕ} (f : Fin n → Literal order_language α m) : Literalblock order_language α m := by
+def Big_and.toLiteralblock {α : Type} {m : ℕ} {n : ℕ} (f : Fin n → Literal order_language α m) : Literalblock order_language α m := by
  induction n with
   | zero =>
     exact Literalblock.truth
@@ -613,6 +614,14 @@ def Big_and.toLiteralblock {α : Type} {m : ℕ}{n : ℕ} (f : Fin n → Literal
     · exact  (ih (λ i:Fin n=> f  )).and qf_tail
 
 
+def existblock (L : Language) (α : Type) (length : ℕ) :=
+  -- FirstOrder.Language.BoundedFormula.ex (
+  --   fun n : ℕ =>
+  --   | zero =>
+  --   | succ =>
+  -- )
+  sorry
+
 
 def existblock.toQFImpAllFreeFormula {α : Type} {n : ℕ} {m : ℕ} (f : Fin n → Literal order_language α (m+1)) : QFImpAllFreeFormula order_language α (m) := by
   have existblock := (Big_and.toLiteralblock f).toImpAllFreeFormula.exists
@@ -625,6 +634,31 @@ end Language
 end FirstOrder
 -------------------------------
 
+section QuantifierELimination
+
+def isExistBlock {L : Language} {α : Type} {n : ℕ} (φ : FirstOrder.Language.BoundedFormula L α n) : Prop :=
+
+  sorry
+
+def has_quantifierfreefromula {L : Language} {α : Type} {n : ℕ} (φ : FirstOrder.Language.BoundedFormula L α n) :=
+  ∃ ψ : FirstOrder.Language.QFBoundedFormula L α n,
+    φ.iff (Language.QFBoundedFormula.toBoundedFormula ψ) = Language.BoundedFormula.falsum.not
+    -- Is this a proper definition?
+
+def admits_quantifier_elimination (L : Language) (α : Type) :=
+  ∀n : ℕ, ∀ φ : FirstOrder.Language.BoundedFormula L α n, has_quantifierfreefromula φ
+  -- Is this a proper definition?
+
+theorem of_exist_bigand_blocks {L : Language} {α : Type} (for_existsblocks : ∀n : ℕ, ∀φ : FirstOrder.Language.BoundedFormula L α n, isExistBlock φ → has_quantifierfreefromula φ) : admits_quantifier_elimination L α := by
+  intro n φ
+  induction' φ
+  repeat1' expose_names
+  · use Language.QFBoundedFormula.falsum
+
+    sorry
+  repeat1' sorry
+
+end QuantifierELimination
 
 -- lemma BoundedFormula.toQFBoundedFormula_iff {n}{X:Type} [Language.Structure L X]  (f: L.BoundedFormula α n) (i : α → X) (x:Fin n→ X) :
 --  f.Realize i x ↔ (BoundedFormula.toQFBoundedFormula f).toBoundedFormula.Realize i x:= by sorry
@@ -724,8 +758,6 @@ lemma of_equal {X : Type} (a : X) (P : X → Prop) : (∃ x : X,  (x=a ∧ P x))
 lemma nonempty_finset_of_nezero {k : ℕ} (k_nonzero : ¬(k = 0)) : Nonempty (Fin k) := by
   exact Fin.pos_iff_nonempty.mp (Nat.zero_lt_of_ne_zero k_nonzero)
 
-set_option linter.unusedTactic false in
-set_option linter.unreachableTactic false in
 /--
 Given an array of n real numbers A and another array of m real numbers B, we have the following equivalence:
 
@@ -878,6 +910,9 @@ def TotalExistentionalElimination {k : ℕ} : ((n : ℕ) → (P : Fin n → Prop
 
 end existential_elimination
 end Big_And_section
+
+
+theorem RealDLO_admits_quantifier_elimination :
 
 
 /--
