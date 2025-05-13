@@ -480,6 +480,17 @@ inductive QFImpFreeFormula (L : Language) (α : Type) : ℕ → Type _
   | and    {n} (f₁ f₂ : QFImpFreeFormula L α n) : QFImpFreeFormula L α n
 
 
+def QFImpFreeFormula.toImpAllFreeFormula {L : Language} {α : Type} {n : ℕ} : QFImpFreeFormula L α n → ImpAllFreeFormula L α n
+  | .falsum => .falsum
+  | .equal t₁ t₂ => .equal t₁ t₂
+  | .rel R ts => .rel R ts
+
+  | .not f => (f.toImpAllFreeFormula).not
+  | .or  f₁ f₂ => (f₁.toImpAllFreeFormula).or  (f₂.toImpAllFreeFormula)
+  | .and f₁ f₂ => (f₁.toImpAllFreeFormula).and (f₂.toImpAllFreeFormula)
+
+
+
 
 -------------------------------
 
@@ -556,9 +567,9 @@ def Realize {n : ℕ} (f : QFBoundedFormula L α n) (X : Type*) (i : α → X) [
 end QFBoundedFormula
 
 
-def Big_and.toQFImpAllFreeFormula {α : Type} {n m : ℕ} (f : Fin n → Literal order_language α m) : QFImpFreeFormula order_language α m := by
+def Big_and.toQFImpFreeFormula {α : Type} {n m : ℕ} (f : Fin n → Literal order_language α m) : QFImpFreeFormula order_language α m := by
   induction' n with k ih
-  · exact QFImpAllFreeFormula.not QFImpAllFreeFormula.falsum
+  · exact QFImpFreeFormula.not QFImpFreeFormula.falsum
 
   -- Split f into head and tail:
   let f0 : Literal order_language α m := f 0
@@ -655,7 +666,7 @@ def existblock (L : Language) (α : Type) (length : ℕ) : sorry :=
   sorry
 
 
-def existblock.toQFImpAllFreeFormula {α : Type} {n : ℕ} {m : ℕ} (f : Fin n → Literal order_language α (m+1)) : QFImpFreeFormula order_language α (m) := by
+def existblock.toQFImpFreeFormula {α : Type} {n : ℕ} {m : ℕ} (f : Fin n → Literal order_language α (m+1)) : QFImpFreeFormula order_language α (m) := by
   have existblock := (BigAnd_overLiteralblock f).toImpAllFreeFormula.exists
   dsimp [BigAnd_overLiteralblock, QFImpFreeFormula.toImpAllFreeFormula] at existblock
   cases existblock
