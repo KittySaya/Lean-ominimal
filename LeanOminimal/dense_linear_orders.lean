@@ -381,13 +381,43 @@ namespace FirstOrder
 namespace Language
 
 
+/--
+A Literal of a Language L, a Type α, and a number of free variables n
+is a formula consisting solely of
 
-inductive Literal (L : Language) (α : Type) : ℕ → Type _
-  | equal {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : Literal L α n
-  | rel {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : Literal L α n
-  | not {n} (f:Literal L α n) : Literal L α n
+  equality of terms
 
+  relations of terms
 
+  and lastly, negation of either of those
+-/ -- Should not really be included? I know we came to that conclusion earlier, but I am doubting it right now. -Lily
+inductive Literal (L : Language) (α : Type) (n : ℕ) : Type _
+  | equal (t₁ t₂ : L.Term (α ⊕ (Fin n))) : Literal L α n
+  | rel {l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : Literal L α n
+  | not (f:Literal L α n) : Literal L α n
+
+/--
+An ImpAllFreeFormula, short for Implication_and_ForAll_free_formula,
+is a representation of some formula φ of a Language L, a Type α and a number of free variables n
+written in such a way that it doesn't contain any → or ∀ symbols.
+That is, it consists solely of:
+
+  falsum, or falsehood.
+
+  equality of terms.
+
+  relations of terms.
+
+  negation (¬) of other ImpAllFreeFormula.
+
+  disjunction (or, ∨) of other ImpAllFreeFormula.
+
+  conjunction (and, ∧) of other ImpAllFreeFormula.
+
+  existentials (exists, ∃) of other ImpAllFreeFormula.
+
+It should be noted that, in classical logic, every formula is equivalent to an ImpAllFreeFormula.
+-/
 inductive ImpAllFreeFormula (L : Language) (α : Type) : ℕ → Type _
   | falsum {n : ℕ} : ImpAllFreeFormula L α n
   | equal  {n : ℕ}   (t₁ t₂ : L.Term (α ⊕ (Fin n))) : ImpAllFreeFormula L α n
@@ -410,7 +440,10 @@ inductive BoundedFormula : ℕ → Type max u v u'
   | all {n} (f : BoundedFormula (n + 1)) : BoundedFormula n
 -/
 
-def ImpAllFreeFormula.toBounded {L} {α} {n} : ImpAllFreeFormula L α n → BoundedFormula L α n
+/--
+Changes an ImpAllFreeFormula into a bounded one.
+-/
+def ImpAllFreeFormula.toBounded {L : Language} {α : Type} {n : ℕ} : ImpAllFreeFormula L α n → BoundedFormula L α n
   | .falsum => .falsum
   | .equal t₁ t₂ => .equal t₁ t₂
   | .rel R ts => .rel R ts
@@ -419,9 +452,9 @@ def ImpAllFreeFormula.toBounded {L} {α} {n} : ImpAllFreeFormula L α n → Boun
   | .and f₁ f₂ => ((f₁.not).or (f₂.not).not).toBounded
   | .exists f => (((f.toBounded).not).all).not
 
-variable {L α}
+-- variable {L α} --Why was this? (Probably an artifact if I had to guess) -Lily
 
-def BoundedFormula.toImpAllFreeFormula {L} {α} {n} : BoundedFormula L α n → ImpAllFreeFormula L α n
+def BoundedFormula.toImpAllFreeFormula {L : Language} {α : Type} {n : ℕ} : BoundedFormula L α n → ImpAllFreeFormula L α n
   | .falsum => .falsum
   | .equal t₁ t₂ => .equal t₁ t₂
   | .rel R ts => .rel R ts
@@ -432,14 +465,19 @@ def BoundedFormula.toImpAllFreeFormula {L} {α} {n} : BoundedFormula L α n → 
 
 /--
 The type of Quantifier Free bounded formulae without implications.
+That is, a formula φ is considered to be quantifier free if it doesn't contain and ∀ or ∃ quantifiers,
+and is implication free if it contains no → connective.
+
+That is, a QF Imp formula is solely built up on falsum, equality of terms, relations of terms,
+and the connectives not, or, and.
 -/
-inductive QFImpAllFreeFormula (L : Language) (α : Type) : ℕ → Type _
-  | falsum {n} : QFImpAllFreeFormula L α n
-  | equal  {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : QFImpAllFreeFormula L α n
-  | rel    {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : QFImpAllFreeFormula L α n
-  | not    {n} (f : QFImpAllFreeFormula L α n) : QFImpAllFreeFormula L α n
-  | or     {n} (f₁ f₂ : QFImpAllFreeFormula L α n) : QFImpAllFreeFormula L α n
-  | and    {n} (f₁ f₂ : QFImpAllFreeFormula L α n) : QFImpAllFreeFormula L α n
+inductive QFImpFreeFormula (L : Language) (α : Type) : ℕ → Type _
+  | falsum {n} : QFImpFreeFormula L α n
+  | equal  {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : QFImpFreeFormula L α n
+  | rel    {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : QFImpFreeFormula L α n
+  | not    {n} (f : QFImpFreeFormula L α n) : QFImpFreeFormula L α n
+  | or     {n} (f₁ f₂ : QFImpFreeFormula L α n) : QFImpFreeFormula L α n
+  | and    {n} (f₁ f₂ : QFImpFreeFormula L α n) : QFImpFreeFormula L α n
 
 
 
@@ -450,13 +488,6 @@ inductive QFImpAllFreeFormula (L : Language) (α : Type) : ℕ → Type _
 --  f.Realize i x ↔ (BoundedFormula.toQFBoundedFormula f).toBoundedFormula.Realize i x:= by sorry
 
 
-/--
-Given an array of n real numbers A and another array of m real numbers B, we have the following equivalence:
-
-· There exists a real number x such that x is larger than every number in A but smaller than every number in B.
-
-· Any number in A is smaller than any number in B.
--/
 def Literal.toImpAllFreeFormula {L} {α} {n} : Literal L α n → ImpAllFreeFormula L α n
   | .equal t₁ t₂ => .equal t₁ t₂
   | .rel R ts => .rel R ts
@@ -464,7 +495,7 @@ def Literal.toImpAllFreeFormula {L} {α} {n} : Literal L α n → ImpAllFreeForm
 
 
 
-def BigAndFormula {L : Language} {α : Type} {m : ℕ} :
+def BigAndFormula {L : Language} {α : Type} {m : ℕ} : --A third big and???
     ∀ (n : ℕ), (Fin n → Literal L α m) → ImpAllFreeFormula L α m
   | 0, _ => .falsum
   | n+1, f =>
@@ -525,7 +556,7 @@ def Realize {n : ℕ} (f : QFBoundedFormula L α n) (X : Type*) (i : α → X) [
 end QFBoundedFormula
 
 
-def Big_and.toQFImpAllFreeFormula {α : Type} {n m : ℕ} (f : Fin n → Literal order_language α m) : QFImpAllFreeFormula order_language α m := by
+def Big_and.toQFImpAllFreeFormula {α : Type} {n m : ℕ} (f : Fin n → Literal order_language α m) : QFImpFreeFormula order_language α m := by
   induction' n with k ih
   · exact QFImpAllFreeFormula.not QFImpAllFreeFormula.falsum
 
@@ -624,9 +655,9 @@ def existblock (L : Language) (α : Type) (length : ℕ) : sorry :=
   sorry
 
 
-def existblock.toQFImpAllFreeFormula {α : Type} {n : ℕ} {m : ℕ} (f : Fin n → Literal order_language α (m+1)) : QFImpAllFreeFormula order_language α (m) := by
+def existblock.toQFImpAllFreeFormula {α : Type} {n : ℕ} {m : ℕ} (f : Fin n → Literal order_language α (m+1)) : QFImpFreeFormula order_language α (m) := by
   have existblock := (BigAnd_overLiteralblock f).toImpAllFreeFormula.exists
-  dsimp [BigAnd_overLiteralblock, QFImpAllFreeFormula.toImpAllFreeFormula] at existblock
+  dsimp [BigAnd_overLiteralblock, QFImpFreeFormula.toImpAllFreeFormula] at existblock
   cases existblock
   repeat' sorry
 
