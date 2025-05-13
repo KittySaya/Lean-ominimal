@@ -540,6 +540,10 @@ def Big_and.toQFImpAllFreeFormula {α : Type} {n m : ℕ} (f : Fin n → Literal
   · exact ih g
 
 
+/--
+A literal block is... What is it, exactly?
+Documentation, folks!
+-/
 inductive Literalblock (L : Language) (α : Type) : ℕ → Type _
   | truth {n} : Literalblock L α n
   | equal {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : Literalblock L α n
@@ -558,20 +562,18 @@ def Literalblock.toImpAllFreeFormula {n : ℕ} : (Literalblock L α n) → L.Imp
 
 
 
-def Big_and.toLiteralblock {α : Type} {m : ℕ} {n : ℕ} (f : Fin n → Literal order_language α m) : Literalblock order_language α m := by
+def BigAnd_overLiteralblock {α : Type} {m : ℕ} {n : ℕ} (f : Fin n → Literal order_language α m) : Literalblock order_language α m := by
  induction n with
   | zero =>
     exact Literalblock.truth
-  | succ n ih =>
 
+  | succ n ih =>
     -- Split f into head and tail:
     let f0 : Literal order_language α (m ) := f 0
     let g : Fin n → Literal order_language α (m ) :=
       λ i => f (Fin.succ i)
 
     have qf_tail := ih g
-
-
 
     rcases f0 with ⟨f1 ,f2⟩ | ⟨R, f⟩ | ⟨t1, t2⟩ | ⟨R, f⟩ | f
 
@@ -623,8 +625,8 @@ def existblock (L : Language) (α : Type) (length : ℕ) : sorry :=
 
 
 def existblock.toQFImpAllFreeFormula {α : Type} {n : ℕ} {m : ℕ} (f : Fin n → Literal order_language α (m+1)) : QFImpAllFreeFormula order_language α (m) := by
-  have existblock := (Big_and.toLiteralblock f).toImpAllFreeFormula.exists
-  dsimp [Big_and.toLiteralblock, QFImpAllFreeFormula.toImpAllFreeFormula] at existblock
+  have existblock := (BigAnd_overLiteralblock f).toImpAllFreeFormula.exists
+  dsimp [BigAnd_overLiteralblock, QFImpAllFreeFormula.toImpAllFreeFormula] at existblock
   cases existblock
   repeat' sorry
 
