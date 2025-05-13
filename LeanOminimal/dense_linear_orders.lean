@@ -643,7 +643,7 @@ def isExistBlock {L : Language} {α : Type} {n : ℕ} (φ : FirstOrder.Language.
 def has_quantifierfreefromula {L : Language} {α : Type} {n : ℕ} (φ : FirstOrder.Language.BoundedFormula L α n) :=
   ∃ ψ : FirstOrder.Language.QFBoundedFormula L α n,
     φ.iff (Language.QFBoundedFormula.toBoundedFormula ψ) = Language.BoundedFormula.falsum.not
-    -- Is this a proper definition?
+    -- This definition needs to be better. Something with ∃'?
 
 def admits_quantifier_elimination (L : Language) (α : Type) :=
   ∀n : ℕ, ∀ φ : FirstOrder.Language.BoundedFormula L α n, has_quantifierfreefromula φ
@@ -651,12 +651,17 @@ def admits_quantifier_elimination (L : Language) (α : Type) :=
 
 theorem of_exist_bigand_blocks {L : Language} {α : Type} (for_existsblocks : ∀n : ℕ, ∀φ : FirstOrder.Language.BoundedFormula L α n, isExistBlock φ → has_quantifierfreefromula φ) : admits_quantifier_elimination L α := by
   intro n φ
-  induction' φ
+  induction' φ with _ _ eq_t₁ eq_t₂ _ _ rel_R rel_ts _ imp_f₁ imp_f₂
   repeat1' expose_names
   · use Language.QFBoundedFormula.falsum
-
     sorry
-  repeat1' sorry
+  · use Language.QFBoundedFormula.equal eq_t₁ eq_t₂
+    sorry
+  · use Language.QFBoundedFormula.rel rel_R rel_ts
+    sorry
+  · use Language.QFBoundedFormula.imp imp_f₁ imp_f₂
+    sorry
+  · sorry
 
 end QuantifierELimination
 
