@@ -713,7 +713,7 @@ Given an array of n real numbers A and another array of m real numbers B, we hav
 
 · Any number in A is smaller than any number in B.
 -/
-lemma of_disjunction {n m : ℕ} (A : Fin n → ℝ) (B : Fin m → ℝ) : --The name makes little sense if I look at my interpretation of the formula. Also, why did it originally have an argument a? I don't see it.
+theorem of_inequals {n m : ℕ} (A : Fin n → ℝ) (B : Fin m → ℝ) : --The name makes little sense if I look at my interpretation of the formula. Also, why did it originally have an argument a? I don't see it.
     (∃x : ℝ, BigAnd _ (fun (i : Fin n) => A i < x) ∧ BigAnd _ (fun (i : Fin m) => x < B i)) ↔
               BigAnd _ (fun (i : Fin m) => (BigAnd _ fun (j : Fin n) => A j < B i)) := by
 
@@ -847,8 +847,12 @@ end formula_conversion
 open steps
 
 
-def TotalExistentionalElimination {k : ℕ} : ((n : ℕ) → (P : Fin n → Prop) → Prop) → ((m : ℕ) → (Fin m → FirstOrder.Language.QFBoundedFormula order_language ℝ k) → Prop) :=
-
+def TotalExistentionalElimination {k : ℕ} : ((n : ℕ) → (P : Fin n → Prop) → Prop) → ((m : ℕ) → (Fin m → FirstOrder.Language.QFBoundedFormula order_language ℝ k) → Prop) := by
+  intro f
+  let f' := formula_conversion.to_ImpAllFreeFormula (k := 0) (formula_conversion.to_BoundedFormula f)
+  -- Case distinction:
+  --  If there is a formula of form x = y, where either x or y is an existential, use subsitution.
+  --  Else, use the of_disjunction lemma.
   sorry
 
 
