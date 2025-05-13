@@ -4,7 +4,7 @@ open Set
 open FirstOrder
 
 
--- What does this do?
+-- What does this do? -Lily
 def funcomb {n : ℕ} {m : ℕ} {X : Type} (f: Fin n → X) (b: Fin m → X): Fin (n+m) → X :=
   fun (k: Fin (n+m)) =>
     if  hk: (k.val: ℕ) < n then f ⟨k, hk⟩
@@ -25,11 +25,10 @@ variable {X : Type} [order X]
 def lt (a b : X) [order X] : Prop :=
   ord (λ i => if i=0 then a else b)
 
-end order
-
-infix:50 " <₀ " => order.lt
+infix:50 " <₀ " => lt
 notation x " >₀ " y => y <₀ x
 
+end order
 end order_definition
 
 
@@ -47,7 +46,7 @@ class DLO (X : Type) extends order X where
 
 namespace DLO
 
--- Basic lemma's.
+-- Basic lemma's of DLOs.
 -- Every dense linear order is asymetric.
 @[simp]
 lemma asymm {X : Type} [DLO X] (x y : X) : ¬(x <₀ y ∧ y <₀ x) := by
@@ -103,19 +102,19 @@ variable {X : Type} [DLO X]
 
 @[simp]
 def bounded (a b : X ): Set X :=
-  {x:X | a<₀x ∧ x<₀b }
+  { x:X | a<₀x ∧ x<₀b }
 
 @[simp]
 def lower (a : X): Set X :=
-  {x:X | a<₀x }
+  { x:X | a<₀x }
 
 @[simp]
 def upper (b : X): Set X :=
-  {x:X | x<₀b }
+  { x:X | x<₀b }
 
 @[simp]
 def singleton (a : X): Set X :=
-  {x:X | x=a}
+  { x:X | x=a}
 
 
 /--
@@ -183,7 +182,7 @@ instance real_order : order ℝ where
 
 
 @[simp]
- instance Rstruc : Language.Structure order_language ℝ  where
+ instance Rstruc : Language.Structure order_language ℝ where
    funMap := λ empt => Empty.elim empt
    RelMap {n:ℕ }:= λ _ f =>
     match n with
@@ -220,7 +219,7 @@ def constR  (b : ℝ ) : FirstOrder.Language.Term (order_language [[univ (α := 
 
 
 
-lemma definable_emptyInterval               : isDefinable order_language (∅ : Set ℝ):= by
+lemma definable_emptyInterval : isDefinable order_language (∅ : Set ℝ):= by
   simp only [isDefinable]
   unfold Definable₁
   unfold Definable
@@ -241,7 +240,7 @@ lemma definable_emptyInterval               : isDefinable order_language (∅ : 
   exact Eq.symm ((fun {x} ↦ EReal.coe_eq_one.mp) (congrArg Real.toEReal h))
 
 
-lemma definable_upperInterval     (a   : ℝ) : isDefinable order_language (DLO.interval.upper a):= by
+lemma definable_upperInterval (a : ℝ) : isDefinable order_language (DLO.interval.upper a):= by
   simp only [isDefinable]
   unfold Definable₁
   unfold Definable
@@ -260,7 +259,7 @@ lemma definable_upperInterval     (a   : ℝ) : isDefinable order_language (DLO.
     apply h
 
 
-lemma definable_lowerInterval     (  b : ℝ) : isDefinable order_language (DLO.interval.lower b):= by
+lemma definable_lowerInterval (b : ℝ) : isDefinable order_language (DLO.interval.lower b):= by
   simp only [isDefinable]
   unfold Definable₁
   unfold Definable
@@ -279,7 +278,7 @@ lemma definable_lowerInterval     (  b : ℝ) : isDefinable order_language (DLO.
     apply h
 
 
-lemma definable_boundInterval     (a b : ℝ) : isDefinable order_language (DLO.interval.bounded a b) := by
+lemma definable_boundInterval (a b : ℝ) : isDefinable order_language (DLO.interval.bounded a b) := by
   simp only [isDefinable]
   unfold Definable₁
   unfold Definable
@@ -644,7 +643,7 @@ def is_quantifierfree_alternative {L : Language} {α : Type} [L.Structure α] (X
   sorry
   -- φ.Realize _ vars ↔ ψ.Realize α _ vars
   -- I worry that something is wrong here, mainly in confusing X and α.
-  -- Also, what are the the arguments of Realize?
+  -- Also, what are the the arguments of Realize? - Lily
 
 def has_quantifierfreefromula {L : Language} {α : Type} [L.Structure α] {n : ℕ} (φ : FirstOrder.Language.BoundedFormula L α n) (vars : Fin n → α) :=
   ∃ ψ : FirstOrder.Language.QFBoundedFormula L α n,
@@ -779,7 +778,7 @@ Given an array of n real numbers A and another array of m real numbers B, we hav
 
 · Any number in A is smaller than any number in B.
 -/
-theorem of_inequals {n m : ℕ} (A : Fin n → ℝ) (B : Fin m → ℝ) : --The name makes little sense if I look at my interpretation of the formula. Also, why did it originally have an argument a? I don't see it.
+theorem of_bigand_inequals {n m : ℕ} (A : Fin n → ℝ) (B : Fin m → ℝ) : --The name makes little sense if I look at my interpretation of the formula. Also, why did it originally have an argument a? I don't see it.
     (∃x : ℝ, BigAnd _ (fun (i : Fin n) => A i < x) ∧ BigAnd _ (fun (i : Fin m) => x < B i)) ↔
               BigAnd _ (fun (i : Fin m) => (BigAnd _ fun (j : Fin n) => A j < B i)) := by
 
