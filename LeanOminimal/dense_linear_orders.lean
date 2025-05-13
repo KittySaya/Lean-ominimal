@@ -62,7 +62,7 @@ lemma asymm {X : Type} [DLO X] (x y : X) : ¬(x <₀ y ∧ y <₀ x) := by
 lemma no_left_extrema {X} [DLO X] : ¬∃y : X, ∀z : X, y = z ∨ y <₀ z := by
   push_neg
   intro y
-  have h : ∃w: X, w<₀y := DLO.no_l_end y
+  have h : ∃w: X, w <₀ y := DLO.no_l_end y
   rcases h with ⟨w, hw⟩
   use w
   constructor
@@ -377,25 +377,28 @@ end reals
 end definability
 
 -- Other sections?
+-- namespace MyFirstOrder -- I would personally prefer not using an already existing name. -Lily
 namespace FirstOrder
 namespace Language
 
 
 
-inductive Literal (L:Language)(α:Type) : ℕ → Type _
+inductive Literal (L : Language) (α : Type) : ℕ → Type _
   | equal {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : Literal L α n
   | rel {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : Literal L α n
-  | not {n} (f:Literal L α n): Literal L α n
+  | not {n} (f:Literal L α n) : Literal L α n
 
 
-inductive ImpAllFreeFormula (L:Language)(α:Type) : ℕ → Type _
-  | falsum {n} : ImpAllFreeFormula L α n
-  | equal {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : ImpAllFreeFormula L α n
-  | rel {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : ImpAllFreeFormula L α n
-  | not {n} (f : ImpAllFreeFormula L α n) : ImpAllFreeFormula L α n
-  | or {n}(f₁ f₂ : ImpAllFreeFormula L α n) : ImpAllFreeFormula L α n
-  | and {n}(f₁ f₂ : ImpAllFreeFormula L α n) : ImpAllFreeFormula L α n
-  | exists {n} (f : ImpAllFreeFormula L α (n + 1)) : ImpAllFreeFormula L α n
+inductive ImpAllFreeFormula (L : Language) (α : Type) : ℕ → Type _
+  | falsum {n : ℕ} : ImpAllFreeFormula L α n
+  | equal  {n : ℕ}   (t₁ t₂ : L.Term (α ⊕ (Fin n))) : ImpAllFreeFormula L α n
+  | rel    {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : ImpAllFreeFormula L α n
+
+  | not    {n : ℕ}   (f     : ImpAllFreeFormula L α n) : ImpAllFreeFormula L α n
+  | or     {n : ℕ}   (f₁ f₂ : ImpAllFreeFormula L α n) : ImpAllFreeFormula L α n
+  | and    {n : ℕ}   (f₁ f₂ : ImpAllFreeFormula L α n) : ImpAllFreeFormula L α n
+
+  | exists {n : ℕ}   (f : ImpAllFreeFormula L α (n + 1)) : ImpAllFreeFormula L α n
 
 /-
 inductive BoundedFormula : ℕ → Type max u v u'
@@ -408,7 +411,7 @@ inductive BoundedFormula : ℕ → Type max u v u'
   | all {n} (f : BoundedFormula (n + 1)) : BoundedFormula n
 -/
 
-def ImpAllFreeFormula.toBounded {L}{α}{n} : ImpAllFreeFormula L α n → BoundedFormula L α n
+def ImpAllFreeFormula.toBounded {L} {α} {n} : ImpAllFreeFormula L α n → BoundedFormula L α n
   | .falsum => .falsum
   | .equal t₁ t₂ => .equal t₁ t₂
   | .rel R ts => .rel R ts
@@ -416,6 +419,8 @@ def ImpAllFreeFormula.toBounded {L}{α}{n} : ImpAllFreeFormula L α n → Bounde
   | .or f₁ f₂ => ((f₁.not).toBounded).imp f₂.toBounded
   | .and f₁ f₂ => ((f₁.not).or (f₂.not).not).toBounded
   | .exists f => (((f.toBounded).not).all).not
+
+
 variable {L α}
 
 def BoundedFormula.toImpAllFreeFormula {L}{α} {n} : BoundedFormula L α n → ImpAllFreeFormula L α n
@@ -613,7 +618,7 @@ That is, if there's an empty list of propositions, it holds;
 and if it's not empty, it holds if all values are evaluated to true.
 -/
 inductive BigAnd : (n : ℕ) → (Fin n → Prop) → Prop
-  | zero (P : Fin 0 → Prop ) : BigAnd 0 P --Modified this; we want this to hold for arbitrary P, not just the specific λ _ => True.
+  | zero (P : Fin 0 → Prop) : BigAnd 0 P --Modified this; we want this to hold for arbitrary P, not just the specific λ _ => True.
   | succ {m : ℕ} (P : Fin (m + 1) → Prop) :
       P 0 → BigAnd m (fun i => P i.succ) → BigAnd (m + 1) P --If P 0 is true, and we know BigAnd of the list starting at index 1, it holds for the entire list.
 
@@ -685,6 +690,7 @@ end BigAnd
 
 
 namespace existential_elimination
+namespace steps
 lemma of_equal {X : Type} (a : X) (P : X → Prop) : (∃ x : X,  (x=a ∧ P x)) ↔ P a := by
   constructor
   · intro h
@@ -821,6 +827,29 @@ lemma of_disjunction {n m : ℕ} (A : Fin n → ℝ) (B : Fin m → ℝ) : --The
         · apply BigAnd.ofAllProven
           intro i
           exact lt_of_lt_of_le mid_lt_B (B_min_is_minimum i)
+
+
+end steps
+
+namespace formula_conversion
+def to_BoundedFormula {k : ℕ} : ((n : ℕ) → (P : Fin n → Prop) → Prop) → ((m : ℕ) → (Fin m → FirstOrder.Language.BoundedFormula order_language ℝ k) → Prop) :=
+  sorry
+  -- (n : ℕ) → (Fin n → FirstOrder.Language.toBoundedFormula order_language ℝ k) → Prop
+
+
+def to_ImpAllFreeFormula {k : ℕ} : ((n : ℕ) → (P : Fin n → FirstOrder.Language.BoundedFormula order_language ℝ k) → Prop) → ((m : ℕ) → (Fin m → FirstOrder.Language.ImpAllFreeFormula order_language ℝ k) → Prop) :=
+  sorry
+  -- (n : ℕ) → (Fin n → FirstOrder.Language.toImpAllFreeFormula order_language ℝ k) → Prop
+
+
+end formula_conversion
+
+open steps
+
+
+def TotalExistentionalElimination {k : ℕ} : ((n : ℕ) → (P : Fin n → Prop) → Prop) → ((m : ℕ) → (Fin m → FirstOrder.Language.QFBoundedFormula order_language ℝ k) → Prop) :=
+
+  sorry
 
 
 end existential_elimination
