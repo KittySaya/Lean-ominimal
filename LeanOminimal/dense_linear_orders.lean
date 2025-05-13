@@ -14,7 +14,7 @@ def funcomb {n : ℕ} {m : ℕ} {X : Type} (f: Fin n → X) (b: Fin m → X): Fi
 -- Section 1: Defining the order
 section order_definition
 
-class order (X : Type) where
+class order (X : Type) : Type where
   ord : (Fin 2 → X) → Prop
 
 namespace order
@@ -36,7 +36,7 @@ end order_definition
 
 -- Section 2: Defining a dense linear order (DLO)
 section DLO_definition
-class DLO (X:Type) extends order X where
+class DLO (X : Type) extends order X where
   irrefl:   ∀x: X,     ¬(x<₀x)
   trans:    ∀x y z: X, x<₀y → y<₀z → x<₀z  --I changed this to be double implication, which Lean usually uses.
   total:    ∀x y: X,   x<₀y ∨ x=y ∨ y<₀x
@@ -158,10 +158,10 @@ end intervals
 -- Section 4: Definability
 section definability
 @[simp]
-def isDefinable {X:Type} (L : Language) (U : Set X) [Language.Structure L X] : Prop :=
+def isDefinable {X : Type} (L : Language) (U : Set X) [Language.Structure L X] : Prop :=
   Definable₁ (⊤ : Set X ) L U
 
-class Ominimal (X:Type) (L : Language) extends DLO X, Language.Structure L X  where
+class Ominimal (X : Type) (L : Language) extends DLO X, Language.Structure L X  where
   definable_sets: ∀ (U: Set (X)), isDefinable L U  ↔ DLO.interval.is_finite_union_of_intervalsP U
 
 
@@ -422,7 +422,7 @@ def ImpAllFreeFormula.toBounded {L} {α} {n} : ImpAllFreeFormula L α n → Boun
 
 variable {L α}
 
-def BoundedFormula.toImpAllFreeFormula {L}{α} {n} : BoundedFormula L α n → ImpAllFreeFormula L α n
+def BoundedFormula.toImpAllFreeFormula {L} {α} {n} : BoundedFormula L α n → ImpAllFreeFormula L α n
   | .falsum => .falsum
   | .equal t₁ t₂ => .equal t₁ t₂
   | .rel R ts => .rel R ts
@@ -458,7 +458,7 @@ Given an array of n real numbers A and another array of m real numbers B, we hav
 
 · Any number in A is smaller than any number in B.
 -/
-def Literal.toImpAllFreeFormula {L}{α} {n} : Literal L α n → ImpAllFreeFormula L α n
+def Literal.toImpAllFreeFormula {L} {α} {n} : Literal L α n → ImpAllFreeFormula L α n
   | .equal t₁ t₂ => .equal t₁ t₂
   | .rel R ts => .rel R ts
   | .not f => .not f.toImpAllFreeFormula
@@ -492,7 +492,7 @@ variable (L : Language) (α)
 /--
 The type of Quantifier Free bounded formulae
 -/
-inductive QFBoundedFormula (L:Language) (α:Type) : ℕ → Type _
+inductive QFBoundedFormula (L : Language) (α : Type) : ℕ → Type _
   | falsum {n} : QFBoundedFormula L α n
   | equal  {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : QFBoundedFormula L α n
   | rel    {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : QFBoundedFormula L α n
@@ -614,7 +614,7 @@ def Big_and.toLiteralblock {α : Type} {m : ℕ} {n : ℕ} (f : Fin n → Litera
     · exact  (ih (λ i:Fin n=> f  )).and qf_tail
 
 
-def existblock (L : Language) (α : Type) (length : ℕ) :=
+def existblock (L : Language) (α : Type) (length : ℕ) : sorry :=
   -- FirstOrder.Language.BoundedFormula.ex (
   --   fun n : ℕ =>
   --   | zero =>
@@ -634,34 +634,43 @@ end Language
 end FirstOrder
 -------------------------------
 
-section QuantifierELimination
+namespace QuantifierELimination
 
 def isExistBlock {L : Language} {α : Type} {n : ℕ} (φ : FirstOrder.Language.BoundedFormula L α n) : Prop :=
 
   sorry
 
-def has_quantifierfreefromula {L : Language} {α : Type} {n : ℕ} (φ : FirstOrder.Language.BoundedFormula L α n) :=
-  ∃ ψ : FirstOrder.Language.QFBoundedFormula L α n,
-    φ.iff (Language.QFBoundedFormula.toBoundedFormula ψ) = Language.BoundedFormula.falsum.not
-    -- This definition needs to be better. Something with ∃'?
+def is_quantifierfree_alternative {L : Language} {α : Type} [L.Structure α] (X : Type*) {n : ℕ} (vars : Fin n → α) (φ : FirstOrder.Language.BoundedFormula L α n) (ψ : FirstOrder.Language.QFBoundedFormula L α n) : Prop :=
+  sorry
+  -- φ.Realize _ vars ↔ ψ.Realize α _ vars
+  -- I worry that something is wrong here, mainly in confusing X and α.
+  -- Also, what are the the arguments of Realize?
 
-def admits_quantifier_elimination (L : Language) (α : Type) :=
-  ∀n : ℕ, ∀ φ : FirstOrder.Language.BoundedFormula L α n, has_quantifierfreefromula φ
+def has_quantifierfreefromula {L : Language} {α : Type} [L.Structure α] {n : ℕ} (φ : FirstOrder.Language.BoundedFormula L α n) (vars : Fin n → α) :=
+  ∃ ψ : FirstOrder.Language.QFBoundedFormula L α n,
+    is_quantifierfree_alternative ℝ vars φ ψ
+    -- This definition needs to be better.
+
+def admits_quantifier_elimination (L : Language) (α : Type) [L.Structure α] :=
+  ∀n : ℕ, ∀vars : Fin n → α, ∀ φ : FirstOrder.Language.BoundedFormula L α n, has_quantifierfreefromula φ vars
   -- Is this a proper definition?
 
-theorem of_exist_bigand_blocks {L : Language} {α : Type} (for_existsblocks : ∀n : ℕ, ∀φ : FirstOrder.Language.BoundedFormula L α n, isExistBlock φ → has_quantifierfreefromula φ) : admits_quantifier_elimination L α := by
-  intro n φ
-  induction' φ with _ _ eq_t₁ eq_t₂ _ _ rel_R rel_ts _ imp_f₁ imp_f₂
-  repeat1' expose_names
-  · use Language.QFBoundedFormula.falsum
-    sorry
-  · use Language.QFBoundedFormula.equal eq_t₁ eq_t₂
-    sorry
-  · use Language.QFBoundedFormula.rel rel_R rel_ts
-    sorry
-  · use Language.QFBoundedFormula.imp imp_f₁ imp_f₂
-    sorry
-  · sorry
+-- WARNING: Volatile.
+-- Editing this theorem may lead to your computer slowing down, even to the point of freezing, and crashing in the worst case.
+-- theorem of_exist_bigand_blocks {L : Language} {α : Type} [L.Structure α] (for_existsblocks : ∀n : ℕ, ∀vars : Fin n → α, ∀φ : FirstOrder.Language.BoundedFormula L α n, isExistBlock φ → has_quantifierfreefromula φ vars) : admits_quantifier_elimination L α := by
+--   intro n vars φ
+--   induction' φ with _ _ eq_t₁ eq_t₂ _ _ rel_R rel_ts _ imp_bounded_f₁ imp_bounded_f₂ imp_ih_f₁ imp_ih_f₂
+--   -- repeat1' expose_names
+--   · use Language.QFBoundedFormula.falsum
+--     unfold is_quantifierfree_alternative
+--     sorry
+--   · use Language.QFBoundedFormula.equal eq_t₁ eq_t₂
+--     sorry
+--   · use Language.QFBoundedFormula.rel rel_R rel_ts
+--     sorry
+--   · -- use Language.QFBoundedFormula.imp imp_f₁ imp_f₂
+--     sorry
+--   · sorry
 
 end QuantifierELimination
 
@@ -917,7 +926,9 @@ end existential_elimination
 end Big_And_section
 
 
-theorem RealDLO_admits_quantifier_elimination :
+theorem RealDLO_admits_quantifier_elimination : QuantifierELimination.admits_quantifier_elimination order_language ℝ := by
+  -- apply of_exist_bigand_blocks
+  sorry
 
 
 /--
