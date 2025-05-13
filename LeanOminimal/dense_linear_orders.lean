@@ -420,7 +420,6 @@ def ImpAllFreeFormula.toBounded {L} {α} {n} : ImpAllFreeFormula L α n → Boun
   | .and f₁ f₂ => ((f₁.not).or (f₂.not).not).toBounded
   | .exists f => (((f.toBounded).not).all).not
 
-
 variable {L α}
 
 def BoundedFormula.toImpAllFreeFormula {L}{α} {n} : BoundedFormula L α n → ImpAllFreeFormula L α n
@@ -542,78 +541,84 @@ def Big_and.toQFImpAllFreeFormula {α : Type} {n m : ℕ} (f : Fin n → Literal
   · exact ih g
 
 
-inductive Literalblock (L:Language)(α:Type) : ℕ → Type _
+inductive Literalblock (L : Language) (α : Type) : ℕ → Type _
   | truth {n} : Literalblock L α n
   | equal {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : Literalblock L α n
-  | rel {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : Literalblock L α n
-  | and {n:ℕ }(f1 f2 : Literalblock L α n) : Literalblock L α n 
-  | or {n:ℕ }(f1 f2 : Literalblock L α n) : Literalblock L α n 
+  | rel   {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : Literalblock L α n
+  | and   {n : ℕ} (f1 f2 : Literalblock L α n) : Literalblock L α n
+  | or    {n : ℕ} (f1 f2 : Literalblock L α n) : Literalblock L α n
 
 def Literalblock.toImpAllFreeFormula {n : ℕ} : (Literalblock L α n) → L.ImpAllFreeFormula α n
   | .truth  => ImpAllFreeFormula.falsum.not
   | .equal t₁ t₂ => .equal t₁ t₂
-  | .rel R ts => .rel R ts
-  | .or f₁ f₂ => f₁.toImpAllFreeFormula.or f₂.toImpAllFreeFormula
-  | .and f₁ f₂ => f₁.toImpAllFreeFormula.and f₂.toImpAllFreeFormula
+  | .rel   R ts => .rel R ts
+  | .or    f₁ f₂ => f₁.toImpAllFreeFormula.or f₂.toImpAllFreeFormula
+  | .and   f₁ f₂ => f₁.toImpAllFreeFormula.and f₂.toImpAllFreeFormula
 
 
 
 
-def Big_and.toLiteralblock {α:Type }{m:ℕ }{n:ℕ } (f:Fin (n) → Literal order_language α (m)) : Literalblock order_language α m := by 
+def Big_and.toLiteralblock {α : Type} {m : ℕ}{n : ℕ} (f : Fin n → Literal order_language α m) : Literalblock order_language α m := by
  induction n with
   | zero =>
     exact Literalblock.truth
   | succ n ih =>
-    
+
     -- Split f into head and tail:
     let f0 : Literal order_language α (m ) := f 0
-    let g : Fin n → Literal order_language α (m ) := 
+    let g : Fin n → Literal order_language α (m ) :=
       λ i => f (Fin.succ i)
 
     have qf_tail := ih g
-    
-
-
-    rcases f0 with ⟨ f1 ,f2⟩ | ⟨ R, f⟩ |  ⟨ t1, t2⟩ |  ⟨R , f  ⟩  | ⟨f ⟩ 
-    
-    let QF :=  Literalblock.equal f1 f2
-    exact QF.and qf_tail
-    
-    let QF :=  Literalblock.rel R f
-    exact QF.and qf_tail
-
-    rcases t1 with ⟨a1 ⟩ | ⟨_, _ ⟩ | ⟨_, _ ⟩   
-    rcases t2 with ⟨a2 ⟩  | ⟨_, _ ⟩ | ⟨_, _ ⟩ 
-    let or1 :=  @Term.var (order_language) (α ⊕ Fin m) a1
-    let or2 :=  @Term.var (order_language) (α ⊕ Fin m) a2
-    let QF1 := Literalblock.rel (ordsymbol.lt) (fun (i:Fin 2)=>  if i=0 then or1 else or2  )
-    let QF2 := Literalblock.rel (ordsymbol.lt) (fun (i:Fin 2)=> if i=0 then or2 else or1 )
-    let QF := QF1.or QF2
-    exact QF.and qf_tail
-    rename_i l 
-    by_cases neq: l=2
-    let ter1:= f ⟨0, by linarith⟩ 
-    let ter2 := f ⟨1, by linarith⟩ 
-    let QF1 := Literalblock.rel (ordsymbol.lt) (fun (i:Fin 2)=>  if i=0 then ter2 else ter1  )
-    let QF2 := Literalblock.equal ter1 ter2
-    let QF := QF1.or QF2
-    exact QF.and qf_tail
-    exfalso
-    have R_empty : order_language.Relations l = Empty := by
-     dsimp [order_language]
-     simp only [ne_eq] at neq
-     simp [dif_neg neq]
-    rw [R_empty] at R
-    exact R.elim 
-    exact  (ih (λ i:Fin n=> f  )).and qf_tail 
 
 
 
-def existblock.toQFImpAllFreeFormula {α:Type }{n:ℕ }{m:ℕ } (f:Fin (n) → Literal order_language α (m+1)) : QFImpAllFreeFormula order_language α (m) := by 
- have existblock := (Big_and.toLiteralblock f).toImpAllFreeFormula.exists 
- dsimp [Big_and.toLiteralblock,QFImpAllFreeFormula.toImpAllFreeFormula] at existblock
- cases existblock  
- sorry
+    rcases f0 with ⟨f1 ,f2⟩ | ⟨R, f⟩ | ⟨t1, t2⟩ | ⟨R, f⟩ | f
+
+    · let QF :=  Literalblock.equal f1 f2
+      exact QF.and qf_tail
+
+    · let QF :=  Literalblock.rel R f
+      exact QF.and qf_tail
+
+    · rcases t1 with ⟨a1 ⟩ | ⟨_, _ ⟩ | ⟨_, _ ⟩
+      rcases t2 with ⟨a2 ⟩  | ⟨_, _ ⟩ | ⟨_, _ ⟩
+      let or1 :=  @Term.var (order_language) (α ⊕ Fin m) a1
+      let or2 :=  @Term.var (order_language) (α ⊕ Fin m) a2
+      let QF1 := Literalblock.rel (ordsymbol.lt) (fun (i:Fin 2)=>  if i=0 then or1 else or2  )
+      let QF2 := Literalblock.rel (ordsymbol.lt) (fun (i:Fin 2)=> if i=0 then or2 else or1 )
+      let QF := QF1.or QF2
+      exact QF.and qf_tail
+
+    · rename_i l
+      by_cases neq: l=2
+      let ter1:= f ⟨0, by linarith⟩
+      let ter2 := f ⟨1, by linarith⟩
+      let QF1 := Literalblock.rel (ordsymbol.lt) (fun (i:Fin 2)=>  if i=0 then ter2 else ter1  )
+      let QF2 := Literalblock.equal ter1 ter2
+      let QF := QF1.or QF2
+      exact QF.and qf_tail
+      exfalso
+      have R_empty : order_language.Relations l = Empty := by
+        dsimp [order_language]
+        simp only [ne_eq] at neq
+        simp [dif_neg neq]
+        intro l_is_2
+        exfalso
+        trivial
+
+      rw [R_empty] at R
+      exact R.elim
+
+    · exact  (ih (λ i:Fin n=> f  )).and qf_tail
+
+
+
+def existblock.toQFImpAllFreeFormula {α : Type} {n : ℕ} {m : ℕ} (f : Fin n → Literal order_language α (m+1)) : QFImpAllFreeFormula order_language α (m) := by
+  have existblock := (Big_and.toLiteralblock f).toImpAllFreeFormula.exists
+  dsimp [Big_and.toLiteralblock, QFImpAllFreeFormula.toImpAllFreeFormula] at existblock
+  cases existblock
+  repeat' sorry
 
 
 end Language
