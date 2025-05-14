@@ -562,7 +562,7 @@ def reducible_formula {n : ℕ} {α : Type} {m : ℕ} (f : Fin n → Literal ord
   (BigAndFormula n f).exists
 
 
-def RealOrder.ImpAllFreeFormula.Realize {α} : ∀ {l} (_f : ImpAllFreeFormula order_language α l) (_v : α → ℝ) (_xs : Fin l → ℝ), Prop
+def ImpAllFreeFormula.Realize {α} : ∀ {l} (_f : ImpAllFreeFormula order_language α l) (_v : α → ℝ) (_xs : Fin l → ℝ), Prop
   | _, FirstOrder.Language.ImpAllFreeFormula.falsum, _v, _xs => False
   | _, FirstOrder.Language.ImpAllFreeFormula.equal t₁ t₂, v, xs => t₁.realize (Sum.elim v xs) = t₂.realize (Sum.elim v xs)
   | _, FirstOrder.Language.ImpAllFreeFormula.rel R ts, v, xs => real_DLO.Rstruc.RelMap R fun i => (ts i).realize (Sum.elim v xs)
@@ -570,7 +570,68 @@ def RealOrder.ImpAllFreeFormula.Realize {α} : ∀ {l} (_f : ImpAllFreeFormula o
   | _, FirstOrder.Language.ImpAllFreeFormula.not f, v, xs => ¬ Realize f v xs
   | _, FirstOrder.Language.ImpAllFreeFormula.and f₁ f₂, v, xs => Realize f₁ v xs ∧ Realize f₂ v xs
   | _, FirstOrder.Language.ImpAllFreeFormula.or  f₁ f₂, v, xs => Realize f₁ v xs ∨ Realize f₂ v xs
+
   | _, FirstOrder.Language.ImpAllFreeFormula.exists f, v, xs => ∃ x : ℝ, Realize f v (Fin.snoc xs x)
+
+
+section Realize_theorems
+variable {L : Language} [L.Structure ℝ]
+variable {α : Type}
+variable {l : ℕ} {φ ψ : ImpAllFreeFormula order_language α l} {θ : ImpAllFreeFormula order_language α l.succ}
+variable {v : α → ℝ} {xs : Fin l → ℝ}
+
+@[simp]
+theorem realize_falsum : ImpAllFreeFormula.Realize (FirstOrder.Language.ImpAllFreeFormula.falsum : ImpAllFreeFormula order_language α l) v xs ↔ False := by
+  exact Iff.rfl
+
+@[simp]
+theorem realize_notfalsum : ImpAllFreeFormula.Realize (ImpAllFreeFormula.not ImpAllFreeFormula.falsum) v xs := by
+  exact fun a ↦ a
+
+-- @[simp]
+-- theorem realize_bdEqual (t₁ t₂ : order_language.Term (α ⊕ (Fin l))) :
+--     (t₁.bdEqual t₂).Realize v xs ↔ t₁.realize (Sum.elim v xs) = t₂.realize (Sum.elim v xs) := by
+--   exact BoundedFormula.realize_bdEqual t₁ t₂
+
+@[simp]
+theorem realize_rel {k : ℕ} {R : order_language.Relations k} {ts : Fin k → order_language.Term _} :
+    (R.boundedFormula ts).Realize v xs ↔ real_DLO.Rstruc.RelMap R fun i => (ts i).realize (Sum.elim v xs) :=
+  Iff.rfl
+
+@[simp]
+theorem realize_not : φ.not.Realize v xs ↔ ¬φ.Realize v xs := by
+  exact Iff.rfl
+
+@[simp]
+theorem realize_and : (φ.and ψ).Realize v xs ↔ φ.Realize v xs ∧ ψ.Realize v xs := by
+  simp only [order_language, ImpAllFreeFormula.Realize]
+
+@[simp]
+theorem realize_rel₁ {R : order_language.Relations 1} {t : order_language.Term _} :
+    (R.boundedFormula₁ t).Realize v xs ↔ real_DLO.Rstruc.RelMap R ![t.realize (Sum.elim v xs)] := by
+  rw [Relations.boundedFormula₁, realize_rel, iff_eq_eq]
+  refine congr rfl (funext fun _ => ?_)
+  simp only [Matrix.cons_val_fin_one]
+
+@[simp]
+theorem realize_rel₂ {R : order_language.Relations 2} {t₁ t₂ : order_language.Term _} :
+    (R.boundedFormula₂ t₁ t₂).Realize v xs ↔
+      real_DLO.Rstruc.RelMap R ![t₁.realize (Sum.elim v xs), t₂.realize (Sum.elim v xs)] := by
+  rw [Relations.boundedFormula₂, realize_rel, iff_eq_eq]
+  refine congr rfl (funext (Fin.cases ?_ ?_))
+  · simp only [Matrix.cons_val_zero]
+  · simp only [Matrix.cons_val_succ, Matrix.cons_val_fin_one, forall_const]
+
+@[simp]
+theorem realize_or : (φ.or ψ).Realize v xs ↔ φ.Realize v xs ∨ ψ.Realize v xs := by
+  simp only [order_language, ImpAllFreeFormula.Realize]
+
+@[simp]
+theorem realize_exists : (ImpAllFreeFormula.exists θ).Realize v xs ↔ ∃ a : ℝ, θ.Realize v (Fin.snoc xs a) := by
+  simp only [ImpAllFreeFormula.Realize, Nat.succ_eq_add_one]
+
+
+end Realize_theorems
 
 
 /- Deprecated
