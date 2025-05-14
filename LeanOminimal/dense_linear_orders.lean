@@ -218,8 +218,9 @@ def constR  (b : ℝ ) : FirstOrder.Language.Term (order_language [[univ (α := 
 
 
 
+namespace definable
 
-lemma definable_emptyInterval : isDefinable order_language (∅ : Set ℝ):= by
+lemma emptyInterval : isDefinable order_language (∅ : Set ℝ):= by
   simp only [isDefinable]
   unfold Definable₁
   unfold Definable
@@ -240,7 +241,7 @@ lemma definable_emptyInterval : isDefinable order_language (∅ : Set ℝ):= by
   exact Eq.symm ((fun {x} ↦ EReal.coe_eq_one.mp) (congrArg Real.toEReal h))
 
 
-lemma definable_upperInterval (a : ℝ) : isDefinable order_language (DLO.interval.upper a):= by
+lemma upperInterval (a : ℝ) : isDefinable order_language (DLO.interval.upper a):= by
   simp only [isDefinable]
   unfold Definable₁
   unfold Definable
@@ -259,7 +260,7 @@ lemma definable_upperInterval (a : ℝ) : isDefinable order_language (DLO.interv
     apply h
 
 
-lemma definable_lowerInterval (b : ℝ) : isDefinable order_language (DLO.interval.lower b):= by
+lemma lowerInterval (b : ℝ) : isDefinable order_language (DLO.interval.lower b):= by
   simp only [isDefinable]
   unfold Definable₁
   unfold Definable
@@ -278,7 +279,7 @@ lemma definable_lowerInterval (b : ℝ) : isDefinable order_language (DLO.interv
     apply h
 
 
-lemma definable_boundInterval (a b : ℝ) : isDefinable order_language (DLO.interval.bounded a b) := by
+lemma boundInterval (a b : ℝ) : isDefinable order_language (DLO.interval.bounded a b) := by
   simp only [isDefinable]
   unfold Definable₁
   unfold Definable
@@ -308,7 +309,7 @@ lemma definable_boundInterval (a b : ℝ) : isDefinable order_language (DLO.inte
     · apply h2
 
 
-lemma definable_singletonInterval (b : ℝ) : isDefinable order_language (singleton b):=  by
+lemma singletonInterval (b : ℝ) : isDefinable order_language (singleton b):=  by
   simp only [isDefinable]
   unfold Definable₁
   unfold Definable
@@ -322,7 +323,7 @@ lemma definable_singletonInterval (b : ℝ) : isDefinable order_language (single
   rfl
 
 
-lemma definable_unionInterval {X L} (U V : Set X) [DLO X] [Language.Structure L X] : isDefinable L U → isDefinable L V → isDefinable L (U ∪ V) := by
+lemma unionInterval {X L} (U V : Set X) [DLO X] [Language.Structure L X] : isDefinable L U → isDefinable L V → isDefinable L (U ∪ V) := by
   simp
   unfold Definable₁
   unfold Definable
@@ -360,16 +361,18 @@ lemma definable_unionInterval {X L} (U V : Set X) [DLO X] [Language.Structure L 
       rw [<- hψ] at x_in_psiset
       exact x_in_psiset
 
+end definable
+open definable
 
 theorem finite_unions_are_definable : ∀U : Set ℝ, DLO.interval.is_finite_union_of_intervalsP U → isDefinable order_language U := by
   intro U is_finite_union
   induction' is_finite_union with a b a b x A B _ _ A_ih B_ih
-  · exact definable_emptyInterval
-  · exact definable_boundInterval a b
-  · exact definable_lowerInterval a
-  · exact definable_upperInterval b
-  · exact definable_singletonInterval x
-  · exact definable_unionInterval A B A_ih B_ih
+  · exact emptyInterval
+  · exact boundInterval a b
+  · exact lowerInterval a
+  · exact upperInterval b
+  · exact singletonInterval x
+  · exact unionInterval A B A_ih B_ih
 
 end real_DLO
 end reals
@@ -382,7 +385,7 @@ namespace Language
 
 
 /--
-A Literal of a Language L, a Type α, and a number of free variables n
+A Literal of a Language `L`, a Type `α`, and a number of free variables `n`
 is a formula consisting solely of
 
   equality of terms
@@ -400,7 +403,7 @@ inductive Literal (L : Language) (α : Type) (n : ℕ) : Type _
 namespace Literal
 
 /--
-This function removes any instances of double negation.
+This function removes any instances of double negation in a Literal.
 
 e.g., it turns x = y into x = y,
 ¬(x = y) into ¬(x = y),
@@ -419,11 +422,6 @@ namespace remove_doubleneg
 
 @[simp]
 lemma removes_doubleneg {L : Language} {α : Type} {n : ℕ} (φ : Literal L α n) (ψ : Literal L α n) (h : ψ = φ.not.not) : Literal.remove_doubleneg ψ = Literal.remove_doubleneg φ := by
-  subst h
-  rfl
-
-@[simp]
-lemma removes_quadeneg {L : Language} {α : Type} {n : ℕ} (φ : Literal L α n) (ψ : Literal L α n) (h : ψ = φ.not.not.not.not) : Literal.remove_doubleneg ψ = Literal.remove_doubleneg φ := by
   subst h
   rfl
 
@@ -473,6 +471,107 @@ inductive ImpAllFreeFormula (L : Language) (α : Type) : ℕ → Type _
 
   | exists {n : ℕ}   (f : ImpAllFreeFormula L α (n + 1)) : ImpAllFreeFormula L α n
 
+
+namespace ImpAllFreeFormula
+
+/--
+Gives a meaning to a formula.
+-/
+def Realize {α} : ∀ {l} (_f : ImpAllFreeFormula order_language α l) (_v : α → ℝ) (_xs : Fin l → ℝ), Prop
+  | _, FirstOrder.Language.ImpAllFreeFormula.falsum, _v, _xs => False
+  | _, FirstOrder.Language.ImpAllFreeFormula.equal t₁ t₂, v, xs => t₁.realize (Sum.elim v xs) = t₂.realize (Sum.elim v xs)
+  | _, FirstOrder.Language.ImpAllFreeFormula.rel R ts, v, xs => real_DLO.Rstruc.RelMap R fun i => (ts i).realize (Sum.elim v xs)
+
+  | _, FirstOrder.Language.ImpAllFreeFormula.not f, v, xs => ¬ Realize f v xs
+  | _, FirstOrder.Language.ImpAllFreeFormula.and f₁ f₂, v, xs => Realize f₁ v xs ∧ Realize f₂ v xs
+  | _, FirstOrder.Language.ImpAllFreeFormula.or  f₁ f₂, v, xs => Realize f₁ v xs ∨ Realize f₂ v xs
+
+  | _, FirstOrder.Language.ImpAllFreeFormula.exists f, v, xs => ∃ x : ℝ, Realize f v (Fin.snoc xs x)
+
+
+section Realize_theorems
+variable {L : Language} [L.Structure ℝ]
+variable {α : Type}
+variable {l : ℕ} {φ ψ : ImpAllFreeFormula order_language α l} {θ : ImpAllFreeFormula order_language α l.succ}
+variable {v : α → ℝ} {xs : Fin l → ℝ}
+
+@[simp]
+theorem realize_falsum : ImpAllFreeFormula.Realize (FirstOrder.Language.ImpAllFreeFormula.falsum : ImpAllFreeFormula order_language α l) v xs ↔ False := by
+  exact Iff.rfl
+
+@[simp]
+theorem realize_notfalsum : ImpAllFreeFormula.Realize (ImpAllFreeFormula.not ImpAllFreeFormula.falsum) v xs := by
+  exact fun a ↦ a
+
+-- @[simp]
+-- theorem realize_bdEqual (t₁ t₂ : order_language.Term (α ⊕ (Fin l))) :
+--     (t₁.bdEqual t₂).Realize v xs ↔ t₁.realize (Sum.elim v xs) = t₂.realize (Sum.elim v xs) := by
+--   exact BoundedFormula.realize_bdEqual t₁ t₂
+
+@[simp]
+theorem realize_rel {k : ℕ} {R : order_language.Relations k} {ts : Fin k → order_language.Term _} :
+    (R.boundedFormula ts).Realize v xs ↔ real_DLO.Rstruc.RelMap R fun i => (ts i).realize (Sum.elim v xs) :=
+  Iff.rfl
+
+@[simp]
+theorem realize_not : φ.not.Realize v xs ↔ ¬φ.Realize v xs := by
+  exact Iff.rfl
+
+@[simp]
+theorem realize_and : (φ.and ψ).Realize v xs ↔ φ.Realize v xs ∧ ψ.Realize v xs := by
+  simp only [order_language, ImpAllFreeFormula.Realize]
+
+@[simp]
+theorem realize_or : (φ.or ψ).Realize v xs ↔ φ.Realize v xs ∨ ψ.Realize v xs := by
+  simp only [order_language, ImpAllFreeFormula.Realize]
+
+@[simp]
+theorem realize_rel₁ {R : order_language.Relations 1} {t : order_language.Term _} :
+    (R.boundedFormula₁ t).Realize v xs ↔ real_DLO.Rstruc.RelMap R ![t.realize (Sum.elim v xs)] := by
+  rw [Relations.boundedFormula₁, realize_rel, iff_eq_eq]
+  refine congr rfl (funext fun _ => ?_)
+  simp only [Matrix.cons_val_fin_one]
+
+@[simp]
+theorem realize_rel₂ {R : order_language.Relations 2} {t₁ t₂ : order_language.Term _} :
+    (R.boundedFormula₂ t₁ t₂).Realize v xs ↔
+      real_DLO.Rstruc.RelMap R ![t₁.realize (Sum.elim v xs), t₂.realize (Sum.elim v xs)] := by
+  rw [Relations.boundedFormula₂, realize_rel, iff_eq_eq]
+  refine congr rfl (funext (Fin.cases ?_ ?_))
+  · simp only [Matrix.cons_val_zero]
+  · simp only [Matrix.cons_val_succ, Matrix.cons_val_fin_one, forall_const]
+
+@[simp]
+theorem realize_exists : (ImpAllFreeFormula.exists θ).Realize v xs ↔ ∃ a : ℝ, θ.Realize v (Fin.snoc xs a) := by
+  simp only [ImpAllFreeFormula.Realize, Nat.succ_eq_add_one]
+
+
+end Realize_theorems
+
+/- Deprecated
+def RealOrder.ImpAllFreeFormula.Realize {α} : ∀ {l} (_f : ImpAllFreeFormula order_language α l) (_v : α → ℝ) (_xs : Fin l → ℝ), Prop
+  | _, FirstOrder.Language.ImpAllFreeFormula.falsum, _v, _xs => False
+  | _, FirstOrder.Language.ImpAllFreeFormula.equal t₁ t₂, v, xs => t₁.realize (Sum.elim v xs) = t₂.realize (Sum.elim v xs)
+  | _, FirstOrder.Language.ImpAllFreeFormula.rel R ts, v, xs => real_DLO.Rstruc.RelMap R fun i => (ts i).realize (Sum.elim v xs)
+  -- We try to realize an ImpAllFreeFormula here, why do we have imp and all???
+  | _, FirstOrder.Language.ImpAllFreeFormula.imp f₁ f₂, v, xs => Realize f₁ v xs → Realize f₂ v xs
+  | _, FirstOrder.Language.ImpAllFreeFormula.all f, v, xs => ∀ x : M, Realize f v (snoc xs x)
+-/
+
+/--
+Changes an ImpAllFreeFormula into a bounded one.
+-/
+def toBounded {L : Language} {α : Type} {n : ℕ} : ImpAllFreeFormula L α n → BoundedFormula L α n
+  | .falsum => .falsum
+  | .equal t₁ t₂ => .equal t₁ t₂
+  | .rel R ts => .rel R ts
+  | .not f => (f.toBounded).not -- (f.toBounded).imp .falsum
+  | .or f₁ f₂ => BoundedFormula.imp (f₁.toBounded.not) f₂.toBounded -- ((f₁.not).toBounded).imp f₂.toBounded
+  | .and f₁ f₂ => (BoundedFormula.imp f₁.toBounded f₂.toBounded.not).not -- ((f₁.not).or (f₂.not).not).toBounded
+  | .exists f => (f.toBounded).ex-- (((f.toBounded).not).all).not
+
+end ImpAllFreeFormula
+
 /-
 inductive BoundedFormula : ℕ → Type max u v u'
   | falsum {n} : BoundedFormula n
@@ -484,19 +583,6 @@ inductive BoundedFormula : ℕ → Type max u v u'
   | all {n} (f : BoundedFormula (n + 1)) : BoundedFormula n
 -/
 
-/--
-Changes an ImpAllFreeFormula into a bounded one.
--/
-def ImpAllFreeFormula.toBounded {L : Language} {α : Type} {n : ℕ} : ImpAllFreeFormula L α n → BoundedFormula L α n
-  | .falsum => .falsum
-  | .equal t₁ t₂ => .equal t₁ t₂
-  | .rel R ts => .rel R ts
-  | .not f => (f.toBounded).not -- (f.toBounded).imp .falsum
-  | .or f₁ f₂ => BoundedFormula.imp (f₁.toBounded.not) f₂.toBounded -- ((f₁.not).toBounded).imp f₂.toBounded
-  | .and f₁ f₂ => (BoundedFormula.imp f₁.toBounded f₂.toBounded.not).not -- ((f₁.not).or (f₂.not).not).toBounded
-  | .exists f => (f.toBounded).ex-- (((f.toBounded).not).all).not
-
-
 def BoundedFormula.toImpAllFreeFormula {L : Language} {α : Type} {n : ℕ} : BoundedFormula L α n → ImpAllFreeFormula L α n
   | .falsum => .falsum
   | .equal t₁ t₂ => .equal t₁ t₂
@@ -504,7 +590,49 @@ def BoundedFormula.toImpAllFreeFormula {L : Language} {α : Type} {n : ℕ} : Bo
   | .imp f₁ f₂ => ((f₁.toImpAllFreeFormula).not).or f₂.toImpAllFreeFormula
   | .all f => (((f.toImpAllFreeFormula).not).exists).not
 
+
+namespace ImpAllFreeFormula
+open BoundedFormula
+
+lemma toBoundedFormula.when_realized_is_left_identity {α : Type} {m : ℕ} :
+    ∀ φ : ImpAllFreeFormula order_language α m, ∀ v : α → ℝ, ∀ xs : Fin m → ℝ, (BoundedFormula.toImpAllFreeFormula (ImpAllFreeFormula.toBounded φ)).Realize v xs ↔ φ.Realize v xs := by
+  intro φ v xs
+  induction' φ with _ _ _ _ _ _ _ _ n not_formula ih_not_formula n or₁ or₂ or₁_ih or₂_ih n and₁ and₂ and₁_ih and₂_ih o p q r s t u v w x y z
+  repeat' rfl
+
+  · specialize ih_not_formula xs
+    unfold toBounded toImpAllFreeFormula
+    simp only [order_language, realize_or, realize_not, ih_not_formula, or_iff_left_iff_imp]
+    intro h
+    exfalso
+    exact h
+
+  · specialize or₁_ih xs
+    specialize or₂_ih xs
+    unfold toBounded toImpAllFreeFormula
+    have this : ¬((or₁.toBounded.not).toImpAllFreeFormula.Realize v xs) ↔ (or₁.toBounded).toImpAllFreeFormula.Realize v xs := by
+      sorry
+
+    simp only [order_language, realize_or, realize_not, or₁_ih, or₂_ih, this]
+
+  · specialize and₁_ih xs
+    specialize and₂_ih xs
+    unfold toBounded toImpAllFreeFormula
+    simp? [and₁_ih, and₂_ih]
+
+    sorry
+  · sorry
+
+
+lemma toBoundedFormula.is_right_identity {L : Language} {α : Type} {n : ℕ} :
+    ∀ φ : BoundedFormula L α n, ImpAllFreeFormula.toBounded (BoundedFormula.toImpAllFreeFormula φ) = φ := by
+
+  sorry
+
+
 /- lemma f.Realize i x ↔ (BoundedFormula.toImpAllFreeFormula f).toBoundedFormula.Realize i x:= by sorry -/
+
+end ImpAllFreeFormula
 
 /--
 The type of Quantifier Free bounded formulae without implications.
@@ -560,89 +688,6 @@ def BigAndFormula {L : Language} {α : Type} {m : ℕ} : --A third big and???
 -- ???
 def reducible_formula {n : ℕ} {α : Type} {m : ℕ} (f : Fin n → Literal order_language α (m+1)) : ImpAllFreeFormula order_language α m :=
   (BigAndFormula n f).exists
-
-
-def ImpAllFreeFormula.Realize {α} : ∀ {l} (_f : ImpAllFreeFormula order_language α l) (_v : α → ℝ) (_xs : Fin l → ℝ), Prop
-  | _, FirstOrder.Language.ImpAllFreeFormula.falsum, _v, _xs => False
-  | _, FirstOrder.Language.ImpAllFreeFormula.equal t₁ t₂, v, xs => t₁.realize (Sum.elim v xs) = t₂.realize (Sum.elim v xs)
-  | _, FirstOrder.Language.ImpAllFreeFormula.rel R ts, v, xs => real_DLO.Rstruc.RelMap R fun i => (ts i).realize (Sum.elim v xs)
-
-  | _, FirstOrder.Language.ImpAllFreeFormula.not f, v, xs => ¬ Realize f v xs
-  | _, FirstOrder.Language.ImpAllFreeFormula.and f₁ f₂, v, xs => Realize f₁ v xs ∧ Realize f₂ v xs
-  | _, FirstOrder.Language.ImpAllFreeFormula.or  f₁ f₂, v, xs => Realize f₁ v xs ∨ Realize f₂ v xs
-
-  | _, FirstOrder.Language.ImpAllFreeFormula.exists f, v, xs => ∃ x : ℝ, Realize f v (Fin.snoc xs x)
-
-
-section Realize_theorems
-variable {L : Language} [L.Structure ℝ]
-variable {α : Type}
-variable {l : ℕ} {φ ψ : ImpAllFreeFormula order_language α l} {θ : ImpAllFreeFormula order_language α l.succ}
-variable {v : α → ℝ} {xs : Fin l → ℝ}
-
-@[simp]
-theorem realize_falsum : ImpAllFreeFormula.Realize (FirstOrder.Language.ImpAllFreeFormula.falsum : ImpAllFreeFormula order_language α l) v xs ↔ False := by
-  exact Iff.rfl
-
-@[simp]
-theorem realize_notfalsum : ImpAllFreeFormula.Realize (ImpAllFreeFormula.not ImpAllFreeFormula.falsum) v xs := by
-  exact fun a ↦ a
-
--- @[simp]
--- theorem realize_bdEqual (t₁ t₂ : order_language.Term (α ⊕ (Fin l))) :
---     (t₁.bdEqual t₂).Realize v xs ↔ t₁.realize (Sum.elim v xs) = t₂.realize (Sum.elim v xs) := by
---   exact BoundedFormula.realize_bdEqual t₁ t₂
-
-@[simp]
-theorem realize_rel {k : ℕ} {R : order_language.Relations k} {ts : Fin k → order_language.Term _} :
-    (R.boundedFormula ts).Realize v xs ↔ real_DLO.Rstruc.RelMap R fun i => (ts i).realize (Sum.elim v xs) :=
-  Iff.rfl
-
-@[simp]
-theorem realize_not : φ.not.Realize v xs ↔ ¬φ.Realize v xs := by
-  exact Iff.rfl
-
-@[simp]
-theorem realize_and : (φ.and ψ).Realize v xs ↔ φ.Realize v xs ∧ ψ.Realize v xs := by
-  simp only [order_language, ImpAllFreeFormula.Realize]
-
-@[simp]
-theorem realize_rel₁ {R : order_language.Relations 1} {t : order_language.Term _} :
-    (R.boundedFormula₁ t).Realize v xs ↔ real_DLO.Rstruc.RelMap R ![t.realize (Sum.elim v xs)] := by
-  rw [Relations.boundedFormula₁, realize_rel, iff_eq_eq]
-  refine congr rfl (funext fun _ => ?_)
-  simp only [Matrix.cons_val_fin_one]
-
-@[simp]
-theorem realize_rel₂ {R : order_language.Relations 2} {t₁ t₂ : order_language.Term _} :
-    (R.boundedFormula₂ t₁ t₂).Realize v xs ↔
-      real_DLO.Rstruc.RelMap R ![t₁.realize (Sum.elim v xs), t₂.realize (Sum.elim v xs)] := by
-  rw [Relations.boundedFormula₂, realize_rel, iff_eq_eq]
-  refine congr rfl (funext (Fin.cases ?_ ?_))
-  · simp only [Matrix.cons_val_zero]
-  · simp only [Matrix.cons_val_succ, Matrix.cons_val_fin_one, forall_const]
-
-@[simp]
-theorem realize_or : (φ.or ψ).Realize v xs ↔ φ.Realize v xs ∨ ψ.Realize v xs := by
-  simp only [order_language, ImpAllFreeFormula.Realize]
-
-@[simp]
-theorem realize_exists : (ImpAllFreeFormula.exists θ).Realize v xs ↔ ∃ a : ℝ, θ.Realize v (Fin.snoc xs a) := by
-  simp only [ImpAllFreeFormula.Realize, Nat.succ_eq_add_one]
-
-
-end Realize_theorems
-
-
-/- Deprecated
-def RealOrder.ImpAllFreeFormula.Realize {α} : ∀ {l} (_f : ImpAllFreeFormula order_language α l) (_v : α → ℝ) (_xs : Fin l → ℝ), Prop
-  | _, FirstOrder.Language.ImpAllFreeFormula.falsum, _v, _xs => False
-  | _, FirstOrder.Language.ImpAllFreeFormula.equal t₁ t₂, v, xs => t₁.realize (Sum.elim v xs) = t₂.realize (Sum.elim v xs)
-  | _, FirstOrder.Language.ImpAllFreeFormula.rel R ts, v, xs => real_DLO.Rstruc.RelMap R fun i => (ts i).realize (Sum.elim v xs)
-  -- We try to realize an ImpAllFreeFormula here, why do we have imp and all???
-  | _, FirstOrder.Language.ImpAllFreeFormula.imp f₁ f₂, v, xs => Realize f₁ v xs → Realize f₂ v xs
-  | _, FirstOrder.Language.ImpAllFreeFormula.all f, v, xs => ∀ x : M, Realize f v (snoc xs x)
--/
 
 /- lemma f.Realize i x ↔ (BoundedFormula.toImpAllFreeFormula f).toBoundedFormula.Realize i x:= by sorry -/
 
