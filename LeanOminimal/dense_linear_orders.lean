@@ -771,11 +771,11 @@ def Literalblock.toImpAllFreeFormula {n : ℕ} : (Literalblock L α n) → ImpAl
   | .and   f₁ f₂ => f₁.toImpAllFreeFormula.and f₂.toImpAllFreeFormula
 
 
-def Literalblock.toexistblock {m:ℕ}{n:ℕ }  (f : Fin n → Literal order_language α (m+1))  : ImpAllFreeFormula order_language α m := 
-   (BigAnd_overLiteralblock f).toImpAllFreeFormula.exists   
+def Literalblock.toexistblock {m : ℕ} {n : ℕ} (f : Fin n → Literal order_language α (m+1))  : ImpAllFreeFormula order_language α m :=
+   (BigAnd_overLiteralblock f).toImpAllFreeFormula.exists
 
 
-inductive existblock  (α : Type) : ℕ → Type _ 
+inductive existblock  (α : Type) : ℕ → Type _
 |  Literalblock.toexistblock {m:ℕ}{n:ℕ } (f : Fin n → Literal order_language α (m+1)): existblock α m
 
 
@@ -783,63 +783,58 @@ inductive Atomicblock (L : Language) (α : Type) : ℕ → Type _
   | equal {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : Atomicblock L α n
   | rel   {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : Atomicblock L α n
   | and   {n : ℕ} (f1 f2 : Atomicblock L α n) : Atomicblock L α n
-  
+
 
 def Atomicblock.toImpAllFreeFormula {n : ℕ} : (Atomicblock L α n) → ImpAllFreeFormula L α n
   | .equal t₁ t₂ => .equal t₁ t₂
   | .rel   R ts => .rel R ts
   | .and   f₁ f₂ => f₁.toImpAllFreeFormula.and f₂.toImpAllFreeFormula
 
-def cAtomicexistblock {n:ℕ }(a: Atomicblock L α (n+1)):= a.toImpAllFreeFormula.exists
+def cAtomicexistblock {n : ℕ} (a : Atomicblock L α (n+1)):=
+  a.toImpAllFreeFormula.exists
 
 inductive Atomicexistblock (L : Language) (α : Type) : ℕ → Type _
-| cAtomicexistblock {n:ℕ }(a: Atomicblock L α (n+1)): Atomicexistblock L α n
+  | cAtomicexistblock {n : ℕ} (a : Atomicblock L α (n+1)) : Atomicexistblock L α n
 
 
 inductive disjunctionAtomicblocks (L : Language)  (α : Type) : ℕ → Type _
-| or {m:ℕ } ( f1 f2: Atomicexistblock L α m): disjunctionAtomicblocks L α m
+  | or {m : ℕ} (f1 f2: Atomicexistblock L α m): disjunctionAtomicblocks L α m
 
-def existblock.disjunctionAtomicblocks  {n:ℕ }(Eblock: existblock α n) : disjunctionAtomicblocks order_language α n := by 
-rcases Eblock with ⟨f ⟩ 
-let Block := Literalblock.toexistblock f
-unfold existblock at *
-rcases Block
-sorry 
+def existblock.disjunctionAtomicblocks  {n : ℕ} (Eblock : existblock α n) : disjunctionAtomicblocks order_language α n := by
+  rcases Eblock with ⟨f ⟩
+  let Block := Literalblock.toexistblock f
+  unfold existblock at *
+  rcases Block
+  sorry
 
 
- 
+
 
 
 inductive Relblock (L : Language) (α : Type) : ℕ → Type _
   | rel   {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : Relblock L α n
   | and   {n : ℕ} (f1 f2 : Relblock L α n) : Relblock L α n
-  
-
-
-def Existeliminate {n:ℕ }:  Atomicexistblock L α n→ Relblock L α n := by 
- intro atomic
- rcases atomic with ⟨t1, t2 ⟩ | ⟨R, f ⟩ | ⟨t1, t2 ⟩
- rcases t1 with ⟨ a⟩ | ⟨_,_ ⟩  
- rcases t2 with ⟨ b ⟩  | ⟨_, _ ⟩ 
- by_cases eq:  a=b
- sorry
- sorry
- sorry 
- exact Relblock.and (Existeliminate t1) (Existeliminate t2)
 
 
 
-  
+def Existeliminate {n : ℕ} : Atomicexistblock L α n → Relblock L α n := by
+  intro atomic
+  rcases atomic with ⟨t1, t2⟩ | ⟨R, f⟩ | ⟨t1, t2⟩
+  · rcases t1 with a | ⟨_, _⟩
+    rcases t2 with b | ⟨_, _⟩
+    by_cases eq:  a=b
+    · sorry
+    · sorry
+    · sorry
+    · exact Relblock.and (Existeliminate t1) (Existeliminate t2)
+  · sorry
+  · sorry
 
 
 end Language
 end FirstOrder
 --------------------
 
-
-end Language
-end FirstOrder
--------------------------------
 
 namespace QuantifierELimination
 
