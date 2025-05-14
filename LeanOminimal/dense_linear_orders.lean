@@ -557,11 +557,23 @@ def BigAndFormula {L : Language} {α : Type} {m : ℕ} : --A third big and???
     let tail := fun i : Fin n => f i.succ
     head.toImpAllFreeFormula.and (BigAndFormula n tail)
 
-def reducible_formula {n:ℕ }{α:Type }{m:ℕ }(f: Fin (n) → Literal order_language α (m+1)): ImpAllFreeFormula order_language α m:=
- (BigAndFormula (n) f).exists
+-- ???
+def reducible_formula {n : ℕ} {α : Type} {m : ℕ} (f : Fin n → Literal order_language α (m+1)) : ImpAllFreeFormula order_language α m :=
+  (BigAndFormula n f).exists
 
 
+def RealOrder.ImpAllFreeFormula.Realize {α} : ∀ {l} (_f : ImpAllFreeFormula order_language α l) (_v : α → ℝ) (_xs : Fin l → ℝ), Prop
+  | _, FirstOrder.Language.ImpAllFreeFormula.falsum, _v, _xs => False
+  | _, FirstOrder.Language.ImpAllFreeFormula.equal t₁ t₂, v, xs => t₁.realize (Sum.elim v xs) = t₂.realize (Sum.elim v xs)
+  | _, FirstOrder.Language.ImpAllFreeFormula.rel R ts, v, xs => real_DLO.Rstruc.RelMap R fun i => (ts i).realize (Sum.elim v xs)
 
+  | _, FirstOrder.Language.ImpAllFreeFormula.not f, v, xs => ¬ Realize f v xs
+  | _, FirstOrder.Language.ImpAllFreeFormula.and f₁ f₂, v, xs => Realize f₁ v xs ∧ Realize f₂ v xs
+  | _, FirstOrder.Language.ImpAllFreeFormula.or  f₁ f₂, v, xs => Realize f₁ v xs ∨ Realize f₂ v xs
+  | _, FirstOrder.Language.ImpAllFreeFormula.exists f, v, xs => ∃ x : ℝ, Realize f v (Fin.snoc xs x)
+
+
+/- Deprecated
 def RealOrder.ImpAllFreeFormula.Realize {α} : ∀ {l} (_f : ImpAllFreeFormula order_language α l) (_v : α → ℝ) (_xs : Fin l → ℝ), Prop
   | _, FirstOrder.Language.ImpAllFreeFormula.falsum, _v, _xs => False
   | _, FirstOrder.Language.ImpAllFreeFormula.equal t₁ t₂, v, xs => t₁.realize (Sum.elim v xs) = t₂.realize (Sum.elim v xs)
@@ -569,6 +581,7 @@ def RealOrder.ImpAllFreeFormula.Realize {α} : ∀ {l} (_f : ImpAllFreeFormula o
   -- We try to realize an ImpAllFreeFormula here, why do we have imp and all???
   | _, FirstOrder.Language.ImpAllFreeFormula.imp f₁ f₂, v, xs => Realize f₁ v xs → Realize f₂ v xs
   | _, FirstOrder.Language.ImpAllFreeFormula.all f, v, xs => ∀ x : M, Realize f v (snoc xs x)
+-/
 
 /- lemma f.Realize i x ↔ (BoundedFormula.toImpAllFreeFormula f).toBoundedFormula.Realize i x:= by sorry -/
 
