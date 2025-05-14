@@ -491,10 +491,10 @@ def ImpAllFreeFormula.toBounded {L : Language} {α : Type} {n : ℕ} : ImpAllFre
   | .falsum => .falsum
   | .equal t₁ t₂ => .equal t₁ t₂
   | .rel R ts => .rel R ts
-  | .not f => (f.toBounded).imp .falsum
-  | .or f₁ f₂ => ((f₁.not).toBounded).imp f₂.toBounded
-  | .and f₁ f₂ => ((f₁.not).or (f₂.not).not).toBounded
-  | .exists f => (((f.toBounded).not).all).not
+  | .not f => (f.toBounded).not -- (f.toBounded).imp .falsum
+  | .or f₁ f₂ => BoundedFormula.imp (f₁.toBounded.not) f₂.toBounded -- ((f₁.not).toBounded).imp f₂.toBounded
+  | .and f₁ f₂ => (BoundedFormula.imp f₁.toBounded f₂.toBounded.not).not -- ((f₁.not).or (f₂.not).not).toBounded
+  | .exists f => (f.toBounded).ex-- (((f.toBounded).not).all).not
 
 
 def BoundedFormula.toImpAllFreeFormula {L : Language} {α : Type} {n : ℕ} : BoundedFormula L α n → ImpAllFreeFormula L α n
