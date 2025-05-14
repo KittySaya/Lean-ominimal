@@ -710,15 +710,6 @@ inductive Literalblock (L : Language) (α : Type) : ℕ → Type _
   | and   {n : ℕ} (f1 f2 : Literalblock L α n) : Literalblock L α n
   | or    {n : ℕ} (f1 f2 : Literalblock L α n) : Literalblock L α n
 
-def Literalblock.toImpAllFreeFormula {n : ℕ} : (Literalblock L α n) → L.ImpAllFreeFormula α n
-  | .truth  => ImpAllFreeFormula.falsum.not
-  | .equal t₁ t₂ => .equal t₁ t₂
-  | .rel   R ts => .rel R ts
-  | .or    f₁ f₂ => f₁.toImpAllFreeFormula.or f₂.toImpAllFreeFormula
-  | .and   f₁ f₂ => f₁.toImpAllFreeFormula.and f₂.toImpAllFreeFormula
-
-
-
 
 def BigAnd_overLiteralblock {α : Type} {m : ℕ} {n : ℕ} (f : Fin n → Literal order_language α m) : Literalblock order_language α m := by
  induction n with
@@ -772,21 +763,78 @@ def BigAnd_overLiteralblock {α : Type} {m : ℕ} {n : ℕ} (f : Fin n → Liter
 
     · exact  (ih (λ i:Fin n=> f  )).and qf_tail
 
-
-def existblock (L : Language) (α : Type) (length : ℕ) : sorry :=
-  -- FirstOrder.Language.BoundedFormula.ex (
-  --   fun n : ℕ =>
-  --   | zero =>
-  --   | succ =>
-  -- )
-  sorry
+def Literalblock.toImpAllFreeFormula {n : ℕ} : (Literalblock L α n) → ImpAllFreeFormula L α n
+  | .truth  => ImpAllFreeFormula.falsum.not
+  | .equal t₁ t₂ => .equal t₁ t₂
+  | .rel   R ts => .rel R ts
+  | .or    f₁ f₂ => f₁.toImpAllFreeFormula.or f₂.toImpAllFreeFormula
+  | .and   f₁ f₂ => f₁.toImpAllFreeFormula.and f₂.toImpAllFreeFormula
 
 
-def existblock.toQFImpFreeFormula {α : Type} {n : ℕ} {m : ℕ} (f : Fin n → Literal order_language α (m+1)) : QFImpFreeFormula order_language α (m) := by
-  have existblock := (BigAnd_overLiteralblock f).toImpAllFreeFormula.exists
-  dsimp [BigAnd_overLiteralblock, QFImpFreeFormula.toImpAllFreeFormula] at existblock
-  cases existblock
-  repeat' sorry
+def Literalblock.toexistblock {m:ℕ}{n:ℕ }  (f : Fin n → Literal order_language α (m+1))  : ImpAllFreeFormula order_language α m := 
+   (BigAnd_overLiteralblock f).toImpAllFreeFormula.exists   
+
+
+inductive existblock  (α : Type) : ℕ → Type _ 
+|  Literalblock.toexistblock {m:ℕ}{n:ℕ } (f : Fin n → Literal order_language α (m+1)): existblock α m
+
+
+inductive Atomicblock (L : Language) (α : Type) : ℕ → Type _
+  | equal {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : Atomicblock L α n
+  | rel   {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : Atomicblock L α n
+  | and   {n : ℕ} (f1 f2 : Atomicblock L α n) : Atomicblock L α n
+  
+
+def Atomicblock.toImpAllFreeFormula {n : ℕ} : (Atomicblock L α n) → ImpAllFreeFormula L α n
+  | .equal t₁ t₂ => .equal t₁ t₂
+  | .rel   R ts => .rel R ts
+  | .and   f₁ f₂ => f₁.toImpAllFreeFormula.and f₂.toImpAllFreeFormula
+
+def cAtomicexistblock {n:ℕ }(a: Atomicblock L α (n+1)):= a.toImpAllFreeFormula.exists
+
+inductive Atomicexistblock (L : Language) (α : Type) : ℕ → Type _
+| cAtomicexistblock {n:ℕ }(a: Atomicblock L α (n+1)): Atomicexistblock L α n
+
+
+inductive disjunctionAtomicblocks (L : Language)  (α : Type) : ℕ → Type _
+| or {m:ℕ } ( f1 f2: Atomicexistblock L α m): disjunctionAtomicblocks L α m
+
+def existblock.disjunctionAtomicblocks  {n:ℕ }(Eblock: existblock α n) : disjunctionAtomicblocks order_language α n := by 
+rcases Eblock with ⟨f ⟩ 
+let Block := Literalblock.toexistblock f
+unfold existblock at *
+rcases Block
+sorry 
+
+
+ 
+
+
+inductive Relblock (L : Language) (α : Type) : ℕ → Type _
+  | rel   {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : Relblock L α n
+  | and   {n : ℕ} (f1 f2 : Relblock L α n) : Relblock L α n
+  
+
+
+def Existeliminate {n:ℕ }:  Atomicexistblock L α n→ Relblock L α n := by 
+ intro atomic
+ rcases atomic with ⟨t1, t2 ⟩ | ⟨R, f ⟩ | ⟨t1, t2 ⟩
+ rcases t1 with ⟨ a⟩ | ⟨_,_ ⟩  
+ rcases t2 with ⟨ b ⟩  | ⟨_, _ ⟩ 
+ by_cases eq:  a=b
+ sorry
+ sorry
+ sorry 
+ exact Relblock.and (Existeliminate t1) (Existeliminate t2)
+
+
+
+  
+
+
+end Language
+end FirstOrder
+--------------------
 
 
 end Language
