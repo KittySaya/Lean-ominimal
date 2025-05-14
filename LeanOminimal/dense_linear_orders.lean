@@ -396,6 +396,9 @@ inductive Literal (L : Language) (α : Type) (n : ℕ) : Type _
   | rel {l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : Literal L α n
   | not (f : Literal L α n) : Literal L α n
 
+
+namespace Literal
+
 /--
 This function removes any instances of double negation.
 
@@ -404,7 +407,7 @@ e.g., it turns x = y into x = y,
 but ¬¬(x = y) into (x = y) and
 ¬¬ ¬¬ ¬¬ ¬(x = y) into ¬(x = y)
 -/
-def Literal.remove_doubleneg {L : Language} {α : Type} {n : ℕ} : Literal L α n → Literal L α n
+def remove_doubleneg {L : Language} {α : Type} {n : ℕ} : Literal L α n → Literal L α n
   | equal t₁ t₂ => equal t₁ t₂
   | rel R ts => rel R ts
   | not f => match f with
@@ -412,7 +415,7 @@ def Literal.remove_doubleneg {L : Language} {α : Type} {n : ℕ} : Literal L α
     | rel R ts => not (rel R ts)
     | not f' => Literal.remove_doubleneg f'
 
-namespace Literal.remove_doubleneg
+namespace remove_doubleneg
 
 @[simp]
 lemma removes_doubleneg {L : Language} {α : Type} {n : ℕ} (φ : Literal L α n) (ψ : Literal L α n) (h : ψ = φ.not.not) : Literal.remove_doubleneg ψ = Literal.remove_doubleneg φ := by
@@ -434,7 +437,8 @@ lemma maintains_notequal  {L : Language} {α : Type} {n : ℕ} {t₁ t₂} (φ :
   subst h
   rfl
 
-end Literal.remove_doubleneg
+end remove_doubleneg
+end Literal
 
 /--
 An `ImpAllFreeFormula`, short for `Implication_and_ForAll_free_formula`,
