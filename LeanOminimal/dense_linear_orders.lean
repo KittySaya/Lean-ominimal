@@ -394,11 +394,51 @@ is a formula consisting solely of
 inductive Literal (L : Language) (α : Type) (n : ℕ) : Type _
   | equal (t₁ t₂ : L.Term (α ⊕ (Fin n))) : Literal L α n
   | rel {l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : Literal L α n
-  | not (f:Literal L α n) : Literal L α n
+  | not (f : Literal L α n) : Literal L α n
 
 /--
-An ImpAllFreeFormula, short for Implication_and_ForAll_free_formula,
-is a representation of some formula φ of a Language L, a Type α and a number of free variables n
+This function removes any instances of double negation.
+
+e.g., it turns x = y into x = y,
+¬(x = y) into ¬(x = y),
+but ¬¬(x = y) into (x = y) and
+¬¬ ¬¬ ¬¬ ¬(x = y) into ¬(x = y)
+-/
+def Literal.remove_doubleneg {L : Language} {α : Type} {n : ℕ} : Literal L α n → Literal L α n
+  | equal t₁ t₂ => equal t₁ t₂
+  | rel R ts => rel R ts
+  | not f => match f with
+    | equal t₁ t₂ => not (equal t₁ t₂)
+    | rel R ts => not (rel R ts)
+    | not f' => Literal.remove_doubleneg f'
+
+namespace Literal.remove_doubleneg
+
+@[simp]
+lemma removes_doubleneg {L : Language} {α : Type} {n : ℕ} (φ : Literal L α n) (ψ : Literal L α n) (h : ψ = φ.not.not) : Literal.remove_doubleneg ψ = Literal.remove_doubleneg φ := by
+  subst h
+  rfl
+
+@[simp]
+lemma removes_quadeneg {L : Language} {α : Type} {n : ℕ} (φ : Literal L α n) (ψ : Literal L α n) (h : ψ = φ.not.not.not.not) : Literal.remove_doubleneg ψ = Literal.remove_doubleneg φ := by
+  subst h
+  rfl
+
+@[simp]
+lemma maintains_equal  {L : Language} {α : Type} {n : ℕ} {t₁ t₂} (φ : Literal L α n) (h : φ = Literal.equal t₁ t₂) : Literal.remove_doubleneg φ = φ := by
+  subst h
+  rfl
+
+@[simp]
+lemma maintains_notequal  {L : Language} {α : Type} {n : ℕ} {t₁ t₂} (φ : Literal L α n) (h : φ = (Literal.equal t₁ t₂).not) : Literal.remove_doubleneg φ = φ := by
+  subst h
+  rfl
+
+end Literal.remove_doubleneg
+
+/--
+An `ImpAllFreeFormula`, short for `Implication_and_ForAll_free_formula`,
+is a representation of some formula φ of a Language `L`, a Type `α` and a number of free variables `n`
 written in such a way that it doesn't contain any → or ∀ symbols.
 That is, it consists solely of:
 
@@ -452,7 +492,6 @@ def ImpAllFreeFormula.toBounded {L : Language} {α : Type} {n : ℕ} : ImpAllFre
   | .and f₁ f₂ => ((f₁.not).or (f₂.not).not).toBounded
   | .exists f => (((f.toBounded).not).all).not
 
--- variable {L α} --Why was this? (Probably an artifact if I had to guess) -Lily
 
 def BoundedFormula.toImpAllFreeFormula {L : Language} {α : Type} {n : ℕ} : BoundedFormula L α n → ImpAllFreeFormula L α n
   | .falsum => .falsum
@@ -519,14 +558,13 @@ def reducible_formula {n:ℕ }{α:Type }{m:ℕ }(f: Fin (n) → Literal order_la
 
 
 
-def ImpAllFreeFormula.Realize {L : Language} : ∀ {l} (_f : BoundedFormula L α l) (_v : α → ℝ) (_xs : Fin l → ℝ), Prop
-  | _, falsum, _v, _xs => False
-  | _, equal t₁ t₂, v, xs => t₁.realize (Sum.elim v xs) = t₂.realize (Sum.elim v xs)
-  | _, rel R ts, v, xs => RelMap R fun i => (ts i).realize (Sum.elim v xs)
-  | _, imp f₁ f₂, v, xs => Realize f₁ v xs → Realize f₂ v xs
-  | _, all f, v, xs => ∀ x : M, Realize f v (snoc xs x)
-
-variable (L : Language) (α)
+def RealOrder.ImpAllFreeFormula.Realize {α} : ∀ {l} (_f : ImpAllFreeFormula order_language α l) (_v : α → ℝ) (_xs : Fin l → ℝ), Prop
+  | _, FirstOrder.Language.ImpAllFreeFormula.falsum, _v, _xs => False
+  | _, FirstOrder.Language.ImpAllFreeFormula.equal t₁ t₂, v, xs => t₁.realize (Sum.elim v xs) = t₂.realize (Sum.elim v xs)
+  | _, FirstOrder.Language.ImpAllFreeFormula.rel R ts, v, xs => real_DLO.Rstruc.RelMap R fun i => (ts i).realize (Sum.elim v xs)
+  -- We try to realize an ImpAllFreeFormula here, why do we have imp and all???
+  | _, FirstOrder.Language.ImpAllFreeFormula.imp f₁ f₂, v, xs => Realize f₁ v xs → Realize f₂ v xs
+  | _, FirstOrder.Language.ImpAllFreeFormula.all f, v, xs => ∀ x : M, Realize f v (snoc xs x)
 
 /- lemma f.Realize i x ↔ (BoundedFormula.toImpAllFreeFormula f).toBoundedFormula.Realize i x:= by sorry -/
 
@@ -946,7 +984,8 @@ def to_BoundedFormula {k : ℕ} : ((n : ℕ) → (P : Fin n → Prop) → Prop) 
   -- (n : ℕ) → (Fin n → FirstOrder.Language.toBoundedFormula order_language ℝ k) → Prop
 
 
-def to_ImpAllFreeFormula {k : ℕ} : ((n : ℕ) → (P : Fin n → FirstOrder.Language.BoundedFormula order_language ℝ k) → Prop) → ((m : ℕ) → (Fin m → FirstOrder.Language.ImpAllFreeFormula order_language ℝ k) → Prop) :=
+def to_ImpAllFreeFormula {k : ℕ} : ((n : ℕ) → (P : Fin n → FirstOrder.Language.BoundedFormula order_language ℝ k) → Prop) → ((m : ℕ) → (Fin m → FirstOrder.Language.ImpAllFreeFormula order_language ℝ k) → Prop) := by
+  -- intro BoundedBigAnd
   sorry
   -- (n : ℕ) → (Fin n → FirstOrder.Language.toImpAllFreeFormula order_language ℝ k) → Prop
 
