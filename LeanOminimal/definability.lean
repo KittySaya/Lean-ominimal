@@ -11,16 +11,6 @@ def isDefinable {X : Type} (L : Language) (U : Set X) [Language.Structure L X] :
 class Ominimal (X : Type) (L : Language) extends DLO X, Language.Structure L X  where
   definable_sets: ∀ (U: Set (X)), isDefinable L U  ↔ DLO.interval.is_finite_union_of_intervalsP U
 
---- Defining (ℝ ,<₀) as an Lstructure and trying to prove o-minimality
-inductive ordsymbol : Type
-| lt : ordsymbol
-
-@[simp]
-def order_language : Language where
-   Functions := λ _ => Empty
-   Relations := λ n => if n = 2 then ordsymbol else Empty
-
-
 noncomputable section reals
 namespace real_DLO
 @[simp]
