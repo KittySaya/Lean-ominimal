@@ -651,6 +651,7 @@ inductive QFImpFreeFormula (L : Language) (α : Type) : ℕ → Type _
   | and    {n} (f₁ f₂ : QFImpFreeFormula L α n) : QFImpFreeFormula L α n
 
 
+section NeedsManagement
 def QFImpFreeFormula.toImpAllFreeFormula {L : Language} {α : Type} {n : ℕ} : QFImpFreeFormula L α n → ImpAllFreeFormula L α n
   | .falsum => .falsum
   | .equal t₁ t₂ => .equal t₁ t₂
@@ -877,6 +878,7 @@ inductive Relblock (L : Language) (α : Type) : ℕ → Type _
 --   · sorry
 
 
+end NeedsManagement
 end Language
 end FirstOrder
 --------------------
