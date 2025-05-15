@@ -1,4 +1,4 @@
-import Mathlib
+import LeanOminimal.Basic
 
 /--
 BigAnd formalizes the notion of ∧ to work with an arbitrary number of propositions.

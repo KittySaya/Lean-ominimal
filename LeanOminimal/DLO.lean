@@ -1,4 +1,4 @@
-import Mathlib.ModelTheory.Basic
+import LeanOminimal.Basic
 
 class order (X : Type) : Type where
   ord : (Fin 2 → X) → Prop
