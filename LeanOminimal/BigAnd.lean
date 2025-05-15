@@ -1,6 +1,5 @@
 import LeanOminimal.Basic
 open FirstOrder
-open Language
 /--
 BigAnd formalizes the notion of ∧ to work with an arbitrary number of propositions.
 That is, if there's an empty list of propositions, it holds;
