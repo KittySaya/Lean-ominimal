@@ -3,6 +3,8 @@ import Mathlib
 open Set
 open FirstOrder
 
+variable {L : Language}
+
 
 -- What does this do? -Lily
 def funcomb {n : ℕ} {m : ℕ} {X : Type} (f: Fin n → X) (b: Fin m → X): Fin (n+m) → X :=
@@ -890,18 +892,18 @@ def isExistBlock {L : Language} {α : Type} {n : ℕ} (φ : FirstOrder.Language.
 
   sorry
 
--- def is_quantifierfree_alternative {L : Language} {M : Type} [L.Structure M] {α : Type*} {n : ℕ} (v : α → M) (xs : Fin n → M) (φ : FirstOrder.Language.BoundedFormula L M n) (ψ : FirstOrder.Language.QFBoundedFormula L M n) : Prop :=
---   φ.Realize v xs ↔ ψ.Realize v xs
+def is_quantifierfree_alternative {L : Language} {M : Type} [L.Structure M] {α : Type*} {n : ℕ} (v : α → M) (xs : Fin n → M) (φ : FirstOrder.Language.BoundedFormula L M n) (ψ : FirstOrder.Language.QFBoundedFormula L M n) : Prop :=
+  φ.Realize v xs ↔ ψ.Realize v xs
   -- I worry that something is wrong here, mainly in confusing X and α.
   -- Also, what are the the arguments of Realize? - Lily
 
--- def has_quantifierfreefromula {L : Language} {M : Type} [L.Structure M] {α : Type*} {n : ℕ} (φ : FirstOrder.Language.BoundedFormula L α n) (v : α → M) (xs : Fin n → M) :=
---   ∃ ψ : FirstOrder.Language.QFBoundedFormula L M n,
---     is_quantifierfree_alternative v xs φ ψ
---     -- This definition needs to be better.
+def has_quantifierfreefromula {L : Language} {M : Type} [L.Structure M] {α : Type*} {n : ℕ} (φ : FirstOrder.Language.BoundedFormula L α n) (v : α → M) (xs : Fin n → M) :=
+  ∃ ψ : FirstOrder.Language.QFBoundedFormula L M n,
+    is_quantifierfree_alternative v xs φ ψ
+    -- This definition needs to be better.
 
--- def admits_quantifier_elimination (L : Language) (α : Type) [L.Structure α] :=
---   ∀n : ℕ, ∀vars : Fin n → α, ∀ φ : FirstOrder.Language.BoundedFormula L α n, has_quantifierfreefromula φ vars
+def admits_quantifier_elimination (L : Language) (α : Type) [L.Structure α] :=
+  ∀n : ℕ, ∀vars : Fin n → α, ∀ φ : FirstOrder.Language.BoundedFormula L α n, has_quantifierfreefromula φ vars
   -- Is this a proper definition?
 
 -- WARNING: Volatile.

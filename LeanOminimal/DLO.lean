@@ -73,3 +73,12 @@ lemma no_right_extrema {X} [DLO X] : ¬∃y : X, ∀z : X, y = z ∨ y >₀ z :=
 
 
 end DLO
+
+@[simp]
+instance : DLO ℝ  where
+  irrefl := by intros x h; exact lt_irrefl x h
+  trans := by rintro x y z h1 h2; exact lt_trans h1 h2
+  total := by intros x y; exact lt_trichotomy x y
+  dense := by intros x y h; exact exists_between h
+  no_r_end := by intro x; exact ⟨x + 1, by simp⟩
+  no_l_end := by intro x; exact ⟨x - 1, by simp⟩

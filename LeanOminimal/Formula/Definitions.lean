@@ -1,7 +1,11 @@
 import LeanOminimal.Basic
+import LeanOminimal.definability
+
 open FirstOrder
 open Language
 
+namespace FirstOrder
+namespace Language
 
 /--
 A Literal of a Language `L`, a Type `α`, and a number of free variables `n`
