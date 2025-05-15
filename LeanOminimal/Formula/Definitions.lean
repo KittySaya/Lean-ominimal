@@ -1,6 +1,8 @@
 import LeanOminimal.Basic
 open FirstOrder
 open Language
+
+
 /--
 A Literal of a Language `L`, a Type `α`, and a number of free variables `n`
 is a formula consisting solely of
@@ -11,7 +13,6 @@ is a formula consisting solely of
 
   and lastly, negation of either of those
 -/
-
 inductive Literal (L : Language) (α : Type) (n : ℕ) : Type _
   | equal (t₁ t₂ : L.Term (α ⊕ (Fin n))) : Literal L α n
   | rel {l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : Literal L α n
