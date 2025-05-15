@@ -1,6 +1,7 @@
 import LeanOminimal.Basic
 open FirstOrder
-open Language
+
+
 class order (X : Type) : Type where
   ord : (Fin 2 → X) → Prop
 

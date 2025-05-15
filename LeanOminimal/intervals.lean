@@ -1,6 +1,6 @@
 import LeanOminimal.DLO
 open FirstOrder
-open Language
+
 namespace DLO.interval
 
 variable {X : Type} [DLO X]

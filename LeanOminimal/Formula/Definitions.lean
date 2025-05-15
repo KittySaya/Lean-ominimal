@@ -1,6 +1,9 @@
 import LeanOminimal.Basic
 open FirstOrder
 open Language
+
+variable (L : Language)
+variable (α)
 /--
 A Literal of a Language `L`, a Type `α`, and a number of free variables `n`
 is a formula consisting solely of
