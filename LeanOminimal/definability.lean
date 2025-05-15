@@ -1,13 +1,16 @@
 import LeanOminimal.DLO
-
+import LeanOminimal.intervals
 open FirstOrder
+open Language
+open Set
+
 
 @[simp]
 def isDefinable {X : Type} (L : Language) (U : Set X) [Language.Structure L X] : Prop :=
   Definable₁ (⊤ : Set X ) L U
 
 class Ominimal (X : Type) (L : Language) extends DLO X, Language.Structure L X  where
-  definable_sets: ∀ (U: Set (X)), isDefinable L U  ↔ DLO.interval.is_finite_union_of_intervalsP U
+  definable_sets: ∀ (U: Set (X)), isDefinable L U  ↔ DLO.interval.is_finite_union_of_intervals P U
 
 
 --- Defining (ℝ ,<₀) as an Lstructure and trying to prove o-minimality

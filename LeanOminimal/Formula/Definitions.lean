@@ -1,5 +1,6 @@
 import LeanOminimal.Basic
-
+open FirstOrder
+open Language
 /--
 A Literal of a Language `L`, a Type `α`, and a number of free variables `n`
 is a formula consisting solely of
@@ -9,7 +10,8 @@ is a formula consisting solely of
   relations of terms
 
   and lastly, negation of either of those
--/ -- Should not really be included? I know we came to that conclusion earlier, but I am doubting it right now. -Lily
+-/
+
 inductive Literal (L : Language) (α : Type) (n : ℕ) : Type _
   | equal (t₁ t₂ : L.Term (α ⊕ (Fin n))) : Literal L α n
   | rel {l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : Literal L α n
@@ -21,9 +23,10 @@ namespace Literal
 /--
 This function removes any instances of double negation in a Literal.
 
-e.g., it turns x = y into x = y,
-¬(x = y) into ¬(x = y),
-but ¬¬(x = y) into (x = y) and
+e.g., it turns
+           x = y  into x = y,
+         ¬(x = y) into ¬(x = y),
+        ¬¬(x = y) into x = y
 ¬¬ ¬¬ ¬¬ ¬(x = y) into ¬(x = y)
 -/
 def remove_doubleneg {L : Language} {α : Type} {n : ℕ} : Literal L α n → Literal L α n
