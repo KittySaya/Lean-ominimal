@@ -722,7 +722,7 @@ def or {n : ℕ} (f₁ f₂ : QFBoundedFormula L α n) : QFBoundedFormula L α n
   (f₁.and f₂).not
 
 
-def Realize {n : ℕ} (f : QFBoundedFormula L α n) (X : Type*) (i : α → X) [L.Structure X](x:Fin n → X) :=
+def Realize {n : ℕ} {X : Type*} (f : QFBoundedFormula L α n) (i : α → X) [L.Structure X](x:Fin n → X) :=
  f.toBoundedFormula.Realize i x
 
 end QFBoundedFormula
@@ -862,18 +862,19 @@ inductive Relblock (L : Language) (α : Type) : ℕ → Type _
 
 
 
-def Existeliminate {n : ℕ} : Atomicexistblock L α n → Relblock L α n := by
-  intro atomic
-  rcases atomic with ⟨t1, t2⟩ | ⟨R, f⟩ | ⟨t1, t2⟩
-  · rcases t1 with a | ⟨_, _⟩
-    rcases t2 with b | ⟨_, _⟩
-    by_cases eq:  a=b
-    · sorry
-    · sorry
-    · sorry
-    · exact Relblock.and (Existeliminate t1) (Existeliminate t2)
-  · sorry
-  · sorry
+-- def Existeliminate {n : ℕ} : Atomicexistblock L α n → Relblock L α n := by
+--   intro atomic
+--   rcases atomic with ⟨t1, t2⟩ | ⟨R, f⟩ | ⟨t1, t2⟩
+--   · rcases t1 with a | ⟨_, _⟩
+--     rcases t2 with b | ⟨_, _⟩
+--     by_cases eq:  a=b
+--     · sorry
+--     · sorry
+--     · sorry
+--     · sorry
+--       -- exact Relblock.and (Existeliminate t1) (Existeliminate t2)
+--   · sorry
+--   · sorry
 
 
 end Language
@@ -887,19 +888,18 @@ def isExistBlock {L : Language} {α : Type} {n : ℕ} (φ : FirstOrder.Language.
 
   sorry
 
-def is_quantifierfree_alternative {L : Language} {α : Type} [L.Structure α] (X : Type*) {n : ℕ} (vars : Fin n → α) (φ : FirstOrder.Language.BoundedFormula L α n) (ψ : FirstOrder.Language.QFBoundedFormula L α n) : Prop :=
-  sorry
-  -- φ.Realize _ vars ↔ ψ.Realize α _ vars
+-- def is_quantifierfree_alternative {L : Language} {M : Type} [L.Structure M] {α : Type*} {n : ℕ} (v : α → M) (xs : Fin n → M) (φ : FirstOrder.Language.BoundedFormula L M n) (ψ : FirstOrder.Language.QFBoundedFormula L M n) : Prop :=
+--   φ.Realize v xs ↔ ψ.Realize v xs
   -- I worry that something is wrong here, mainly in confusing X and α.
   -- Also, what are the the arguments of Realize? - Lily
 
-def has_quantifierfreefromula {L : Language} {α : Type} [L.Structure α] {n : ℕ} (φ : FirstOrder.Language.BoundedFormula L α n) (vars : Fin n → α) :=
-  ∃ ψ : FirstOrder.Language.QFBoundedFormula L α n,
-    is_quantifierfree_alternative ℝ vars φ ψ
-    -- This definition needs to be better.
+-- def has_quantifierfreefromula {L : Language} {M : Type} [L.Structure M] {α : Type*} {n : ℕ} (φ : FirstOrder.Language.BoundedFormula L α n) (v : α → M) (xs : Fin n → M) :=
+--   ∃ ψ : FirstOrder.Language.QFBoundedFormula L M n,
+--     is_quantifierfree_alternative v xs φ ψ
+--     -- This definition needs to be better.
 
-def admits_quantifier_elimination (L : Language) (α : Type) [L.Structure α] :=
-  ∀n : ℕ, ∀vars : Fin n → α, ∀ φ : FirstOrder.Language.BoundedFormula L α n, has_quantifierfreefromula φ vars
+-- def admits_quantifier_elimination (L : Language) (α : Type) [L.Structure α] :=
+--   ∀n : ℕ, ∀vars : Fin n → α, ∀ φ : FirstOrder.Language.BoundedFormula L α n, has_quantifierfreefromula φ vars
   -- Is this a proper definition?
 
 -- WARNING: Volatile.
@@ -1174,9 +1174,9 @@ end existential_elimination
 end Big_And_section
 
 
-theorem RealDLO_admits_quantifier_elimination : QuantifierELimination.admits_quantifier_elimination order_language ℝ := by
-  -- apply of_exist_bigand_blocks
-  sorry
+-- theorem RealDLO_admits_quantifier_elimination : QuantifierELimination.admits_quantifier_elimination order_language ℝ := by
+--   -- apply of_exist_bigand_blocks
+--   sorry
 
 
 /--
