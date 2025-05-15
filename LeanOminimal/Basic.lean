@@ -1,5 +1,8 @@
 import Mathlib
 
+open FirstOrder.Language
+open Set
+
 --- Defining (ℝ ,<₀) as an Lstructure and trying to prove o-minimality
 inductive ordsymbol : Type
   | lt : ordsymbol
