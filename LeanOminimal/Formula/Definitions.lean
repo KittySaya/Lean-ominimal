@@ -266,7 +266,7 @@ and is implication free if it contains no → connective.
 That is, a QF Imp formula is solely built up on falsum, equality of terms, relations of terms,
 and the connectives not, or, and.
 -/
-inductive QFImpFreeFormula (L : Language) (α : Type) : ℕ → Type _
+inductive QFImpFreeFormula (L : Language) (α : Type*) : ℕ → Type _
   | falsum {n} : QFImpFreeFormula L α n
   | equal  {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : QFImpFreeFormula L α n
   | rel    {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : QFImpFreeFormula L α n

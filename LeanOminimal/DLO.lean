@@ -1,23 +1,6 @@
 import LeanOminimal.Basic
 open FirstOrder
 
-
-class order (X : Type) : Type where
-  ord : (Fin 2 → X) → Prop
-
-namespace order
-
-variable {X : Type} [order X]
-
-@[simp]
-def lt (a b : X) [order X] : Prop :=
-  ord (λ i => if i=0 then a else b)
-
-infix:50 " <₀ " => lt
-notation x " >₀ " y => y <₀ x
-
-end order
-
 class DLO (X : Type) extends order X where
   irrefl:   ∀x: X,     ¬(x<₀x)
   trans:    ∀x y z: X, x<₀y → y<₀z → x<₀z  --I changed this to be double implication, which Lean usually uses.

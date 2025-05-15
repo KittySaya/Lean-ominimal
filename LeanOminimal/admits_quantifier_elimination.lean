@@ -1,20 +1,23 @@
 import LeanOminimal.Basic
+import LeanOminimal.Formula.Definitions
+
 open FirstOrder
 open Language
 
 
-def is_quantifierfree_alternative {L : Language} {M : Type} [L.Structure M] {α : Type*} {n : ℕ} (v : α → M) (xs : Fin n → M) (φ : FirstOrder.Language.BoundedFormula L M n) (ψ : FirstOrder.Language.QFBoundedFormula L M n) : Prop :=
-  φ.Realize v xs ↔ ψ.Realize v xs
-  I worry that something is wrong here, mainly in confusing X and α.
-  Also, what are the the arguments of Realize? - Lily
+def is_quantifierfree_alternative {L : Language} {M : Type} [L.Structure M] {α : Type*} {n : ℕ} (v : α → M) (xs : Fin n → M) (φ : FirstOrder.Language.BoundedFormula L α n) (ψ : FirstOrder.Language.QFImpFreeFormula L α n) : Prop :=
+  sorry
+  -- φ.Realize v xs ↔ ψ.Realize v xs
+  -- I worry that something is wrong here, mainly in confusing X and α.
+  -- Also, what are the the arguments of Realize? - Lily
 
 def has_quantifierfreefromula {L : Language} {M : Type} [L.Structure M] {α : Type*} {n : ℕ} (φ : FirstOrder.Language.BoundedFormula L α n) (v : α → M) (xs : Fin n → M) :=
-  ∃ ψ : FirstOrder.Language.QFBoundedFormula L M n,
+  ∃ ψ : FirstOrder.Language.QFImpFreeFormula L α n,
     is_quantifierfree_alternative v xs φ ψ
     -- This definition needs to be better.
 
-def admits_quantifier_elimination (L : Language) (α : Type) [L.Structure α] :=
-  ∀n : ℕ, ∀vars : Fin n → α, ∀ φ : FirstOrder.Language.BoundedFormula L α n, has_quantifierfreefromula φ vars
+def admits_quantifier_elimination (L : Language) (M : Type) [L.Structure M] {α : Type*} :=
+  ∀n : ℕ, ∀v : α → M, ∀xs : Fin n → M, ∀ φ : FirstOrder.Language.BoundedFormula L α n, has_quantifierfreefromula φ v xs
   -- Is this a proper definition?
 
 -- WARNING: Volatile.
