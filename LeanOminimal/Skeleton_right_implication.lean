@@ -1,5 +1,5 @@
 import Mathlib
-
+open FirstOrder
 section order_definition
 
 class order (X : Type) : Type where
@@ -72,14 +72,12 @@ inductive is_finite_union_of_intervalsP : Set X → Prop where
 
 
 
-section definability
+ section definability
 open Set
-open FirstOrder
 open Language
-
 @[simp]
 def isDefinable {X : Type} (L : Language) (U : Set X) [Language.Structure L X] : Prop :=
-  Definable₁ (⊤ : Set X ) L U
+  Definable₁ (Set.univ : Set X ) L U
 
 class Ominimal (X : Type) (L : Language) extends DLO X, Language.Structure L X  where
   definable_sets: ∀ (U: Set (X)), isDefinable L U  ↔ DLO.interval.is_finite_union_of_intervalsP U
@@ -199,18 +197,18 @@ def BoundedFormula.toImpAllFreeFormula {L : Language} {α : Type} {n : ℕ} : Bo
 
 
 def Literal.toImpAllFreeFormula {L} {α} {n} : Literal L α n → ImpAllFreeFormula L α n
+
   | .equal t₁ t₂ => .equal t₁ t₂
   | .rel R ts => .rel R ts
   | .not f => .not f.toImpAllFreeFormula
+def Atomicblock.toImpAllFreeFormula {L} {α} {n} : (Atomicblock L α n) → ImpAllFreeFormula L α n
 
-  def Atomicblock.toImpAllFreeFormula {L} {α} {n} : (Atomicblock L α n) → ImpAllFreeFormula L α n
   | .truth  => ImpAllFreeFormula.falsum.not
   | .equal t₁ t₂ => .equal t₁ t₂
   | .rel   R ts => .rel R ts
   | .and   f₁ f₂ => f₁.toImpAllFreeFormula.and f₂.toImpAllFreeFormula
-
 def Atomicblock.todisjunctionAtomicblocks {m : ℕ}{L} {α} (a: Atomicblock L α m) :  disjunctionAtomicblocks L α m  :=
-  disjunctionAtomicblocks.atom a
+disjunctionAtomicblocks.atom a
 
 def Relblock.toBoundedFormula {L} {α} {n}: Relblock L α n→ BoundedFormula L α n
  | truth => BoundedFormula.falsum.imp BoundedFormula.falsum
@@ -223,34 +221,32 @@ def disjunctionRelblocks.toBoundedFormula {L} {α} {n}: disjunctionRelblocks L �
   exact BoundedFormula.falsum
   exact (rel.toBoundedFormula.imp BoundedFormula.falsum).imp dis.toBoundedFormula
 
-def Existblock.toImpAllFreeFormula {L} {α} {n}: Existblock L α n → ImpAllFreeFormula L α n := by
-  sorry
+def Existblock.toImpAllFreeFormula {L} {α} {n}: Existblock L α n→ ImpAllFreeFormula L α n:= by sorry
 
 
-def ImpAllFreeFormula.toBoundedFormula {L} {α} {n}: ImpAllFreeFormula L α n→ BoundedFormula L α n := by
-  sorry
-
-def QFImpAllFreeFormula.toBoundedFormula {L} {α} {n}: QFImpAllFreeFormula L α n→ BoundedFormula L α n:= by
-  sorry
+def ImpAllFreeFormula.toBoundedFormula {L} {α} {n}: ImpAllFreeFormula L α n→ BoundedFormula L α n:= by sorry
+def QFImpAllFreeFormula.toBoundedFormula {L} {α} {n}: QFImpAllFreeFormula L α n→ BoundedFormula L α n:= by sorry
 
 -- disjunction and conjuction of disjunctionofatomicblocks
 
 
-def disjunctionAtomicblocks.and {L : Language} {α : Type} {n : ℕ}
-    (f₁ f₂ : disjunctionAtomicblocks L α n) : disjunctionAtomicblocks L α n :=
-  match f₁, f₂ with
-  | atom a₁, atom a₂ => atom (Atomicblock.and a₁ a₂)
-  | atom a₁, or b₁ b₂ =>
-      or (disjunctionAtomicblocks.and (atom a₁) b₁)
-        (disjunctionAtomicblocks.and (atom a₁) b₂)
-  | or a₁ a₂, b =>
-      or (disjunctionAtomicblocks.and a₁ b)
-        (disjunctionAtomicblocks.and a₂ b)
+def disjunctionAtomicblocks.and
+  {L : Language} {α : Type} {n : ℕ}
+  (f₁ f₂ : disjunctionAtomicblocks L α n) : disjunctionAtomicblocks L α n :=
+match f₁, f₂ with
+| atom a₁, atom a₂ => atom (Atomicblock.and a₁ a₂)
+| atom a₁, or b₁ b₂ =>
+    or (disjunctionAtomicblocks.and (atom a₁) b₁)
+       (disjunctionAtomicblocks.and (atom a₁) b₂)
+| or a₁ a₂, b =>
+    or (disjunctionAtomicblocks.and a₁ b)
+       (disjunctionAtomicblocks.and a₂ b)
 
 
 
 def Literal.todisjunctionAtomicblocks {n:ℕ }(l : Literal (order_language[[ℝ]]) (Fin 1) n) : disjunctionAtomicblocks (order_language[[ℝ]]) (Fin 1) n := by
  rcases l with ⟨t1 ,t2⟩ | ⟨R, f⟩ | ⟨t1, t2⟩ | ⟨R, f⟩ | f
+
 
  rcases t1 with ⟨a1 ⟩ | ⟨f, t1 ⟩
  rcases t2 with ⟨a2 ⟩  | ⟨g, t2⟩
@@ -321,31 +317,63 @@ exact (disjunctionRelblocks.relb (Atomicblock.toRelblock atom))
 
 exact disjunctionRelblocks.or (d1.todisjunctionRelblocks) (d2.todisjunctionRelblocks)
 
-
+@[simp]
 lemma compatible (block: Existblock (order_language[[ℝ]]) (Fin 1) (1)) (x: Fin 1→ ℝ ) :
   (block.toImpAllFreeFormula.exists).toBoundedFormula.Realize x (fun i:(Fin 0) => nomatch i)
    ↔ @block.todisjunctionAtomicblocks.todisjunctionRelblocks.toBoundedFormula.Realize (order_language[[ℝ]]) ℝ  _ _ _  x (fun i:Fin 0 => nomatch i) := by sorry
 
 
-
+@[simp]
 def ImpAllFreeFormula.toQFImpAllFreeFormula  : ImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) 0 → QFImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) 0:= by sorry
 
-lemma compatible2  (φ : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0 ) (x :Fin 1 → ℝ  ):
-    φ.Realize x (fun i:Fin 0 => nomatch i)
-    ↔ (QFImpAllFreeFormula.toBoundedFormula ((BoundedFormula.toImpAllFreeFormula φ).toQFImpAllFreeFormula)).Realize
-        x (fun i:Fin 0 => nomatch i) := by
-  sorry
-
-lemma QFimpAllFreeFormulaDef (φ :QFImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) 0 ):
-  let ψ := φ.toBoundedFormula
-  let set := { x:ℝ   | @ψ.Realize (order_language[[ℝ]]) ℝ  _ _ _  (fun i: Fin 1=> x) (fun i:Fin 0 => nomatch i)  }
-  @isDefinable ℝ  order_language set  (real_DLO.Rstruc) := by
-    sorry
+@[simp]
+lemma compatible2  (φ : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0 ) :
+∀x:ℝ ,φ.Realize (fun i: Fin 1=> x) (fun i:Fin 0 => nomatch i)
+ ↔ (QFImpAllFreeFormula.toBoundedFormula ((BoundedFormula.toImpAllFreeFormula φ).toQFImpAllFreeFormula)).Realize
+    (fun i: Fin 1=> x) (fun i:Fin 0 => nomatch i) := by sorry
 
 
 
+@[simp]
+def Formulafiniteunion (ψ : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0 ): Prop := 
+ @DLO.interval.is_finite_union_of_intervalsP ℝ _
+  ({ x:ℝ   | @ψ.Realize (order_language[[ℝ]]) ℝ  _ _ _  (fun _: Fin 1=> x) (fun i:Fin 0 => nomatch i)  } )
 
-lemma definable_sets_left : ∀ (U: Set (ℝ )), isDefinable order_language U → DLO.interval.is_finite_union_of_intervalsP U:= by
-  intro u def_u
-  rcases def_u with ⟨φ, set  ⟩
-  sorry
+@[simp]
+lemma QFimpAllFreeFormulafiniteunion (φ :QFImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) 0 ):
+  Formulafiniteunion φ.toBoundedFormula := by sorry
+
+@[simp]
+
+
+
+lemma formulaequiv (φ ψ : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0 ):
+(∀ x:ℝ,  ψ.Realize (fun _: Fin 1=> x) (fun i:Fin 0 => nomatch i) ↔ φ.Realize (fun _: Fin 1=> x) (fun i:Fin 0 => nomatch i)) → (Formulafiniteunion φ ↔ Formulafiniteunion ψ) := by sorry
+
+
+def Formulaisbounded  (φ : Formula (order_language[[ℝ]]) (Fin 1)  ) : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0 :=
+  (by simp : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0  =Formula (order_language[[ℝ]]) (Fin 1)  ) ▸ φ 
+
+
+theorem definable_sets_left:  ∀ (U: Set (ℝ )), isDefinable order_language U  → DLO.interval.is_finite_union_of_intervalsP U:= by
+intro u def_u
+rcases def_u with ⟨φ', set_eq  ⟩
+
+have langhom: order_language[[@univ ℝ]] = order_language[[ℝ]] := by sorry
+
+rw [langhom] at φ' 
+
+let φ := Formulaisbounded φ'
+let ψ := QFImpAllFreeFormula.toBoundedFormula ((BoundedFormula.toImpAllFreeFormula φ).toQFImpAllFreeFormula)
+
+have ψfin : Formulafiniteunion ψ :=
+    QFimpAllFreeFormulafiniteunion ((BoundedFormula.toImpAllFreeFormula φ).toQFImpAllFreeFormula)
+
+
+have φfin : Formulafiniteunion φ := ((formulaequiv  ψ φ  (compatible2 φ))).1 ψfin
+ 
+unfold Formulafiniteunion at φfin
+have  seteq :u = {x | φ.Realize (fun x_1 ↦ x) fun i ↦ nomatch i}:=by sorry
+rw[seteq]
+exact φfin
+
