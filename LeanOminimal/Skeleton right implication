@@ -1,5 +1,3 @@
-import Mathlib
-open FirstOrder
 section order_definition
 
 class order (X : Type) : Type where
@@ -163,8 +161,8 @@ inductive Atomicblock (L : Language) (α : Type) : ℕ → Type _
 
 
 inductive disjunctionAtomicblocks (L : Language)  (α : Type) : ℕ → Type _
-| falsum  {n:ℕ }: disjunctionAtomicblocks L α n
-| or {m:ℕ } ( f1: Atomicblock L α m) (f2 :disjunctionAtomicblocks L α m ): disjunctionAtomicblocks L α m
+| atom  {m:ℕ } (a:Atomicblock L α m): disjunctionAtomicblocks L α m
+| or {m:ℕ } (  f1 f2 :disjunctionAtomicblocks L α m ): disjunctionAtomicblocks L α m
 
 
 inductive Relblock (L : Language) (α : Type) : ℕ → Type _
@@ -173,8 +171,8 @@ inductive Relblock (L : Language) (α : Type) : ℕ → Type _
   | and   {n : ℕ} (f1 f2 : Relblock L α n) : Relblock L α n
 
 inductive disjunctionRelblocks (L : Language)  (α : Type) : ℕ → Type _
-| falsum  {n:ℕ }: disjunctionRelblocks L α n
-| or {m:ℕ } ( f1: Relblock L α m) (f2 :disjunctionRelblocks L α m ): disjunctionRelblocks L α m
+| relb  {m:ℕ } (r: Relblock L α m): disjunctionRelblocks L α m
+| or {m:ℕ } (f1 f2 :disjunctionRelblocks L α m ): disjunctionRelblocks L α m
 
 
 --- All inclusions of types:
@@ -208,11 +206,13 @@ def Atomicblock.toImpAllFreeFormula {L} {α} {n} : (Atomicblock L α n) → ImpA
   | .rel   R ts => .rel R ts
   | .and   f₁ f₂ => f₁.toImpAllFreeFormula.and f₂.toImpAllFreeFormula
 def Atomicblock.todisjunctionAtomicblocks {m : ℕ}{L} {α} (a: Atomicblock L α m) :  disjunctionAtomicblocks L α m  :=
-disjunctionAtomicblocks.or a (disjunctionAtomicblocks.falsum)
+disjunctionAtomicblocks.atom a
+
 def Relblock.toBoundedFormula {L} {α} {n}: Relblock L α n→ BoundedFormula L α n
  | truth => BoundedFormula.falsum.imp BoundedFormula.falsum
  | .rel R ts => .rel R ts
  | .and t1 t2 => (t1.toBoundedFormula.imp (t2.toBoundedFormula.imp BoundedFormula.falsum)).imp BoundedFormula.falsum
+
 def disjunctionRelblocks.toBoundedFormula {L} {α} {n}: disjunctionRelblocks L α n→ BoundedFormula L α n := by
   intro disj
   rcases disj with ⟨ ⟩ | ⟨ rel, dis⟩
@@ -226,37 +226,19 @@ def ImpAllFreeFormula.toBoundedFormula {L} {α} {n}: ImpAllFreeFormula L α n→
 def QFImpAllFreeFormula.toBoundedFormula {L} {α} {n}: QFImpAllFreeFormula L α n→ BoundedFormula L α n:= by sorry
 
 -- disjunction and conjuction of disjunctionofatomicblocks
-def disjunctionAtomicblocks.OR {L α n}(x y : disjunctionAtomicblocks L α n) : disjunctionAtomicblocks L α n :=
-    match x with
-    | falsum => y
-    | or h t => or h (t.OR y)
-
-def disjunctionRelblocks.OR {L α n}(x y : disjunctionRelblocks L α n) : disjunctionRelblocks L α n :=
-    match x with
-    | falsum => y
-    | or h t => or h (t.OR y)
 
 
-def disjunctionAtomicblocks.and {L α n}
-  (d1 d2 : disjunctionAtomicblocks L α n) : disjunctionAtomicblocks L α n :=
-match d1, d2 with
-| falsum, _ => falsum
-| _, falsum => falsum
-| or a₁ rest₁, _ =>
-
-  let rec mapAndRight (a : Atomicblock L α n) (d : disjunctionAtomicblocks L α n) : disjunctionAtomicblocks L α n :=
-    match d with
-    | falsum => falsum
-    | or a₂ rest₂ =>
-        or (Atomicblock.and a a₂) (mapAndRight a rest₂)
-
-
-  let left := mapAndRight a₁ d2
-  let right := and rest₁ d2
-
-
-  left.OR right
-
+def disjunctionAtomicblocks.and
+  {L : Language} {α : Type} {n : ℕ}
+  (f₁ f₂ : disjunctionAtomicblocks L α n) : disjunctionAtomicblocks L α n :=
+match f₁, f₂ with
+| atom a₁, atom a₂ => atom (Atomicblock.and a₁ a₂)
+| atom a₁, or b₁ b₂ =>
+    or (disjunctionAtomicblocks.and (atom a₁) b₁)
+       (disjunctionAtomicblocks.and (atom a₁) b₂)
+| or a₁ a₂, b =>
+    or (disjunctionAtomicblocks.and a₁ b)
+       (disjunctionAtomicblocks.and a₂ b)
 
 
 
@@ -300,14 +282,14 @@ def Literal.todisjunctionAtomicblocks {n:ℕ }(l : Literal (order_language[[ℝ]
 
  let QF1 := Atomicblock.rel (Sum.inl ordsymbol.lt) (fun (i:Fin 2)=>  if i=0 then t1 else t2  )
  let QF2 := Atomicblock.rel (Sum.inl ordsymbol.lt) (fun (i:Fin 2)=> if i=0 then t2 else t1 )
- exact disjunctionAtomicblocks.or QF1 QF2.todisjunctionAtomicblocks
+ exact disjunctionAtomicblocks.or QF1.todisjunctionAtomicblocks QF2.todisjunctionAtomicblocks
  rename_i l
  by_cases neq: l=2
  let ter1:= f ⟨0, by linarith⟩
  let ter2 := f ⟨1, by linarith⟩
  let QF1 := Atomicblock.rel (Sum.inl ordsymbol.lt) (fun (i:Fin 2)=>  if i=0 then ter2 else ter1  )
  let QF2 := Atomicblock.equal ter1 ter2
- exact disjunctionAtomicblocks.or QF1 QF2.todisjunctionAtomicblocks
+ exact disjunctionAtomicblocks.or QF1.todisjunctionAtomicblocks QF2.todisjunctionAtomicblocks
  exfalso
  have R_empty : order_language[[ℝ]].Relations l = Empty := by sorry
 
@@ -328,9 +310,10 @@ def Atomicblock.toRelblock  (block : Atomicblock (order_language[[ℝ]]) (Fin 1)
 
 def disjunctionAtomicblocks.todisjunctionRelblocks :disjunctionAtomicblocks (order_language[[ℝ]]) (Fin 1) (1)→ disjunctionRelblocks (order_language[[ℝ]]) (Fin 1) (0):= by
 intro disA
-rcases disA with ⟨ ⟩ | ⟨atom, dis ⟩
-exact disjunctionRelblocks.falsum
-exact disjunctionRelblocks.or (atom.toRelblock) (dis.todisjunctionRelblocks)
+rcases disA with ⟨atom ⟩ | ⟨d1, d2 ⟩
+exact (disjunctionRelblocks.relb (Atomicblock.toRelblock atom))
+
+exact disjunctionRelblocks.or (d1.todisjunctionRelblocks) (d2.todisjunctionRelblocks)
 
 
 lemma compatible (block: Existblock (order_language[[ℝ]]) (Fin 1) (1)) (x: Fin 1→ ℝ ) :
