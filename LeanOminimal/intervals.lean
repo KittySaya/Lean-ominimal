@@ -1,5 +1,6 @@
 import LeanOminimal.DLO
 open FirstOrder
+open Set
 
 namespace DLO.interval
 
@@ -27,7 +28,6 @@ This property expresses the fact that a subset of X is a finite union of interva
 -/
 inductive is_finite_union_of_intervalsP : Set X → Prop where
   | empty   : is_finite_union_of_intervalsP ∅
-  -- | entire  : is_finite_union_of_intervalsP univ -- Not needed, logically follows from the others.
   | bounded : (a : X) → (b : X) → is_finite_union_of_intervalsP (bounded a b)
   | lower   : (a : X) → is_finite_union_of_intervalsP (lower a)
   | upper   : (a : X) → is_finite_union_of_intervalsP (upper a)
@@ -35,6 +35,32 @@ inductive is_finite_union_of_intervalsP : Set X → Prop where
   | union   : ∀ U V : Set X, is_finite_union_of_intervalsP U → is_finite_union_of_intervalsP V → is_finite_union_of_intervalsP (U ∪ V)
 
 
+-- Low priority.
+@[simp]
+lemma is_finite_union_of_intervalsP.entire : is_finite_union_of_intervalsP (@univ X : Set X) := by
+  by_cases inhabited_X : ∃x : X, True
+  · rcases inhabited_X with ⟨x, _⟩
+    let x_lower := interval.lower x
+    let x_single := interval.singleton x
+    let x_upper := interval.upper x
+
+    let x_full := x_lower ∪ x_single ∪ x_upper
+    have x_full_is_univ : x_full = univ := by
+      ext t
+      apply iff_of_true
+      · rcases DLO.total x t with less | equal | more
+        · sorry
+        · sorry
+        · sorry
+      · expose_names
+        exact h
+    sorry
+  ·
+    sorry
+
+
+-- Irrelevant. -Lily
+/-
 @[simp]
 lemma union_preserves_finite_union {U V : Set X} (hu : is_finite_union_of_intervalsP U) (hv : is_finite_union_of_intervalsP V) : is_finite_union_of_intervalsP (U ∪ V) := by
   exact is_finite_union_of_intervalsP.union U V hu hv
@@ -54,5 +80,6 @@ lemma union_preserves_finite_union {U V : Set X} (hu : is_finite_union_of_interv
 --     rcases hn
 
 --    sorry
+-/
 
 end DLO.interval

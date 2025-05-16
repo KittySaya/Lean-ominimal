@@ -5,20 +5,30 @@ open FirstOrder
 open Language
 
 
+/--
+States that the quantifier-free formula `ψ v xs` is equivalent to a potential quantifier-having formula `φ v xs`.
+-/
 def is_quantifierfree_alternative {L : Language} {M : Type} [L.Structure M] {α : Type*} {n : ℕ} (v : α → M) (xs : Fin n → M) (φ : FirstOrder.Language.BoundedFormula L α n) (ψ : FirstOrder.Language.QFImpFreeFormula L α n) : Prop :=
   sorry
   -- φ.Realize v xs ↔ ψ.Realize v xs
   -- I worry that something is wrong here, mainly in confusing X and α.
   -- Also, what are the the arguments of Realize? - Lily
 
+/--
+States that a formula `φ v xs` has a quantifier-free alternative formula.
+-/
 def has_quantifierfreefromula {L : Language} {M : Type} [L.Structure M] {α : Type*} {n : ℕ} (φ : FirstOrder.Language.BoundedFormula L α n) (v : α → M) (xs : Fin n → M) :=
   ∃ ψ : FirstOrder.Language.QFImpFreeFormula L α n,
     is_quantifierfree_alternative v xs φ ψ
     -- This definition needs to be better.
 
-def admits_quantifier_elimination (L : Language) (M : Type) [L.Structure M] {α : Type*} :=
+def admits_quantifier_elimination (L : Language) (M : Type) [L.Structure M] (α : Type*) :=
   ∀n : ℕ, ∀v : α → M, ∀xs : Fin n → M, ∀ φ : FirstOrder.Language.BoundedFormula L α n, has_quantifierfreefromula φ v xs
-  -- Is this a proper definition?
+
+class QuantifierEliminator (L : Language) (M : Type) [L.Structure M] (α : Type*) where
+  formulas_have_quantifierfree_alternative : ∀n : ℕ, ∀v : α → M, ∀xs : Fin n → M, ∀ φ : FirstOrder.Language.BoundedFormula L α n, has_quantifierfreefromula φ v xs
+
+
 
 -- WARNING: Volatile.
 -- Editing this theorem may lead to your computer slowing down, even to the point of freezing, and crashing in the worst case.
@@ -36,3 +46,9 @@ def admits_quantifier_elimination (L : Language) (M : Type) [L.Structure M] {α 
 --   · -- use Language.QFBoundedFormula.imp imp_f₁ imp_f₂
 --     sorry
 --   · sorry
+
+theorem realorder_admits_quantifier_elimination {α} : admits_quantifier_elimination order_language ℝ α := by
+  sorry
+
+instance Realorder_QuantifierEliminator {α} : QuantifierEliminator order_language ℝ α where
+  formulas_have_quantifierfree_alternative := realorder_admits_quantifier_elimination

@@ -1,0 +1,6 @@
+Finished  , File is done; all definitions and theorems are written and proven.
+Unfinished, File needs proving; all definitions and theorems are written            , but have sorry statements.
+Incomplete, File is lacking; Definitions or theorems need to be added.
+Unknown   , It's unknown if the file is finished or not.
+Deprecated, File is no longer relevant.
+Blank     , File has no actual content.

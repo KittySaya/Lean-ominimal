@@ -345,7 +345,7 @@ lemma QFimpAllFreeFormulaDef (φ :QFImpAllFreeFormula (order_language[[ℝ]]) (F
 
 
 
-lemma definable_sets_left:  ∀ (U: Set (ℝ )), isDefinable order_language U → DLO.interval.is_finite_union_of_intervalsP U:= by
+lemma definable_sets_left : ∀ (U: Set (ℝ )), isDefinable order_language U → DLO.interval.is_finite_union_of_intervalsP U:= by
   intro u def_u
   rcases def_u with ⟨φ, set  ⟩
   sorry

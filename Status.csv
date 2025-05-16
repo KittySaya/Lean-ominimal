@@ -1,0 +1,21 @@
+FILE                           ; STATUS     ; DESCRIPTION
+
+Basic                          ; Unknown    ; Forms a basis to be imported by all files.
+
+dense_linear_orders            ; Deprecated ; The old one-file.
+
+QuantifierEliminator           ; Incomplete ; Defines what it means to admit quantifier eliminations and proves that the real numbers admit that.
+ominimality                    ; Finished   ; Proves that real numbers are O Minimal.
+DLO                            ; Finished   ; Defines what a Dense Linear is, and proves that the real numbers are a dense linear order.
+intervals                      ; Unfinished ; Defines the types of intervals, and the property that some subset is a finite union of intervals.
+Skeleton_right_implication     ; Unknown    ; Unknown
+Literal                        ; Blank      ; Unknown, Deprecated?
+BigAnd                         ; Unknown    ; An implication of the and connective over a finite list of propositions.
+
+Definability.Right             ; Finished   ; Proves finite unions of intervals are definable.
+Definability.Left              ; Incomplete ; Proves definable sets are finite unions of intervals.
+Definability.Definitions       ; Debatable  ; Defines what it means to be definable.
+
+Formula.Definitions            ; Deprecated?; Contains the different instances of formula types. To be replaced by Skeleton_right_implication
+Formula.Rewrite                ; Deprecated?; Shows rewriting of one type of formula to a different one.
+Formula.Existential_Elimination; Deprecated?; Proof that Real_order admits Quantifier Elimination

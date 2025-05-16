@@ -1,6 +1,9 @@
 import LeanOminimal.Basic
 open FirstOrder
 
+/--
+A dense linear order is a dense linear order that has no left or right end point.
+-/
 class DLO (X : Type) extends order X where
   irrefl:   ∀x: X,     ¬(x<₀x)
   trans:    ∀x y z: X, x<₀y → y<₀z → x<₀z  --I changed this to be double implication, which Lean usually uses.
@@ -58,6 +61,10 @@ lemma no_right_extrema {X} [DLO X] : ¬∃y : X, ∀z : X, y = z ∨ y >₀ z :=
 
 end DLO
 
+/--
+Proof that `(ℝ, <)`, the real numbers with the stadard order,
+is a dense linear order.
+-/
 @[simp]
 instance : DLO ℝ  where
   irrefl := by intros x h; exact lt_irrefl x h

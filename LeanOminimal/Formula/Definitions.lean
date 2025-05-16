@@ -1,5 +1,5 @@
 import LeanOminimal.Basic
-import LeanOminimal.definability
+import LeanOminimal.Definability.Definition
 
 open FirstOrder
 open Language
@@ -104,7 +104,7 @@ Gives a meaning to a formula.
 def Realize {α} : ∀ {l} (_f : ImpAllFreeFormula order_language α l) (_v : α → ℝ) (_xs : Fin l → ℝ), Prop
   | _, FirstOrder.Language.ImpAllFreeFormula.falsum, _v, _xs => False
   | _, FirstOrder.Language.ImpAllFreeFormula.equal t₁ t₂, v, xs => t₁.realize (Sum.elim v xs) = t₂.realize (Sum.elim v xs)
-  | _, FirstOrder.Language.ImpAllFreeFormula.rel R ts, v, xs => real_DLO.Rstruc.RelMap R fun i => (ts i).realize (Sum.elim v xs)
+  | _, FirstOrder.Language.ImpAllFreeFormula.rel R ts, v, xs => Rstruc.RelMap R fun i => (ts i).realize (Sum.elim v xs)
 
   | _, FirstOrder.Language.ImpAllFreeFormula.not f, v, xs => ¬ Realize f v xs
   | _, FirstOrder.Language.ImpAllFreeFormula.and f₁ f₂, v, xs => Realize f₁ v xs ∧ Realize f₂ v xs
@@ -134,7 +134,7 @@ theorem realize_notfalsum : ImpAllFreeFormula.Realize (ImpAllFreeFormula.not Imp
 
 @[simp]
 theorem realize_rel {k : ℕ} {R : order_language.Relations k} {ts : Fin k → order_language.Term _} :
-    (R.boundedFormula ts).Realize v xs ↔ real_DLO.Rstruc.RelMap R fun i => (ts i).realize (Sum.elim v xs) :=
+    (R.boundedFormula ts).Realize v xs ↔ Rstruc.RelMap R fun i => (ts i).realize (Sum.elim v xs) :=
   Iff.rfl
 
 @[simp]
@@ -151,7 +151,7 @@ theorem realize_or : (φ.or ψ).Realize v xs ↔ φ.Realize v xs ∨ ψ.Realize 
 
 @[simp]
 theorem realize_rel₁ {R : order_language.Relations 1} {t : order_language.Term _} :
-    (R.boundedFormula₁ t).Realize v xs ↔ real_DLO.Rstruc.RelMap R ![t.realize (Sum.elim v xs)] := by
+    (R.boundedFormula₁ t).Realize v xs ↔ Rstruc.RelMap R ![t.realize (Sum.elim v xs)] := by
   rw [Relations.boundedFormula₁, realize_rel, iff_eq_eq]
   refine congr rfl (funext fun _ => ?_)
   simp only [Matrix.cons_val_fin_one]
@@ -159,7 +159,7 @@ theorem realize_rel₁ {R : order_language.Relations 1} {t : order_language.Term
 @[simp]
 theorem realize_rel₂ {R : order_language.Relations 2} {t₁ t₂ : order_language.Term _} :
     (R.boundedFormula₂ t₁ t₂).Realize v xs ↔
-      real_DLO.Rstruc.RelMap R ![t₁.realize (Sum.elim v xs), t₂.realize (Sum.elim v xs)] := by
+      Rstruc.RelMap R ![t₁.realize (Sum.elim v xs), t₂.realize (Sum.elim v xs)] := by
   rw [Relations.boundedFormula₂, realize_rel, iff_eq_eq]
   refine congr rfl (funext (Fin.cases ?_ ?_))
   · simp only [Matrix.cons_val_zero]
