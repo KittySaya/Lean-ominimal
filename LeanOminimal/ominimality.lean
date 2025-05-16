@@ -4,7 +4,7 @@ import LeanOminimal.definability
 open FirstOrder
 open Language
 
-class Ominimal (X : Type) (L : Language) extends DLO X, Language.Structure L X  where
+class Ominimal (X : Type) (L : Language) extends DLO X, Language.Structure L X where
   definable_sets: ∀ (U: Set (X)), isDefinable L U  ↔ DLO.interval.is_finite_union_of_intervalsP U
 
 /--
