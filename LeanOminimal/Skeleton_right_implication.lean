@@ -221,11 +221,9 @@ def disjunctionRelblocks.toBoundedFormula {L} {α} {n}: disjunctionRelblocks L �
   exact BoundedFormula.falsum
   exact (rel.toBoundedFormula.imp BoundedFormula.falsum).imp dis.toBoundedFormula
 
-def Existblock.toImpAllFreeFormula {L} {α} {n}: Existblock L α n→ ImpAllFreeFormula L α n:= by sorry
-
-
-def ImpAllFreeFormula.toBoundedFormula {L} {α} {n}: ImpAllFreeFormula L α n→ BoundedFormula L α n:= by sorry
-def QFImpAllFreeFormula.toBoundedFormula {L} {α} {n}: QFImpAllFreeFormula L α n→ BoundedFormula L α n:= by sorry
+def Existblock.toImpAllFreeFormula {L} {α} {n}: Existblock L α n→ ImpAllFreeFormula L α n:= by sorry -- Joos
+def ImpAllFreeFormula.toBoundedFormula {L} {α} {n}: ImpAllFreeFormula L α n→ BoundedFormula L α n:= by sorry -- Lily al gedaan!
+def QFImpAllFreeFormula.toBoundedFormula {L} {α} {n}: QFImpAllFreeFormula L α n→ BoundedFormula L α n:= by sorry -- Joos
 
 -- disjunction and conjuction of disjunctionofatomicblocks
 
@@ -263,7 +261,7 @@ def Literal.todisjunctionAtomicblocks {n:ℕ }(l : Literal (order_language[[ℝ]
  let QF:= Atomicblock.equal const ter
  exact QF.todisjunctionAtomicblocks
 
- have F_empty : order_language[[ℝ]].Functions l = Empty := by sorry
+ have F_empty : order_language[[ℝ]].Functions l = Empty := by sorry -- Lily
  rw[F_empty] at g
  exact g.elim
 
@@ -276,7 +274,7 @@ def Literal.todisjunctionAtomicblocks {n:ℕ }(l : Literal (order_language[[ℝ]
  let QF:= Atomicblock.equal const1 t2
  exact QF.todisjunctionAtomicblocks
 
- have F_empty : order_language[[ℝ]].Functions l = Empty := by sorry
+ have F_empty : order_language[[ℝ]].Functions l = Empty := by sorry -- Lily
  rw [F_empty] at f
  exact f.elim
  let QF :=  Atomicblock.rel R f
@@ -293,7 +291,7 @@ def Literal.todisjunctionAtomicblocks {n:ℕ }(l : Literal (order_language[[ℝ]
  let QF2 := Atomicblock.equal ter1 ter2
  exact disjunctionAtomicblocks.or QF1.todisjunctionAtomicblocks QF2.todisjunctionAtomicblocks
  exfalso
- have R_empty : order_language[[ℝ]].Relations l = Empty := by sorry
+ have R_empty : order_language[[ℝ]].Relations l = Empty := by sorry -- Lily
 
 
  rw [R_empty] at R
@@ -308,7 +306,7 @@ def Existblock.todisjunctionAtomicblocks {n:ℕ } (block : Existblock (order_lan
 
 
 
-def Atomicblock.toRelblock  (block : Atomicblock (order_language[[ℝ]]) (Fin 1) (1)) : Relblock (order_language[[ℝ]]) (Fin 1) 0 := by sorry
+def Atomicblock.toRelblock  (block : Atomicblock (order_language[[ℝ]]) (Fin 1) (1)) : Relblock (order_language[[ℝ]]) (Fin 1) 0 := by sorry -- Niels
 
 def disjunctionAtomicblocks.todisjunctionRelblocks :disjunctionAtomicblocks (order_language[[ℝ]]) (Fin 1) (1)→ disjunctionRelblocks (order_language[[ℝ]]) (Fin 1) (0):= by
 intro disA
@@ -320,28 +318,27 @@ exact disjunctionRelblocks.or (d1.todisjunctionRelblocks) (d2.todisjunctionRelbl
 @[simp]
 lemma compatible (block: Existblock (order_language[[ℝ]]) (Fin 1) (1)) (x: Fin 1→ ℝ ) :
   (block.toImpAllFreeFormula.exists).toBoundedFormula.Realize x (fun i:(Fin 0) => nomatch i)
-   ↔ @block.todisjunctionAtomicblocks.todisjunctionRelblocks.toBoundedFormula.Realize (order_language[[ℝ]]) ℝ  _ _ _  x (fun i:Fin 0 => nomatch i) := by sorry
-
+   ↔ @block.todisjunctionAtomicblocks.todisjunctionRelblocks.toBoundedFormula.Realize (order_language[[ℝ]]) ℝ  _ _ _  x (fun i:Fin 0 => nomatch i) := by sorry -- Lily
 
 @[simp]
-def ImpAllFreeFormula.toQFImpAllFreeFormula  : ImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) 0 → QFImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) 0:= by sorry
+def ImpAllFreeFormula.toQFImpAllFreeFormula  : ImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) 0 → QFImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) 0:= by sorry -- Joos
 
 @[simp]
 lemma compatible2  (φ : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0 ) :
 ∀x:ℝ ,φ.Realize (fun i: Fin 1=> x) (fun i:Fin 0 => nomatch i)
  ↔ (QFImpAllFreeFormula.toBoundedFormula ((BoundedFormula.toImpAllFreeFormula φ).toQFImpAllFreeFormula)).Realize
-    (fun i: Fin 1=> x) (fun i:Fin 0 => nomatch i) := by sorry
+    (fun i: Fin 1=> x) (fun i:Fin 0 => nomatch i) := by sorry -- Later
 
 
 
 @[simp]
-def Formulafiniteunion (ψ : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0 ): Prop := 
+def Formulafiniteunion (ψ : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0 ): Prop :=
  @DLO.interval.is_finite_union_of_intervalsP ℝ _
   ({ x:ℝ   | @ψ.Realize (order_language[[ℝ]]) ℝ  _ _ _  (fun _: Fin 1=> x) (fun i:Fin 0 => nomatch i)  } )
 
 @[simp]
 lemma QFimpAllFreeFormulafiniteunion (φ :QFImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) 0 ):
-  Formulafiniteunion φ.toBoundedFormula := by sorry
+  Formulafiniteunion φ.toBoundedFormula := by sorry -- Lily
 
 @[simp]
 
@@ -352,16 +349,16 @@ lemma formulaequiv (φ ψ : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0 ):
 
 
 def Formulaisbounded  (φ : Formula (order_language[[ℝ]]) (Fin 1)  ) : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0 :=
-  (by simp : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0  =Formula (order_language[[ℝ]]) (Fin 1)  ) ▸ φ 
+  (by simp : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0  =Formula (order_language[[ℝ]]) (Fin 1)  ) ▸ φ
 
 
 theorem definable_sets_left:  ∀ (U: Set (ℝ )), isDefinable order_language U  → DLO.interval.is_finite_union_of_intervalsP U:= by
 intro u def_u
 rcases def_u with ⟨φ', set_eq  ⟩
 
-have langhom: order_language[[@univ ℝ]] = order_language[[ℝ]] := by sorry
+have langhom: order_language[[@univ ℝ]] = order_language[[ℝ]] := by sorry -- donderdag Johan
 
-rw [langhom] at φ' 
+rw [langhom] at φ'
 
 let φ := Formulaisbounded φ'
 let ψ := QFImpAllFreeFormula.toBoundedFormula ((BoundedFormula.toImpAllFreeFormula φ).toQFImpAllFreeFormula)
@@ -371,9 +368,8 @@ have ψfin : Formulafiniteunion ψ :=
 
 
 have φfin : Formulafiniteunion φ := ((formulaequiv  ψ φ  (compatible2 φ))).1 ψfin
- 
+
 unfold Formulafiniteunion at φfin
-have  seteq :u = {x | φ.Realize (fun x_1 ↦ x) fun i ↦ nomatch i}:=by sorry
+have  seteq :u = {x | φ.Realize (fun x_1 ↦ x) fun i ↦ nomatch i}:=by sorry --
 rw[seteq]
 exact φfin
-
