@@ -222,7 +222,16 @@ def disjunctionRelblocks.toBoundedFormula {L} {α} {n}: disjunctionRelblocks L �
   exact (rel.toBoundedFormula.imp BoundedFormula.falsum).imp dis.toBoundedFormula
 
 def Existblock.toImpAllFreeFormula {L} {α} {n}: Existblock L α n→ ImpAllFreeFormula L α n:= by sorry -- Joos
-def ImpAllFreeFormula.toBoundedFormula {L} {α} {n}: ImpAllFreeFormula L α n→ BoundedFormula L α n:= by sorry -- Lily al gedaan!
+
+def ImpAllFreeFormula.toBoundedFormula {L} {α} {n} : ImpAllFreeFormula L α n → BoundedFormula L α n
+  | .falsum => .falsum
+  | .equal t₁ t₂ => .equal t₁ t₂
+  | .rel R ts => .rel R ts
+  | .not f => (f.toBoundedFormula).not -- (f.toBounded).imp .falsum
+  | .or f₁ f₂ => BoundedFormula.imp (f₁.toBoundedFormula.not) f₂.toBoundedFormula -- ((f₁.not).toBounded).imp f₂.toBounded
+  | .and f₁ f₂ => (BoundedFormula.imp f₁.toBoundedFormula f₂.toBoundedFormula.not).not -- ((f₁.not).or (f₂.not).not).toBounded
+  | .exists f => (f.toBoundedFormula).ex-- (((f.toBounded).not).all).not
+
 def QFImpAllFreeFormula.toBoundedFormula {L} {α} {n}: QFImpAllFreeFormula L α n→ BoundedFormula L α n:= by sorry -- Joos
 
 -- disjunction and conjuction of disjunctionofatomicblocks
