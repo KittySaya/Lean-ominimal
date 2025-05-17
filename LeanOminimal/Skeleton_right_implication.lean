@@ -270,7 +270,34 @@ def Literal.todisjunctionAtomicblocks {n:ℕ }(l : Literal (order_language[[ℝ]
  let QF:= Atomicblock.equal const ter
  exact QF.todisjunctionAtomicblocks
 
- have F_empty : order_language[[ℝ]].Functions l = Empty := by sorry -- Lily
+ have F_empty : order_language[[ℝ]].Functions l = Empty := by
+    have is_empty : IsEmpty (order_language[[ℝ]].Functions l) := by
+      unfold withConstants
+      unfold Language.sum
+      simp only [order_language, constantsOn_Functions, constantsOnFunc, isEmpty_sum]
+      constructor
+      · exact Empty.instIsEmpty
+      · have l_pred : ∃p : ℕ, p.succ = l := by
+          refine Nat.exists_add_one_eq.mpr ?_
+          exact Nat.zero_lt_of_ne_zero neq
+        rcases l_pred with ⟨l₁, hl⟩
+        subst hl
+        dsimp
+        exact PEmpty.instIsEmpty
+
+    have eq_empty_iff_is_empty {t : Type} : IsEmpty t ↔ t = Empty := by
+      constructor
+      · intro h
+        sorry
+      · intro h
+        subst h
+        exact Empty.instIsEmpty
+
+
+    apply eq_empty_iff_is_empty.mp
+    exact is_empty
+    -- Lily
+
  rw[F_empty] at g
  exact g.elim
 
@@ -347,7 +374,13 @@ def Formulafiniteunion (ψ : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0 ):
 
 @[simp]
 lemma QFimpAllFreeFormulafiniteunion (φ :QFImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) 0 ):
-  Formulafiniteunion φ.toBoundedFormula := by sorry -- Lily
+    Formulafiniteunion φ.toBoundedFormula := by
+  unfold Formulafiniteunion
+  induction' φ with a b c d e f g h i j k l m n o p q r s t u v w x y z
+  · unfold QFImpAllFreeFormula.toBoundedFormula
+
+    sorry
+  repeat1' sorry -- Lily
 
 @[simp]
 
