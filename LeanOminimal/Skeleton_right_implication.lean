@@ -243,8 +243,14 @@ def ImpAllFreeFormula.toBoundedFormula {L} {α} {n} : ImpAllFreeFormula L α n �
 def Atomicblock.toBoundedFormula {L} {α} {n} : (φ : Atomicblock L α n) → BoundedFormula L α n :=
   fun φ => φ.toImpAllFreeFormula.toBoundedFormula
 
-def QFImpAllFreeFormula.toBoundedFormula {L} {α} {n}: QFImpAllFreeFormula L α n→ BoundedFormula L α n:= by sorry -- Joos
-
+-- Joos
+def QFImpAllFreeFormula.toBoundedFormula {L} {α} {n}: QFImpAllFreeFormula L α n→ BoundedFormula L α n
+  | .falsum => .falsum
+  | .equal t₁ t₂ => .equal t₁ t₂
+  | .rel R ts => .rel R ts
+  | .not f => f.toBoundedFormula.imp .falsum
+  | .and f₁ f₂ => (f₁.toBoundedFormula.imp (f₂.toBoundedFormula.imp .falsum)).imp .falsum
+  | .or f₁ f₂ => (f₁.toBoundedFormula.imp .falsum).imp f₂.toBoundedFormula
 -- disjunction and conjuction of disjunctionofatomicblocks
 
 
