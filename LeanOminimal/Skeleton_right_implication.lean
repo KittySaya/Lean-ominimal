@@ -347,9 +347,9 @@ def Literal.todisjunctionAtomicblocks {n:ℕ }(l : Literal (order_language[[ℝ]
 
 
 def Existblock.todisjunctionAtomicblocks {n:ℕ } (block : Existblock (order_language[[ℝ]]) (Fin 1) n ) : disjunctionAtomicblocks (order_language[[ℝ]]) (Fin 1) n := by
-  rcases block with ⟨l⟩ | ⟨l1, l2⟩
+  rcases block with ⟨l⟩ | ⟨l, e⟩
   · exact l.todisjunctionAtomicblocks
-  · exact l1.todisjunctionAtomicblocks.and l2.todisjunctionAtomicblocks
+  · exact l.todisjunctionAtomicblocks.and e.todisjunctionAtomicblocks
 
 
 
@@ -370,6 +370,18 @@ def ImpAllFreeFormula.Realize {L : Language} {α : Type} {M} [L.Structure M] {l}
 lemma ImpAllFreeFormula.Realize_equiv {L : Language} {α : Type} {M} [L.Structure M] {l} (φ : ImpAllFreeFormula L α l) (v : α → M) (xs : Fin l → M) : φ.Realize v xs ↔ φ.toBoundedFormula.Realize v xs := by
   rfl
 
+/--
+The "standard way" to realize an exist block,
+by turning it into a bounded formula through the use of
+ImpAllFreeFormula, and realizing it that way.
+-/
+def Existblock.Realize {L : Language} {α : Type} {M} [L.Structure M] {l} (φ : Existblock L α (l + 1)) (v : α → M) (xs : Fin l → M) : Prop :=
+  φ.toImpAllFreeFormula.toBoundedFormula.Realize v xs
+
+@[simp]
+lemma Existblock.Realize_equiv {L : Language} {α : Type} {M} [L.Structure M] {l} (φ : Existblock L α (l + 1)) (v : α → M) (xs : Fin l → M) : φ.Realize v xs ↔ φ.toImpAllFreeFormula.toBoundedFormula.Realize v xs := by
+  rfl
+
 def Relblock.Realize {L : Language} {α : Type} {M} [L.Structure M] {l} (φ : Relblock L α l) (v : α → M) (xs : Fin l → M) : Prop :=
   φ.toBoundedFormula.Realize v xs
 
@@ -385,20 +397,24 @@ lemma disjunctionAtomicblocks.RealRealize_equiv (φ : disjunctionAtomicblocks (o
   rfl
 
 @[simp]
-lemma compatible (eb: Existblock (order_language[[ℝ]]) (Fin 1) (1)) (x: Fin 1→ ℝ ) :
-    (eb.toImpAllFreeFormula).Realize x (fun i:(Fin 0) => nomatch i)
-      ↔ @eb.todisjunctionAtomicblocks.todisjunctionRelblocks.toBoundedFormula.Realize (order_language[[ℝ]]) ℝ  _ _ _  x (fun i:Fin 0 => nomatch i) := by
+lemma compatible (eb: Existblock (order_language[[ℝ]]) (Fin 1) (1)) (x: Fin 1 → ℝ ) :
+    eb.Realize x (fun i : (Fin 0) => nomatch i)
+      ↔ @eb.todisjunctionAtomicblocks.todisjunctionRelblocks.toBoundedFormula.Realize (order_language[[ℝ]]) ℝ  _ _ _  x (fun i : Fin 0 => nomatch i) := by
   constructor
-  · intro h₁
-    dsimp! at h₁
+  · induction' eb with lit₁ lit_and eb_and eb_and_ih
+    · induction' lit₁ with t₁ t₂ l R ts f f_ih
+      · intro h₁
+        rcases Existblock.lit (Literal.equal t₁ t₂) with l | ⟨l, e⟩
+        ·
+          repeat1' sorry
+        ·
+          sorry
 
-    induction' eb with lit₁ b c d e f g h i j k l m n o p q r s t u v w
-    · dsimp! at *
-      -- unfold BoundedFormula.Realize at *
 
-      sorry
-    ·
-      sorry
+
+
+      repeat1' sorry
+    sorry
 
   · intro h₂
     induction' eb with lit₁ b c d e f g h i j k l m n o p q r s t u v w
