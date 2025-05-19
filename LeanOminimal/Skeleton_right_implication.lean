@@ -262,105 +262,104 @@ def disjunctionAtomicblocks.and
 
 
 
-def Literal.todisjunctionAtomicblocks {n:ℕ }(l : Literal (order_language[[ℝ]]) (Fin 1) n) : disjunctionAtomicblocks (order_language[[ℝ]]) (Fin 1) n := by
- rcases l with ⟨t1 ,t2⟩ | ⟨R, f⟩ | ⟨t1, t2⟩ | ⟨R, f⟩ | f
+def Literal.todisjunctionAtomicblocks {n : ℕ} (l : Literal (order_language[[ℝ]]) (Fin 1) n) : disjunctionAtomicblocks (order_language[[ℝ]]) (Fin 1) n := by
+  rcases l with ⟨t1 ,t2⟩ | ⟨R, f⟩ | ⟨t1, t2⟩ | ⟨R, f⟩ | f
 
 
- rcases t1 with ⟨a1 ⟩ | ⟨f, t1 ⟩
- rcases t2 with ⟨a2 ⟩  | ⟨g, t2⟩
+  rcases t1 with ⟨a1 ⟩ | ⟨f, t1 ⟩
+  rcases t2 with ⟨a2 ⟩  | ⟨g, t2⟩
 
- let QF :=  Atomicblock.equal (@Term.var  (order_language[[ℝ]]) (Fin 1 ⊕ Fin n) a1 ) (@Term.var  (order_language[[ℝ]]) ((Fin 1) ⊕ Fin n) a2)
-
-
- exact QF.todisjunctionAtomicblocks
- let ter := (@Term.var  (order_language[[ℝ]]) ((Fin 1) ⊕ Fin n) a1 )
- rename_i l
- by_cases neq : l=0
- rw [neq] at t2 g
- let const := Term.func g t2
- let QF:= Atomicblock.equal const ter
- exact QF.todisjunctionAtomicblocks
-
- have F_empty : order_language[[ℝ]].Functions l = Empty := by
-    have is_empty : IsEmpty (order_language[[ℝ]].Functions l) := by
-      unfold withConstants
-      unfold Language.sum
-      simp only [order_language, constantsOn_Functions, constantsOnFunc, isEmpty_sum]
-      constructor
-      · exact Empty.instIsEmpty
-      · have l_pred : ∃p : ℕ, p.succ = l := by
-          refine Nat.exists_add_one_eq.mpr ?_
-          exact Nat.zero_lt_of_ne_zero neq
-        rcases l_pred with ⟨l₁, hl⟩
-        subst hl
-        dsimp
-        exact PEmpty.instIsEmpty
-
-    have eq_empty_iff_is_empty {t : Type} : IsEmpty t ↔ t = Empty := by
-      constructor
-      · intro h
-        sorry --Lily
-      · intro h
-        subst h
-        exact Empty.instIsEmpty
+  let QF :=  Atomicblock.equal (@Term.var  (order_language[[ℝ]]) (Fin 1 ⊕ Fin n) a1 ) (@Term.var  (order_language[[ℝ]]) ((Fin 1) ⊕ Fin n) a2)
 
 
-    apply eq_empty_iff_is_empty.mp
-    exact is_empty
-    -- Lily
+  exact QF.todisjunctionAtomicblocks
+  let ter := (@Term.var  (order_language[[ℝ]]) ((Fin 1) ⊕ Fin n) a1 )
+  rename_i l
+  by_cases neq : l=0
+  rw [neq] at t2 g
+  let const := Term.func g t2
+  let QF:= Atomicblock.equal const ter
+  exact QF.todisjunctionAtomicblocks
 
- rw[F_empty] at g
- exact g.elim
+  have F_empty : order_language[[ℝ]].Functions l = Empty := by
+      have is_empty : IsEmpty (order_language[[ℝ]].Functions l) := by
+        unfold withConstants
+        unfold Language.sum
+        simp only [order_language, constantsOn_Functions, constantsOnFunc, isEmpty_sum]
+        constructor
+        · exact Empty.instIsEmpty
+        · have l_pred : ∃p : ℕ, p.succ = l := by
+            refine Nat.exists_add_one_eq.mpr ?_
+            exact Nat.zero_lt_of_ne_zero neq
+          rcases l_pred with ⟨l₁, hl⟩
+          subst hl
+          dsimp
+          exact PEmpty.instIsEmpty
 
- rename_i l
-
-
- by_cases neq : l=0
- rw [neq] at f t1
- let const1 := Term.func f t1
- let QF:= Atomicblock.equal const1 t2
- exact QF.todisjunctionAtomicblocks
-
- have F_empty : order_language[[ℝ]].Functions l = Empty := by sorry -- Lily
- rw [F_empty] at f
- exact f.elim
- let QF :=  Atomicblock.rel R f
- exact QF.todisjunctionAtomicblocks
-
- let QF1 := Atomicblock.rel (Sum.inl ordsymbol.lt) (fun (i:Fin 2)=>  if i=0 then t1 else t2  )
- let QF2 := Atomicblock.rel (Sum.inl ordsymbol.lt) (fun (i:Fin 2)=> if i=0 then t2 else t1 )
- exact disjunctionAtomicblocks.or QF1.todisjunctionAtomicblocks QF2.todisjunctionAtomicblocks
- rename_i l
- by_cases neq: l=2
- let ter1:= f ⟨0, by linarith⟩
- let ter2 := f ⟨1, by linarith⟩
- let QF1 := Atomicblock.rel (Sum.inl ordsymbol.lt) (fun (i:Fin 2)=>  if i=0 then ter2 else ter1  )
- let QF2 := Atomicblock.equal ter1 ter2
- exact disjunctionAtomicblocks.or QF1.todisjunctionAtomicblocks QF2.todisjunctionAtomicblocks
- exfalso
- have R_empty : order_language[[ℝ]].Relations l = Empty := by sorry -- Lily
+      have eq_empty_iff_is_empty {t : Type} : IsEmpty t ↔ t = Empty := by
+        constructor
+        · intro h
+          sorry --Lily
+        · intro h
+          subst h
+          exact Empty.instIsEmpty
 
 
- rw [R_empty] at R
- exact R.elim
- exact f.todisjunctionAtomicblocks
+      apply eq_empty_iff_is_empty.mp
+      exact is_empty
+      -- Lily
+
+  rw[F_empty] at g
+  exact g.elim
+
+  rename_i l
 
 
-def Existblock.todisjunctionAtomicblocks {n:ℕ } (block : Existblock (order_language[[ℝ]]) (Fin 1) n ) : disjunctionAtomicblocks (order_language[[ℝ]]) (Fin 1) n := by
-  rcases block with ⟨l⟩ | ⟨l, e⟩
-  · exact l.todisjunctionAtomicblocks
-  · exact l.todisjunctionAtomicblocks.and e.todisjunctionAtomicblocks
+  by_cases neq : l=0
+  rw [neq] at f t1
+  let const1 := Term.func f t1
+  let QF:= Atomicblock.equal const1 t2
+  exact QF.todisjunctionAtomicblocks
+
+  have F_empty : order_language[[ℝ]].Functions l = Empty := by sorry -- Lily
+  rw [F_empty] at f
+  exact f.elim
+  let QF :=  Atomicblock.rel R f
+  exact QF.todisjunctionAtomicblocks
+
+  let QF1 := Atomicblock.rel (Sum.inl ordsymbol.lt) (fun (i:Fin 2)=>  if i=0 then t1 else t2  )
+  let QF2 := Atomicblock.rel (Sum.inl ordsymbol.lt) (fun (i:Fin 2)=> if i=0 then t2 else t1 )
+  exact disjunctionAtomicblocks.or QF1.todisjunctionAtomicblocks QF2.todisjunctionAtomicblocks
+  rename_i l
+  by_cases neq: l=2
+  let ter1:= f ⟨0, by linarith⟩
+  let ter2 := f ⟨1, by linarith⟩
+  let QF1 := Atomicblock.rel (Sum.inl ordsymbol.lt) (fun (i:Fin 2)=>  if i=0 then ter2 else ter1  )
+  let QF2 := Atomicblock.equal ter1 ter2
+  exact disjunctionAtomicblocks.or QF1.todisjunctionAtomicblocks QF2.todisjunctionAtomicblocks
+  exfalso
+  have R_empty : order_language[[ℝ]].Relations l = Empty := by sorry -- Lily
+
+
+  rw [R_empty] at R
+  exact R.elim
+  exact f.todisjunctionAtomicblocks
+
+
+  def Existblock.todisjunctionAtomicblocks {n:ℕ } (block : Existblock (order_language[[ℝ]]) (Fin 1) n ) : disjunctionAtomicblocks (order_language[[ℝ]]) (Fin 1) n := by
+    rcases block with ⟨l⟩ | ⟨l, e⟩
+    · exact l.todisjunctionAtomicblocks
+    · exact l.todisjunctionAtomicblocks.and e.todisjunctionAtomicblocks
 
 
 
 def Atomicblock.toRelblock  (block : Atomicblock (order_language[[ℝ]]) (Fin 1) (1)) : Relblock (order_language[[ℝ]]) (Fin 1) 0 := by sorry -- Niels
 
 def disjunctionAtomicblocks.todisjunctionRelblocks :disjunctionAtomicblocks (order_language[[ℝ]]) (Fin 1) (1)→ disjunctionRelblocks (order_language[[ℝ]]) (Fin 1) (0):= by
-intro disA
-rcases disA with ⟨atom ⟩ | ⟨d1, d2 ⟩
-exact (disjunctionRelblocks.relb (Atomicblock.toRelblock atom))
-
-exact disjunctionRelblocks.or (d1.todisjunctionRelblocks) (d2.todisjunctionRelblocks)
+  intro disA
+  rcases disA with atom | ⟨d1, d2⟩
+  · exact (disjunctionRelblocks.relb (Atomicblock.toRelblock atom))
+  · exact disjunctionRelblocks.or (d1.todisjunctionRelblocks) (d2.todisjunctionRelblocks)
 
 
 def ImpAllFreeFormula.Realize {L : Language} {α : Type} {M} [L.Structure M] {l} (φ : ImpAllFreeFormula L α l) (v : α → M) (xs : Fin l → M) : Prop :=
