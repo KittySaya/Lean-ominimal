@@ -149,11 +149,10 @@ inductive Literal (L : Language) (α : Type) (n : ℕ) : Type _
   | rel {l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : Literal L α n
   | not (f : Literal L α n) : Literal L α n
 
+-- def Existblock (L : Language) (α : Type) (m : ℕ) := List (Literal L α m)
 inductive Existblock (L : Language) (α : Type) (m : ℕ) : Type _
-| lit (l: Literal L α m) : Existblock L α m
-| and (l1 l2: Literal L α m) : Existblock L α m
-
-
+  | lit (l: Literal L α m) : Existblock L α m
+  | and (l : Literal L α m) (e : Existblock L α m) : Existblock L α m
 
 inductive Atomicblock (L : Language) (α : Type) : ℕ → Type _
   | truth {n} : Atomicblock L α n
@@ -288,7 +287,7 @@ def Literal.todisjunctionAtomicblocks {n:ℕ }(l : Literal (order_language[[ℝ]
     have eq_empty_iff_is_empty {t : Type} : IsEmpty t ↔ t = Empty := by
       constructor
       · intro h
-        sorry
+        sorry --Lily
       · intro h
         subst h
         exact Empty.instIsEmpty
@@ -357,7 +356,10 @@ lemma compatible (block: Existblock (order_language[[ℝ]]) (Fin 1) (1)) (x: Fin
       ↔ @block.todisjunctionAtomicblocks.todisjunctionRelblocks.toBoundedFormula.Realize (order_language[[ℝ]]) ℝ  _ _ _  x (fun i:Fin 0 => nomatch i) := by
   constructor
   · intro h
-    sorry
+    induction' block with lit₁ b c d e f g h i j k l m n o p q r s t u v w
+    ·
+      sorry
+    repeat1' sorry
   · sorry -- Lily
 
 @[simp]
