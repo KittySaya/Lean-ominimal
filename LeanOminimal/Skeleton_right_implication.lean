@@ -446,10 +446,50 @@ def Formulafiniteunion (ψ : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0 ):
   ({x : ℝ | @ψ.Realize (order_language[[ℝ]]) ℝ  _ _ _  (fun _: Fin 1=> x) (fun i:Fin 0 => nomatch i)})
 
 @[simp]
-lemma QFimpAllFreeFormulafiniteunion (φ :QFImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) 0 ):
+lemma QFimpAllFreeFormulafiniteunion (φ : QFImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) 0 ):
     Formulafiniteunion φ.toBoundedFormula := by
   unfold Formulafiniteunion
-  induction' φ with a b c d e f g h i j k l m n o p q r s t u v w x y z
+  induction' φ with a b c d e not_formula ih_not_formula h i j k l m n o p q r s t u v w x y z
+  · unfold QFImpAllFreeFormula.toBoundedFormula
+    show DLO.interval.is_finite_union_of_intervalsP ∅
+    exact DLO.interval.is_finite_union_of_intervalsP.empty
+
+  · dsimp!
+    by_cases h : a = b
+    · have is_entire : {x | @Term.realize (order_language[[ℝ]]) ℝ _ _ (Sum.elim (fun x_1 : Fin 1 ↦ x) (fun i : Fin 0 ↦ nomatch i)) a = Term.realize (Sum.elim (fun x_1 : Fin 1 ↦ x) (fun i : Fin 0 ↦ nomatch i)) b} = univ := by
+        ext x
+        constructor
+        · intro h₁
+          exact trivial
+        · intro h
+          clear h
+          rw [Set.mem_setOf]
+          sorry --!!! - Need assistance...
+
+      rw [is_entire]
+      have h : DLO.interval.is_finite_union_of_intervalsP (univ : Set ℝ) := by
+        sorry -- Proven in the new documents.
+
+      exact h
+
+    · have is_empty : {x | @Term.realize (order_language[[ℝ]]) ℝ _ _ (Sum.elim (fun x_1 : Fin 1 ↦ x) (fun i : Fin 0 ↦ nomatch i)) a = Term.realize (Sum.elim (fun x_1 : Fin 1 ↦ x) (fun i : Fin 0 ↦ nomatch i)) b} = ∅ := by
+        ext x
+        constructor
+        · intro h₁
+          rw [Set.mem_setOf] at h₁
+          exfalso
+          apply h
+          clear h
+          sorry --!!! - Need assistance...
+        · intro h₁
+          exfalso
+          exact h₁
+
+      rw [is_empty]
+      exact DLO.interval.is_finite_union_of_intervalsP.empty
+
+  ·
+    sorry
   · unfold QFImpAllFreeFormula.toBoundedFormula
 
     sorry
