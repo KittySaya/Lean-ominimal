@@ -371,6 +371,11 @@ def Literal.todisjunctionAtomicblocks {n:ℕ }(l : Literal (order_language[[ℝ]
 
  exact f.todisjunctionAtomicblocks
 
+def reindex (i : Fin 1 ⊕ Fin 1) : Fin 1 ⊕ Fin 0 :=
+ Sum.inl (match i with
+  | Sum.inl x => x
+  | Sum.inr x => x)
+
 
 
 def varelimAtomicblock (i: Fin 1 ⊕ Fin 1 ) (ter : order_language[[ℝ]].Term (Fin 1 ⊕ Fin 0)): Atomicblock (order_language[[ℝ]]) (Fin 1) 1 →  Relblock (order_language[[ℝ]]) (Fin 1) 0:= by 
