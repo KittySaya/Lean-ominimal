@@ -41,7 +41,7 @@ def upper (b : X): Set X :=
   { x:X | x<₀b }
 
 /--
-The interval `[a, a]`.
+The interval `[a, a]`, i.e., the interval set `{a}`.
 -/
 @[simp]
 def singleton (a : X): Set X :=
@@ -66,7 +66,7 @@ lemma mem_singleton_iff {a : X} (x : X) : x ∈ singleton a ↔ x = a := by
   exact mem_def
 
 /--
-This property expresses the fact that a subset of X is a finite union of intervals or singletons.
+This property expresses the fact that a subset of X is a finite union of (open) intervals or singletons.
 -/
 inductive is_finite_union_of_intervalsP : Set X → Prop where
   | empty   : is_finite_union_of_intervalsP ∅
@@ -77,6 +77,9 @@ inductive is_finite_union_of_intervalsP : Set X → Prop where
   | union   : ∀ U V : Set X, is_finite_union_of_intervalsP U → is_finite_union_of_intervalsP V → is_finite_union_of_intervalsP (U ∪ V)
 
 
+/--
+The entire set is a finite union of intervals.
+-/
 @[simp]
 lemma is_finite_union_of_intervalsP.entire : is_finite_union_of_intervalsP (@univ X : Set X) := by
   by_cases inhabited_X : ∃x : X, True
@@ -129,6 +132,10 @@ lemma is_finite_union_of_intervalsP.entire : is_finite_union_of_intervalsP (@uni
     exact empty
 
 
+/--
+Given two finite union of intervals `U` and `V`, their intersection
+`U ∩ V` is also a finite union of intervals.
+-/
 @[simp]
 lemma is_finite_union_of_intervalsP.intersection {U V : Set X} (hU : is_finite_union_of_intervalsP U) (hV : is_finite_union_of_intervalsP V) : is_finite_union_of_intervalsP (U ∩ V) := by
   have point_left {c : X} {U : Set X} : is_finite_union_of_intervalsP (U ∩ singleton c) := by
@@ -234,6 +241,10 @@ lemma is_finite_union_of_intervalsP.intersection {U V : Set X} (hU : is_finite_u
 
 
 
+/--
+Given a finite union of intervals `U`, their complement
+`Uᶜ` is also a finite union of intervals.
+-/
 @[simp]
 lemma is_finite_union_of_intervalsP.complement {U : Set X} (hU : is_finite_union_of_intervalsP U) : is_finite_union_of_intervalsP Uᶜ := by
   induction' hU with a b a a a V W hV hU V_ih W_ih

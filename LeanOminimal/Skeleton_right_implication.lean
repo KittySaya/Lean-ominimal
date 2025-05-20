@@ -177,8 +177,8 @@ inductive Relblock (L : Language) (α : Type) : ℕ → Type _
 
 
 inductive disjunctionRelblocks (L : Language)  (α : Type) : ℕ → Type _
-  | relb  {m:ℕ } (r: Relblock L α m): disjunctionRelblocks L α m
-  | or {m:ℕ } (f1 f2 :disjunctionRelblocks L α m ): disjunctionRelblocks L α m
+  | relb  {m : ℕ} (r: Relblock L α m) : disjunctionRelblocks L α m
+  | or {m : ℕ} (f1 f2 :disjunctionRelblocks L α m ): disjunctionRelblocks L α m
 
 
 --- All inclusions of types:
@@ -216,17 +216,36 @@ def Atomicblock.todisjunctionAtomicblocks {m : ℕ}{L} {α} (a: Atomicblock L α
 disjunctionAtomicblocks.atom a
 
 def Relblock.toBoundedFormula {L} {α} {n}: Relblock L α n→ BoundedFormula L α n
- | truth => BoundedFormula.falsum.imp  BoundedFormula.falsum
+ | truth => BoundedFormula.falsum.imp BoundedFormula.falsum
  | falsum => BoundedFormula.falsum
  | .rel R ts => .rel R ts
- | .and t1 t2 => (t1.toBoundedFormula.imp (t2.toBoundedFormula.imp BoundedFormula.falsum)).imp BoundedFormula.falsum
+ | .and t1 t2 => t1.toBoundedFormula ⊓ t2.toBoundedFormula
+ -- | .and t1 t2 => (t1.toBoundedFormula.imp (t2.toBoundedFormula.imp BoundedFormula.falsum)).imp BoundedFormula.falsum
 
 
-def disjunctionRelblocks.toBoundedFormula {L} {α} {n}: disjunctionRelblocks L α n→ BoundedFormula L α n := by
+/--
+Sends a disjunction of rel blocks to a disjunction of the falsum formula.
+-/
+def disjunctionRelblocks.toBoundedFormula {L} {α} {n} : disjunctionRelblocks L α n → BoundedFormula L α n := by
   intro disj
-  rcases disj with _ | ⟨ rel, dis⟩
+  rcases disj with _ | ⟨rel, dis⟩
+  -- rcases disj with rel | ⟨rel, dis⟩
   exact BoundedFormula.falsum
-  exact (rel.toBoundedFormula.imp BoundedFormula.falsum).imp dis.toBoundedFormula
+  -- exact rel.toBoundedFormula
+  -- exact (rel.toBoundedFormula.imp BoundedFormula.falsum).imp dis.toBoundedFormula
+  exact rel.toBoundedFormula ⊔ dis.toBoundedFormula
+
+/--
+Show that it's essentially sending everything to a falsum.
+-/
+lemma disjunctionRelblocks.toBoundedFormula.wrong_definition {L} {α} {n} (φ : disjunctionRelblocks L α n) : φ.toBoundedFormula = BoundedFormula.falsum := by
+  induction' φ with rel f1 f2 f1_ih f2_ih
+  · -- sorry
+    exact rfl
+  · dsimp!
+    rw [f1_ih, f2_ih]
+    -- Maybe not *equal* equal, but *essentially the same* equal.
+    sorry
 
 def Existblock.toImpAllFreeFormulaWithoutExists {L} {α} {n}: Existblock L α (n + 1) → ImpAllFreeFormula L α (n + 1)
   | .lit l => l.toImpAllFreeFormula -- Joos
@@ -554,7 +573,7 @@ def disjunctionAtomicblocks.todisjunctionRelblocks : disjunctionAtomicblocks (or
   exact disjunctionRelblocks.or (d1.todisjunctionRelblocks) (d2.todisjunctionRelblocks)
 
 
-def Existblock.todisjunctionAtomicblocks {n : ℕ} (block : Existblock (order_language[[ℝ]]) (Fin 1) n ) : disjunctionAtomicblocks (order_language[[ℝ]]) (Fin 1) n:= by
+def Existblock.todisjunctionAtomicblocks {n : ℕ} (block : Existblock (order_language[[ℝ]]) (Fin 1) n ) : disjunctionAtomicblocks (order_language[[ℝ]]) (Fin 1) n := by
   rcases block with l | ⟨l1, l2⟩
   exact l.todisjunctionAtomicblocks
   exact l1.todisjunctionAtomicblocks.and l2.todisjunctionAtomicblocks
@@ -587,8 +606,10 @@ lemma disjunctionAtomicblocks.RealRealize_equiv (φ : disjunctionAtomicblocks (o
   rfl
 
 
--- lemma Existblock.todisjunctionAtomicblocks.todisjunctionRelblocks.toBoundedFormula.equal_equiv {t₁ t₂ : order_language[[ℝ]].Term (Fin 1 ⊕ Fin 1)} {x : Fin 1 → ℝ} : (Existblock.lit (Literal.equal t₁ t₂)).todisjunctionAtomicblocks.todisjunctionRelblocks.toBoundedFormula = BoundedFormula.equal t₁ t₂ := by
---   sorry
+lemma Existblock.todisjunctionAtomicblocks.todisjunctionRelblocks.toBoundedFormula.equal_equiv {t₁ t₂ : order_language[[ℝ]].Term (Fin 1 ⊕ Fin 1)} {x : Fin 1 → ℝ} :
+    -- (Existblock.lit (Literal.equal t₁ t₂)).todisjunctionAtomicblocks.todisjunctionRelblocks.toBoundedFormula = @BoundedFormula.equal _ _ _ t₁ t₂ := by
+    False :=
+  sorry
 
 
 @[simp]
@@ -613,7 +634,9 @@ lemma compatible (eb: Existblock (order_language[[ℝ]]) (Fin 1) (1)) (x: Fin 1 
   · intro h₂
     induction' eb with lit₁ lit_and eb_and eb_and_ih
     · dsimp! at *
-      sorry
+      induction' lit₁ with t₁ t₂ l R ts f f_ih
+
+      repeat1' sorry
 
     ·
       sorry --Lily? Need help...
