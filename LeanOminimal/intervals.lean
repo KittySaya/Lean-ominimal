@@ -130,8 +130,59 @@ lemma is_finite_union_of_intervalsP.entire : is_finite_union_of_intervalsP (@uni
 
 
 @[simp]
-lemma is_finite_union_of_intervalsP.intersection {U V : Set X} (hU : is_finite_union_of_intervalsP U) (hV : is_finite_union_of_intervalsP V) : is_finite_union_of_intervalsP U ∩ V := by
-  sorry
+lemma is_finite_union_of_intervalsP.intersection {U V : Set X} (hU : is_finite_union_of_intervalsP U) (hV : is_finite_union_of_intervalsP V) : is_finite_union_of_intervalsP (U ∩ V) := by
+  induction' hU with a b a a a U₁ U₂ hU₁ hU₂ U₁_ih U₂_ih
+  · rw [empty_inter V]
+    exact is_finite_union_of_intervalsP.empty
+
+  repeat' induction' hV with c d c c c V₁ V₂ hV₁ hV₂ V₁_ih V₂_ih
+  · rw [inter_empty]
+    exact is_finite_union_of_intervalsP.empty
+
+  · rcases DLO.total a c with ac_less | ac_eq | ac_more
+    · have this : interval.bounded a b ∩ interval.bounded c d = interval.bounded c b ∩ interval.bounded c d := by
+        refine inter_congr_right ?_ ?_
+        · intro x hx
+          rw [mem_inter_iff] at hx
+          repeat rw [mem_bounded_iff] at *
+          rcases hx with ⟨⟨c_lt, lt_b⟩, ⟨c_lt, lt_d⟩⟩
+          constructor
+          · apply DLO.trans a c x
+            assumption'
+          · assumption
+        · intro x hx
+          rw [mem_inter_iff] at hx
+          repeat rw [mem_bounded_iff] at *
+          rcases hx with ⟨⟨a_lt, lt_b⟩, ⟨c_lt, lt_d⟩⟩
+          trivial
+
+      rw [this]
+      rcases DLO.total b d with bd_less | bd_eq | bd_more
+      · have thiss : interval.bounded c b ∩ interval.bounded c d = interval.bounded c b := by
+          refine inter_eq_left.mpr ?_
+          intro x hx
+          repeat rw [mem_bounded_iff] at *
+          rcases hx with ⟨c_lt, lt_b⟩
+          constructor
+          · assumption
+          · apply DLO.trans x b d
+            assumption'
+
+        rw [thiss]
+        exact bounded c b
+
+      repeat1' sorry
+
+    repeat1' sorry
+
+  repeat1' sorry
+  -- The statement is largely obvious but tedious to implement.
+  -- Unless either of you is keen on proving all 30 different cases.
+  -- The other strategy is to proof it works for complement, and use
+  -- (U ∩ V) = (U ∩ V)ᶜᶜ = (Uᶜ ∪ Vᶜ)ᶜ
+  -- And use; it holds for U and V, so for Uᶜ and Vᶜ, so for their union, so for their complement.
+  -- But I couldn't find a way to prove it holds for the complement of a union
+  -- without proving it holds for an intersection.
 
 
 
@@ -408,6 +459,10 @@ lemma is_finite_union_of_intervalsP.complement {U : Set X} (hU : is_finite_union
     exact upper a
 
 
-  · sorry
+  · have : (V ∪ W)ᶜ = Vᶜ ∩ Wᶜ := by
+      apply compl_union
+    rw [this]
+    apply is_finite_union_of_intervalsP.intersection
+    assumption'
 
 end DLO.interval
