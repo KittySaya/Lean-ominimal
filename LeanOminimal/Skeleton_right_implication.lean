@@ -616,7 +616,7 @@ lemma compatible (eb: Existblock (order_language[[ℝ]]) (Fin 1) (1)) (x: Fin 1 
       sorry
 
     ·
-      sorry
+      sorry --Lily? Need help...
 
 
 
