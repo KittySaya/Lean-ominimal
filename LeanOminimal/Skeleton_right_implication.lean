@@ -608,12 +608,12 @@ lemma compatible (eb: Existblock (order_language[[ℝ]]) (Fin 1) (1)) (x: Fin 1 
     sorry
 
   · intro h₂
-    induction' eb with lit₁ b c d e f g h i j k l m n o p q r s t u v w
+    induction' eb with lit₁ lit_and eb_and eb_and_ih
     · dsimp! at *
-
       sorry
 
-    · sorry
+    ·
+      sorry
      -- Lily
 
 
@@ -639,7 +639,7 @@ def Formulafiniteunion (ψ : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0 ):
 lemma QFimpAllFreeFormulafiniteunion (φ : QFImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) 0 ):
     Formulafiniteunion φ.toBoundedFormula := by
   unfold Formulafiniteunion
-  induction' φ with a b c d e not_formula ih_not_formula h i j k l m n o p q r s t u v w x y z
+  induction' φ with a b l R ts not_formula ih_not_formula or_left or_right orl_ih orr_ih and_left and_right andr_ih andl_ih
   · unfold QFImpAllFreeFormula.toBoundedFormula
     show DLO.interval.is_finite_union_of_intervalsP ∅
     exact DLO.interval.is_finite_union_of_intervalsP.empty
@@ -678,8 +678,11 @@ lemma QFimpAllFreeFormulafiniteunion (φ : QFImpAllFreeFormula (order_language[[
       rw [is_empty]
       exact DLO.interval.is_finite_union_of_intervalsP.empty
 
-  ·
-    sorry
+  · unfold QFImpAllFreeFormula.toBoundedFormula
+    dsimp!
+    sorry -- !!! - Need assistance...
+
+
   · unfold QFImpAllFreeFormula.toBoundedFormula
     have this : {x : ℝ | (∼not_formula.toBoundedFormula).Realize (fun x_1 : Fin 1 ↦ x) fun i ↦ nomatch i} = {x | (not_formula.toBoundedFormula).Realize (fun x_1 ↦ x) fun i ↦ nomatch i}ᶜ := by
       exact rfl
@@ -693,25 +696,40 @@ lemma QFimpAllFreeFormulafiniteunion (φ : QFImpAllFreeFormula (order_language[[
 
 
   · unfold QFImpAllFreeFormula.toBoundedFormula
-    have this : {x : ℝ | (∼not_formula.toBoundedFormula).Realize (fun x_1 : Fin 1 ↦ x) fun i ↦ nomatch i} = {x | (not_formula.toBoundedFormula).Realize (fun x_1 ↦ x) fun i ↦ nomatch i}ᶜ := by
-      exact rfl
+    have this : {x : ℝ | (or_left.toBoundedFormula ⊔ or_right.toBoundedFormula).Realize (fun x_1 ↦ x) fun i ↦ nomatch i} =
+                 {x | or_left.toBoundedFormula.Realize (fun x_1 ↦ x) fun i ↦ nomatch i} ∪ {x | or_right.toBoundedFormula.Realize (fun x_1 ↦ x) fun i ↦ nomatch i} := by
+      ext x
+      rw [mem_union]
+      repeat rw [mem_setOf]
+      exact BoundedFormula.realize_sup
 
     rw [this]
-    have h {U} : DLO.interval.is_finite_union_of_intervalsP (U : Set ℝ) → DLO.interval.is_finite_union_of_intervalsP (Uᶜ : Set ℝ) := by
-        sorry -- Proven in the new documents.
+    apply DLO.interval.is_finite_union_of_intervalsP.union
+    assumption'
+
+
+  · unfold QFImpAllFreeFormula.toBoundedFormula
+    have this : {x : ℝ | (and_left.toBoundedFormula ⊓ and_right.toBoundedFormula).Realize (fun x_1 ↦ x) fun i ↦ nomatch i} =
+                 {x | and_left.toBoundedFormula.Realize (fun x_1 ↦ x) fun i ↦ nomatch i} ∩ {x | and_right.toBoundedFormula.Realize (fun x_1 ↦ x) fun i ↦ nomatch i} := by
+      ext x
+      rw [mem_inter_iff]
+      repeat rw [mem_setOf]
+      exact BoundedFormula.realize_inf
+
+    rw [this]
+    have h {U V} : DLO.interval.is_finite_union_of_intervalsP (U : Set ℝ) → DLO.interval.is_finite_union_of_intervalsP (V : Set ℝ) → DLO.interval.is_finite_union_of_intervalsP (U ∩ V : Set ℝ) := by
+        sorry -- Sorry'd in the new documents.
 
     apply h
-    assumption
-
-  repeat1' sorry -- Lily
-
-@[simp]
+    assumption'
+  -- Lily
 
 
 
 -- Joos
-lemma formulaequiv (φ ψ : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0 ):
-(∀ x:ℝ,  ψ.Realize (fun _: Fin 1=> x) (fun i:Fin 0 => nomatch i) ↔ φ.Realize (fun _: Fin 1=> x) (fun i:Fin 0 => nomatch i)) → (Formulafiniteunion φ ↔ Formulafiniteunion ψ) := by
+@[simp]
+lemma formulaequiv (φ ψ : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0 ) :
+    (∀ x:ℝ,  ψ.Realize (fun _: Fin 1=> x) (fun i:Fin 0 => nomatch i) ↔ φ.Realize (fun _: Fin 1=> x) (fun i:Fin 0 => nomatch i)) → (Formulafiniteunion φ ↔ Formulafiniteunion ψ) := by
   intro hyp
   unfold Formulafiniteunion at *
 
@@ -726,28 +744,29 @@ lemma formulaequiv (φ ψ : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0 ):
     rw [this]
     exact psi
 
+
 def Formulaisbounded  (φ : Formula (order_language[[ℝ]]) (Fin 1)  ) : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0 :=
   (by simp : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0  =Formula (order_language[[ℝ]]) (Fin 1)  ) ▸ φ
 
 
 theorem definable_sets_left:  ∀ (U: Set (ℝ )), isDefinable order_language U  → DLO.interval.is_finite_union_of_intervalsP U:= by
-intro u def_u
-rcases def_u with ⟨φ', set_eq  ⟩
+  intro u def_u
+  rcases def_u with ⟨φ', set_eq  ⟩
 
-have langhom: order_language[[@univ ℝ]] = order_language[[ℝ]] := by sorry -- donderdag Johan
+  have langhom: order_language[[@univ ℝ]] = order_language[[ℝ]] := by sorry -- donderdag Johan
 
-rw [langhom] at φ'
+  rw [langhom] at φ'
 
-let φ := Formulaisbounded φ'
-let ψ := QFImpAllFreeFormula.toBoundedFormula ((BoundedFormula.toImpAllFreeFormula φ).toQFImpAllFreeFormula)
+  let φ := Formulaisbounded φ'
+  let ψ := QFImpAllFreeFormula.toBoundedFormula ((BoundedFormula.toImpAllFreeFormula φ).toQFImpAllFreeFormula)
 
-have ψfin : Formulafiniteunion ψ :=
-    QFimpAllFreeFormulafiniteunion ((BoundedFormula.toImpAllFreeFormula φ).toQFImpAllFreeFormula)
+  have ψfin : Formulafiniteunion ψ :=
+      QFimpAllFreeFormulafiniteunion ((BoundedFormula.toImpAllFreeFormula φ).toQFImpAllFreeFormula)
 
 
-have φfin : Formulafiniteunion φ := ((formulaequiv  ψ φ  (compatible2 φ))).1 ψfin
+  have φfin : Formulafiniteunion φ := ((formulaequiv  ψ φ  (compatible2 φ))).1 ψfin
 
-unfold Formulafiniteunion at φfin
-have  seteq :u = {x | φ.Realize (fun x_1 ↦ x) fun i ↦ nomatch i}:=by sorry --
-rw[seteq]
-exact φfin
+  unfold Formulafiniteunion at φfin
+  have  seteq :u = {x | φ.Realize (fun x_1 ↦ x) fun i ↦ nomatch i}:=by sorry --
+  rw[seteq]
+  exact φfin

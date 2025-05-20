@@ -135,9 +135,55 @@ lemma is_finite_union_of_intervalsP.intersection {U V : Set X} (hU : is_finite_u
   · rw [empty_inter V]
     exact is_finite_union_of_intervalsP.empty
 
+  case point =>
+    by_cases h : a ∈ V
+    · have : singleton a ∩ V = singleton a := by
+        refine inter_eq_left.mpr ?_
+        intro x hx
+        rw [mem_singleton_iff] at hx
+        subst hx
+        assumption
+      rw [this]
+      exact point a
+
+    · have : singleton a ∩ V = ∅ := by
+        refine Disjoint.inter_eq ?_
+        exact disjoint_singleton_left.mpr h
+      rw [this]
+      exact empty
+
+  case union =>
+    rw [union_inter_distrib_right]
+    apply union
+    assumption'
+
   repeat' induction' hV with c d c c c V₁ V₂ hV₁ hV₂ V₁_ih V₂_ih
-  · rw [inter_empty]
+  repeat' case empty =>
+    rw [inter_empty]
     exact is_finite_union_of_intervalsP.empty
+
+  -- repeat' case point => -- For this one we need to 'anonymize' whatever case we have of U.
+  --   show is_finite_union_of_intervalsP (U ∩ singleton c)
+  --   by_cases h : c ∈ U
+  --   · have : singleton c ∩ U = singleton c := by
+  --       refine inter_eq_left.mpr ?_
+  --       intro x hx
+  --       rw [mem_singleton_iff] at hx
+  --       subst hx
+  --       assumption
+  --     rw [this]
+  --     exact point c
+
+  --   · have : singleton c ∩ U = ∅ := by
+  --       refine Disjoint.inter_eq ?_
+  --       exact disjoint_singleton_left.mpr h
+  --     rw [this]
+  --     exact empty
+
+  repeat' case union =>
+    rw [inter_union_distrib_left]
+    apply union
+    assumption'
 
   · rcases DLO.total a c with ac_less | ac_eq | ac_more
     · have this : interval.bounded a b ∩ interval.bounded c d = interval.bounded c b ∩ interval.bounded c d := by
