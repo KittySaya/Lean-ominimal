@@ -165,20 +165,20 @@ inductive Atomicblock (L : Language) (α : Type) : ℕ → Type _
 
 
 inductive disjunctionAtomicblocks (L : Language)  (α : Type) : ℕ → Type _
-  | atom  {m:ℕ } (a:Atomicblock L α m): disjunctionAtomicblocks L α m
-  | or {m:ℕ } (  f1 f2 :disjunctionAtomicblocks L α m ): disjunctionAtomicblocks L α m
+  | atom {m : ℕ} (a : Atomicblock L α m): disjunctionAtomicblocks L α m
+  | or {m : ℕ} (f1 f2 :disjunctionAtomicblocks L α m ): disjunctionAtomicblocks L α m
 
 
 inductive Relblock (L : Language) (α : Type) : ℕ → Type _
-  | truth {n}  :  Relblock L α n
+  | truth  {n} : Relblock L α n
   | falsum {n} : Relblock L α n
-  | rel   {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : Relblock L α n
-  | and   {n : ℕ} (f1 f2 : Relblock L α n) : Relblock L α n
+  | rel {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : Relblock L α n
+  | and {n : ℕ} (f1 f2 : Relblock L α n) : Relblock L α n
 
 
 inductive disjunctionRelblocks (L : Language)  (α : Type) : ℕ → Type _
-| relb  {m:ℕ } (r: Relblock L α m): disjunctionRelblocks L α m
-| or {m:ℕ } (f1 f2 :disjunctionRelblocks L α m ): disjunctionRelblocks L α m
+  | relb  {m:ℕ } (r: Relblock L α m): disjunctionRelblocks L α m
+  | or {m:ℕ } (f1 f2 :disjunctionRelblocks L α m ): disjunctionRelblocks L α m
 
 
 --- All inclusions of types:
@@ -546,7 +546,7 @@ def Atomicblock.toRelblock (block : Atomicblock (order_language[[ℝ]]) (Fin 1) 
 
 
 
-def disjunctionAtomicblocks.todisjunctionRelblocks :disjunctionAtomicblocks (order_language[[ℝ]]) (Fin 1) (1)→ disjunctionRelblocks (order_language[[ℝ]]) (Fin 1) (0):= by
+def disjunctionAtomicblocks.todisjunctionRelblocks : disjunctionAtomicblocks (order_language[[ℝ]]) (Fin 1) (1) → disjunctionRelblocks (order_language[[ℝ]]) (Fin 1) (0):= by
   intro disA
   rcases disA with ⟨atom ⟩ | ⟨d1, d2 ⟩
   exact (disjunctionRelblocks.relb (Atomicblock.toRelblock atom))
@@ -554,8 +554,8 @@ def disjunctionAtomicblocks.todisjunctionRelblocks :disjunctionAtomicblocks (ord
   exact disjunctionRelblocks.or (d1.todisjunctionRelblocks) (d2.todisjunctionRelblocks)
 
 
-def Existblock.todisjunctionAtomicblocks {n:ℕ } (block : Existblock (order_language[[ℝ]]) (Fin 1) n ) : disjunctionAtomicblocks (order_language[[ℝ]]) (Fin 1) n:= by
-  rcases block with ⟨ l⟩ | ⟨l1, l2 ⟩
+def Existblock.todisjunctionAtomicblocks {n : ℕ} (block : Existblock (order_language[[ℝ]]) (Fin 1) n ) : disjunctionAtomicblocks (order_language[[ℝ]]) (Fin 1) n:= by
+  rcases block with l | ⟨l1, l2⟩
   exact l.todisjunctionAtomicblocks
   exact l1.todisjunctionAtomicblocks.and l2.todisjunctionAtomicblocks
 
@@ -587,6 +587,10 @@ lemma disjunctionAtomicblocks.RealRealize_equiv (φ : disjunctionAtomicblocks (o
   rfl
 
 
+-- lemma Existblock.todisjunctionAtomicblocks.todisjunctionRelblocks.toBoundedFormula.equal_equiv {t₁ t₂ : order_language[[ℝ]].Term (Fin 1 ⊕ Fin 1)} {x : Fin 1 → ℝ} : (Existblock.lit (Literal.equal t₁ t₂)).todisjunctionAtomicblocks.todisjunctionRelblocks.toBoundedFormula = BoundedFormula.equal t₁ t₂ := by
+--   sorry
+
+
 @[simp]
 lemma compatible (eb: Existblock (order_language[[ℝ]]) (Fin 1) (1)) (x: Fin 1 → ℝ ) :
     eb.Realize x (fun i : (Fin 0) => nomatch i)
@@ -594,18 +598,17 @@ lemma compatible (eb: Existblock (order_language[[ℝ]]) (Fin 1) (1)) (x: Fin 1 
   constructor
   · induction' eb with lit₁ lit_and eb_and eb_and_ih
     · induction' lit₁ with t₁ t₂ l R ts f f_ih
-      · intro h₁
-        rcases Existblock.lit (Literal.equal t₁ t₂) with l | ⟨l, e⟩
-        ·
-          repeat1' sorry
-        ·
-          sorry
+      repeat' intro h₁
+      repeat' simp! at h₁
+      repeat' rcases h₁ with ⟨y, hy⟩
 
-
-
-
+      · unfold BoundedFormula.Realize
+        unfold Existblock.todisjunctionAtomicblocks
+        sorry
       repeat1' sorry
-    sorry
+
+    · intro h₂
+      repeat1' sorry
 
   · intro h₂
     induction' eb with lit₁ lit_and eb_and eb_and_ih
@@ -614,7 +617,7 @@ lemma compatible (eb: Existblock (order_language[[ℝ]]) (Fin 1) (1)) (x: Fin 1 
 
     ·
       sorry
-     -- Lily
+
 
 
 @[simp]
@@ -636,7 +639,7 @@ def Formulafiniteunion (ψ : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0 ):
 
 
 @[simp]
-lemma QFimpAllFreeFormulafiniteunion (φ : QFImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) 0 ):
+lemma QFimpAllFreeFormulafiniteunion (φ : QFImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) 0 ) :
     Formulafiniteunion φ.toBoundedFormula := by
   unfold Formulafiniteunion
   induction' φ with a b l R ts not_formula ih_not_formula or_left or_right orl_ih orr_ih and_left and_right andr_ih andl_ih
@@ -645,7 +648,7 @@ lemma QFimpAllFreeFormulafiniteunion (φ : QFImpAllFreeFormula (order_language[[
     exact DLO.interval.is_finite_union_of_intervalsP.empty
 
   · dsimp!
-    by_cases h : a = b
+    by_cases h : Term.realize (Sum.elim (fun x_1 ↦ (0 : ℝ)) fun i ↦ nomatch i) a = Term.realize (Sum.elim (fun x_1 ↦ 0) fun i ↦ nomatch i) b
     · have is_entire : {x | @Term.realize (order_language[[ℝ]]) ℝ _ _ (Sum.elim (fun x_1 : Fin 1 ↦ x) (fun i : Fin 0 ↦ nomatch i)) a = Term.realize (Sum.elim (fun x_1 : Fin 1 ↦ x) (fun i : Fin 0 ↦ nomatch i)) b} = univ := by
         ext x
         constructor
@@ -654,6 +657,7 @@ lemma QFimpAllFreeFormulafiniteunion (φ : QFImpAllFreeFormula (order_language[[
         · intro h
           clear h
           rw [Set.mem_setOf]
+
           sorry --!!! - Need assistance...
 
       rw [is_entire]
