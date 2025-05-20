@@ -130,6 +130,12 @@ lemma is_finite_union_of_intervalsP.entire : is_finite_union_of_intervalsP (@uni
 
 
 @[simp]
+lemma is_finite_union_of_intervalsP.intersection {U V : Set X} (hU : is_finite_union_of_intervalsP U) (hV : is_finite_union_of_intervalsP V) : is_finite_union_of_intervalsP U ∩ V := by
+  sorry
+
+
+
+@[simp]
 lemma is_finite_union_of_intervalsP.complement {U : Set X} (hU : is_finite_union_of_intervalsP U) : is_finite_union_of_intervalsP Uᶜ := by
   induction' hU with a b a a a V W hV hU V_ih W_ih
   · rw [compl_empty]
