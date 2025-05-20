@@ -256,8 +256,8 @@ def QFImpAllFreeFormula.toBoundedFormula {L} {α} {n}: QFImpAllFreeFormula L α 
   | .equal t₁ t₂ => .equal t₁ t₂
   | .rel R ts => .rel R ts
   | .not f => f.toBoundedFormula.not
-  | .and f₁ f₂ => (f₁.toBoundedFormula.imp (f₂.toBoundedFormula.imp .falsum)).imp .falsum
-  | .or f₁ f₂ => (f₁.toBoundedFormula.imp .falsum).imp f₂.toBoundedFormula
+  | .and f₁ f₂ => f₁.toBoundedFormula ⊓ f₂.toBoundedFormula
+  | .or f₁ f₂ => f₁.toBoundedFormula ⊔ f₂.toBoundedFormula
 -- disjunction and conjuction of disjunctionofatomicblocks
 
 
@@ -314,67 +314,68 @@ apply empt
 
 
 def Literal.todisjunctionAtomicblocks {n:ℕ }(l : Literal (order_language[[ℝ]]) (Fin 1) n) : disjunctionAtomicblocks (order_language[[ℝ]]) (Fin 1) n := by
- rcases l with ⟨t1 ,t2⟩ | ⟨R, f⟩ | ⟨t1, t2⟩ | ⟨R, f⟩ | f
+  rcases l with ⟨t1 ,t2⟩ | ⟨R, f⟩ | ⟨t1, t2⟩ | ⟨R, f⟩ | f
 
 
- rcases t1 with ⟨a1 ⟩ | ⟨f, t1 ⟩
- rcases t2 with ⟨a2 ⟩  | ⟨g, t2⟩
+  rcases t1 with ⟨a1 ⟩ | ⟨f, t1 ⟩
+  rcases t2 with ⟨a2 ⟩  | ⟨g, t2⟩
 
- let QF :=  Atomicblock.equal (@Term.var  (order_language[[ℝ]]) (Fin 1 ⊕ Fin n) a1 ) (@Term.var  (order_language[[ℝ]]) ((Fin 1) ⊕ Fin n) a2)
-
-
- exact QF.todisjunctionAtomicblocks
- let ter := (@Term.var  (order_language[[ℝ]]) ((Fin 1) ⊕ Fin n) a1 )
- rename_i l
- by_cases neq : l=0
- rw [neq] at t2 g
- let const := Term.func g t2
- let QF:= Atomicblock.equal const ter
- exact QF.todisjunctionAtomicblocks
-
- have F_empty : IsEmpty (order_language[[ℝ]].Functions l)  := func0empty neq
- apply F_empty.elim'
- apply g
+  let QF :=  Atomicblock.equal (@Term.var  (order_language[[ℝ]]) (Fin 1 ⊕ Fin n) a1 ) (@Term.var  (order_language[[ℝ]]) ((Fin 1) ⊕ Fin n) a2)
 
 
- rename_i l
+  exact QF.todisjunctionAtomicblocks
+  let ter := (@Term.var  (order_language[[ℝ]]) ((Fin 1) ⊕ Fin n) a1 )
+  rename_i l
+  by_cases neq : l=0
+  rw [neq] at t2 g
+  let const := Term.func g t2
+  let QF:= Atomicblock.equal const ter
+  exact QF.todisjunctionAtomicblocks
+
+  have F_empty : IsEmpty (order_language[[ℝ]].Functions l)  := func0empty neq
+  apply F_empty.elim'
+  apply g
 
 
- by_cases neq : l=0
- rw [neq] at f t1
- let const1 := Term.func f t1
- let QF:= Atomicblock.equal const1 t2
- exact QF.todisjunctionAtomicblocks
-
- have F_empty : IsEmpty (order_language[[ℝ]].Functions l)  := func0empty neq
- apply F_empty.elim'
- apply f
-
- let QF :=  Atomicblock.rel R f
- exact QF.todisjunctionAtomicblocks
-
- let QF1 := Atomicblock.rel (Sum.inl ordsymbol.lt) (fun (i:Fin 2)=>  if i=0 then t1 else t2  )
- let QF2 := Atomicblock.rel (Sum.inl ordsymbol.lt) (fun (i:Fin 2)=> if i=0 then t2 else t1 )
- exact disjunctionAtomicblocks.or QF1.todisjunctionAtomicblocks QF2.todisjunctionAtomicblocks
- rename_i l
- by_cases neq: l=2
- let ter1:= f ⟨0, by linarith⟩
- let ter2 := f ⟨1, by linarith⟩
- let QF1 := Atomicblock.rel (Sum.inl ordsymbol.lt) (fun (i:Fin 2)=>  if i=0 then ter2 else ter1  )
- let QF2 := Atomicblock.equal ter1 ter2
- exact disjunctionAtomicblocks.or QF1.todisjunctionAtomicblocks QF2.todisjunctionAtomicblocks
- exfalso
- have F_empty : IsEmpty (order_language[[ℝ]].Relations l)  := rel2empty neq
- apply F_empty.elim'
- apply R
+  rename_i l
 
 
- exact f.todisjunctionAtomicblocks
+  by_cases neq : l=0
+  rw [neq] at f t1
+  let const1 := Term.func f t1
+  let QF:= Atomicblock.equal const1 t2
+  exact QF.todisjunctionAtomicblocks
+
+  have F_empty : IsEmpty (order_language[[ℝ]].Functions l)  := func0empty neq
+  apply F_empty.elim'
+  apply f
+
+  let QF :=  Atomicblock.rel R f
+  exact QF.todisjunctionAtomicblocks
+
+  let QF1 := Atomicblock.rel (Sum.inl ordsymbol.lt) (fun (i:Fin 2)=>  if i=0 then t1 else t2  )
+  let QF2 := Atomicblock.rel (Sum.inl ordsymbol.lt) (fun (i:Fin 2)=> if i=0 then t2 else t1 )
+  exact disjunctionAtomicblocks.or QF1.todisjunctionAtomicblocks QF2.todisjunctionAtomicblocks
+  rename_i l
+  by_cases neq: l=2
+  let ter1:= f ⟨0, by linarith⟩
+  let ter2 := f ⟨1, by linarith⟩
+  let QF1 := Atomicblock.rel (Sum.inl ordsymbol.lt) (fun (i:Fin 2)=>  if i=0 then ter2 else ter1  )
+  let QF2 := Atomicblock.equal ter1 ter2
+  exact disjunctionAtomicblocks.or QF1.todisjunctionAtomicblocks QF2.todisjunctionAtomicblocks
+  exfalso
+  have F_empty : IsEmpty (order_language[[ℝ]].Relations l)  := rel2empty neq
+  apply F_empty.elim'
+  apply R
+
+
+  exact f.todisjunctionAtomicblocks
+
 
 def reindex (i : Fin 1 ⊕ Fin 1) : Fin 1 ⊕ Fin 0 :=
- Sum.inl (match i with
-  | Sum.inl x => x
-  | Sum.inr x => x)
+  Sum.inl (match i with
+    | Sum.inl x => x
+    | Sum.inr x => x)
 
 
 
@@ -609,6 +610,7 @@ lemma compatible (eb: Existblock (order_language[[ℝ]]) (Fin 1) (1)) (x: Fin 1 
   · intro h₂
     induction' eb with lit₁ b c d e f g h i j k l m n o p q r s t u v w
     · dsimp! at *
+
       sorry
 
     · sorry
@@ -679,8 +681,28 @@ lemma QFimpAllFreeFormulafiniteunion (φ : QFImpAllFreeFormula (order_language[[
   ·
     sorry
   · unfold QFImpAllFreeFormula.toBoundedFormula
+    have this : {x : ℝ | (∼not_formula.toBoundedFormula).Realize (fun x_1 : Fin 1 ↦ x) fun i ↦ nomatch i} = {x | (not_formula.toBoundedFormula).Realize (fun x_1 ↦ x) fun i ↦ nomatch i}ᶜ := by
+      exact rfl
 
-    sorry
+    rw [this]
+    have h {U} : DLO.interval.is_finite_union_of_intervalsP (U : Set ℝ) → DLO.interval.is_finite_union_of_intervalsP (Uᶜ : Set ℝ) := by
+        sorry -- Proven in the new documents.
+
+    apply h
+    assumption
+
+
+  · unfold QFImpAllFreeFormula.toBoundedFormula
+    have this : {x : ℝ | (∼not_formula.toBoundedFormula).Realize (fun x_1 : Fin 1 ↦ x) fun i ↦ nomatch i} = {x | (not_formula.toBoundedFormula).Realize (fun x_1 ↦ x) fun i ↦ nomatch i}ᶜ := by
+      exact rfl
+
+    rw [this]
+    have h {U} : DLO.interval.is_finite_union_of_intervalsP (U : Set ℝ) → DLO.interval.is_finite_union_of_intervalsP (Uᶜ : Set ℝ) := by
+        sorry -- Proven in the new documents.
+
+    apply h
+    assumption
+
   repeat1' sorry -- Lily
 
 @[simp]
