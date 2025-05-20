@@ -683,8 +683,20 @@ lemma QFimpAllFreeFormulafiniteunion (φ : QFImpAllFreeFormula (order_language[[
       exact DLO.interval.is_finite_union_of_intervalsP.empty
 
   · unfold QFImpAllFreeFormula.toBoundedFormula
-    dsimp!
-    sorry -- !!! - Need assistance...
+
+    by_cases h : l = 2
+    · subst h
+      let a := ts 0
+      let b := ts 0
+      -- have {x : ℝ} : (BoundedFormula.rel R ts).Realize (fun x_1 ↦ x) (fun i : Fin 0 ↦ nomatch i) ↔ a < b := by
+        -- sorry
+      simp!
+      unfold Structure.RelMap
+      sorry -- !!! - Need assistance...
+    · exfalso
+      have : IsEmpty (order_language[[ℝ]].Relations l) := by
+        exact rel2empty h
+      exact IsEmpty.false R
 
 
   · unfold QFImpAllFreeFormula.toBoundedFormula
