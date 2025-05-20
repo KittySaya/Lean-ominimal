@@ -131,6 +131,23 @@ lemma is_finite_union_of_intervalsP.entire : is_finite_union_of_intervalsP (@uni
 
 @[simp]
 lemma is_finite_union_of_intervalsP.intersection {U V : Set X} (hU : is_finite_union_of_intervalsP U) (hV : is_finite_union_of_intervalsP V) : is_finite_union_of_intervalsP (U ∩ V) := by
+  have point_left {c : X} {U : Set X} : is_finite_union_of_intervalsP (U ∩ singleton c) := by
+    by_cases h : c ∈ U
+    · have : U ∩ singleton c = singleton c := by
+        refine inter_eq_right.mpr ?_
+        intro x hx
+        rw [mem_singleton_iff] at hx
+        subst hx
+        assumption
+      rw [this]
+      exact point c
+
+    · have : U ∩ singleton c = ∅ := by
+        refine Disjoint.inter_eq ?_
+        exact disjoint_singleton_right.mpr h
+      rw [this]
+      exact empty
+
   induction' hU with a b a a a U₁ U₂ hU₁ hU₂ U₁_ih U₂_ih
   · rw [empty_inter V]
     exact is_finite_union_of_intervalsP.empty
@@ -162,23 +179,8 @@ lemma is_finite_union_of_intervalsP.intersection {U V : Set X} (hU : is_finite_u
     rw [inter_empty]
     exact is_finite_union_of_intervalsP.empty
 
-  -- repeat' case point => -- For this one we need to 'anonymize' whatever case we have of U.
-  --   show is_finite_union_of_intervalsP (U ∩ singleton c)
-  --   by_cases h : c ∈ U
-  --   · have : singleton c ∩ U = singleton c := by
-  --       refine inter_eq_left.mpr ?_
-  --       intro x hx
-  --       rw [mem_singleton_iff] at hx
-  --       subst hx
-  --       assumption
-  --     rw [this]
-  --     exact point c
-
-  --   · have : singleton c ∩ U = ∅ := by
-  --       refine Disjoint.inter_eq ?_
-  --       exact disjoint_singleton_left.mpr h
-  --     rw [this]
-  --     exact empty
+  repeat' case point =>
+    apply point_left
 
   repeat' case union =>
     rw [inter_union_distrib_left]
