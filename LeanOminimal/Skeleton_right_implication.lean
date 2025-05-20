@@ -165,8 +165,8 @@ inductive Atomicblock (L : Language) (α : Type) : ℕ → Type _
 
 
 inductive disjunctionAtomicblocks (L : Language)  (α : Type) : ℕ → Type _
-| atom  {m:ℕ } (a:Atomicblock L α m): disjunctionAtomicblocks L α m
-| or {m:ℕ } (  f1 f2 :disjunctionAtomicblocks L α m ): disjunctionAtomicblocks L α m
+  | atom  {m:ℕ } (a:Atomicblock L α m): disjunctionAtomicblocks L α m
+  | or {m:ℕ } (  f1 f2 :disjunctionAtomicblocks L α m ): disjunctionAtomicblocks L α m
 
 
 inductive Relblock (L : Language) (α : Type) : ℕ → Type _
@@ -183,12 +183,12 @@ inductive disjunctionRelblocks (L : Language)  (α : Type) : ℕ → Type _
 
 --- All inclusions of types:
 def QFImpAllFreeFormula.toImpAllFreeFormula {L} {α} {n}: QFImpAllFreeFormula L α n→ ImpAllFreeFormula L α n
-| .falsum => .falsum
-| .equal t₁ t₂ => .equal t₁ t₂
-| .rel R ts => .rel R ts
-| .not f => (QFImpAllFreeFormula.toImpAllFreeFormula f).not
-| .or  f₁ f₂  => (QFImpAllFreeFormula.toImpAllFreeFormula f₁).or (QFImpAllFreeFormula.toImpAllFreeFormula f₂)
-| .and f₁ f₂  => (QFImpAllFreeFormula.toImpAllFreeFormula f₁).and (QFImpAllFreeFormula.toImpAllFreeFormula f₂)
+  | .falsum => .falsum
+  | .equal t₁ t₂ => .equal t₁ t₂
+  | .rel R ts => .rel R ts
+  | .not f => (QFImpAllFreeFormula.toImpAllFreeFormula f).not
+  | .or  f₁ f₂  => (QFImpAllFreeFormula.toImpAllFreeFormula f₁).or (QFImpAllFreeFormula.toImpAllFreeFormula f₂)
+  | .and f₁ f₂  => (QFImpAllFreeFormula.toImpAllFreeFormula f₁).and (QFImpAllFreeFormula.toImpAllFreeFormula f₂)
 
 
 
@@ -255,7 +255,7 @@ def QFImpAllFreeFormula.toBoundedFormula {L} {α} {n}: QFImpAllFreeFormula L α 
   | .falsum => .falsum
   | .equal t₁ t₂ => .equal t₁ t₂
   | .rel R ts => .rel R ts
-  | .not f => f.toBoundedFormula.imp .falsum
+  | .not f => f.toBoundedFormula.not
   | .and f₁ f₂ => (f₁.toBoundedFormula.imp (f₂.toBoundedFormula.imp .falsum)).imp .falsum
   | .or f₁ f₂ => (f₁.toBoundedFormula.imp .falsum).imp f₂.toBoundedFormula
 -- disjunction and conjuction of disjunctionofatomicblocks
@@ -265,10 +265,10 @@ def disjunctionAtomicblocks.and
     {L : Language} {α : Type} {n : ℕ}
     (f₁ f₂ : disjunctionAtomicblocks L α n) : disjunctionAtomicblocks L α n :=
   match f₁, f₂ with
-  | atomblock a₁, atomblock a₂ => atomblock (Atomicblock.and a₁ a₂)
-  | atomblock a₁, or b₁ b₂ =>
-      or (disjunctionAtomicblocks.and (atomblock a₁) b₁)
-        (disjunctionAtomicblocks.and (atomblock a₁) b₂)
+  | atom a₁, atom a₂ => atom (Atomicblock.and a₁ a₂)
+  | atom a₁, or b₁ b₂ =>
+      or (disjunctionAtomicblocks.and (atom a₁) b₁)
+        (disjunctionAtomicblocks.and (atom a₁) b₂)
   | or a₁ a₂, b =>
       or (disjunctionAtomicblocks.and a₁ b)
         (disjunctionAtomicblocks.and a₂ b)
@@ -279,10 +279,10 @@ lemma rel2empty {n:ℕ }(h : ¬ n=2) : IsEmpty (order_language[[ℝ]].Relations 
 
 have constempty: (constantsOn ℝ ).Relations n = Empty := FirstOrder.Language.constantsOn_Relations ℝ n
 have relempty:  order_language.Relations n = Empty:= by
- simp 
+ simp
  intro ass
  contradiction
-have coerc: order_language[[ℝ]].Relations n = (order_language.Relations n ⊕ (constantsOn ℝ ).Relations n):= by rfl 
+have coerc: order_language[[ℝ]].Relations n = (order_language.Relations n ⊕ (constantsOn ℝ ).Relations n):= by rfl
 rw[coerc]
 rw[constempty, relempty]
 have a: IsEmpty Empty := Empty.instIsEmpty
@@ -293,13 +293,13 @@ apply a
 apply a
 
 
-lemma func0empty{n:ℕ }(h: ¬ n=0) : IsEmpty (order_language[[ℝ]].Functions n)  := by  
+lemma func0empty{n:ℕ }(h: ¬ n=0) : IsEmpty (order_language[[ℝ]].Functions n)  := by
 have funcempty : order_language.Functions n = Empty:= by
- simp 
+ simp
 have coerc: order_language[[ℝ]].Functions n =(order_language.Functions n ⊕ (constantsOn ℝ ).Functions n) := by rfl
 rw[coerc]
 cases n
-exfalso 
+exfalso
 apply h
 rfl
 rename_i k
@@ -330,7 +330,7 @@ def Literal.todisjunctionAtomicblocks {n:ℕ }(l : Literal (order_language[[ℝ]
  rw [neq] at t2 g
  let const := Term.func g t2
  let QF:= Atomicblock.equal const ter
- exact QF.todisjunctionAtomicblocks 
+ exact QF.todisjunctionAtomicblocks
 
  have F_empty : IsEmpty (order_language[[ℝ]].Functions l)  := func0empty neq
  apply F_empty.elim'
@@ -378,201 +378,213 @@ def reindex (i : Fin 1 ⊕ Fin 1) : Fin 1 ⊕ Fin 0 :=
 
 
 
-def varelimAtomicblock (i: Fin 1 ⊕ Fin 1 ) (ter : order_language[[ℝ]].Term (Fin 1 ⊕ Fin 0)): Atomicblock (order_language[[ℝ]]) (Fin 1) 1 →  Relblock (order_language[[ℝ]]) (Fin 1) 0:= by 
-intro rel 
-rcases rel with ⟨ _⟩|  ⟨ _⟩|⟨t1,t2 ⟩ |  ⟨R,f ⟩ | ⟨t1,t2 ⟩ 
+def varelimAtomicblock (i: Fin 1 ⊕ Fin 1 ) (ter : order_language[[ℝ]].Term (Fin 1 ⊕ Fin 0)): Atomicblock (order_language[[ℝ]]) (Fin 1) 1 →  Relblock (order_language[[ℝ]]) (Fin 1) 0:= by
+  intro rel
+  rcases rel with ⟨ _⟩|  ⟨ _⟩|⟨t1,t2 ⟩ |  ⟨R,f ⟩ | ⟨t1,t2 ⟩
 
-exact Relblock.truth
+  exact Relblock.truth
 
-exact Relblock.falsum
-exact Relblock.truth
-
-
-rename_i l 
-by_cases neq: l=2
-let t1:= f ⟨0, by linarith⟩
-let t2 := f ⟨1, by linarith⟩
-rcases t1 with ⟨a1 ⟩ | ⟨h, t_1 ⟩ 
-rcases t2 with ⟨a2 ⟩  | ⟨g, t_2⟩ 
-by_cases i=a1
-
-by_cases i=a2
-
-exact Relblock.falsum
-
-exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then ter else Term.var (reindex a2))
-
-exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.var (reindex a1) else ter)
-rename_i p
-by_cases neq : p=0
-rw [neq] at g t_2
-
-by_cases ineqa : i=a1
-
-exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  ter else Term.func g (fun i: Fin 0=>  nomatch i))
-
-exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.var (reindex a1) else Term.func g (fun i: Fin 0=>  nomatch i))
-
-have F_empty : IsEmpty (order_language[[ℝ]].Functions p)  := func0empty neq
-apply F_empty.elim'
-apply g
-
-rename_i t 
-by_cases neq2 : t=0
-rw [neq2] at h t_1  
-rcases t2 with ⟨a1 ⟩ |  ⟨g, t_2⟩ 
-by_cases ineqa :i=a1
-exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.func h (fun i: Fin 0=>  nomatch i) else ter)
-exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.func h (fun i: Fin 0=>  nomatch i) else Term.var (reindex a1) )
-rename_i e
-by_cases neq2 : e=0
-rw [neq2] at g t_2
-exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.func h (fun i: Fin 0=>  nomatch i) else Term.func g (fun i: Fin 0=>  nomatch i) )
-
-have F_empty : IsEmpty (order_language[[ℝ]].Functions e)  := func0empty neq2
-apply F_empty.elim'
-apply g
-
-have F_empty : IsEmpty (order_language[[ℝ]].Functions t)  := func0empty neq2
-apply F_empty.elim'
-apply h
-have F_empty : IsEmpty (order_language[[ℝ]].Relations l):= rel2empty neq
-apply F_empty.elim'
-apply R
+  exact Relblock.falsum
+  exact Relblock.truth
 
 
-exact (varelimAtomicblock i ter t1).and (varelimAtomicblock i ter t1)
+  rename_i l
+  by_cases neq: l=2
+  let t1:= f ⟨0, by linarith⟩
+  let t2 := f ⟨1, by linarith⟩
+  rcases t1 with ⟨a1 ⟩ | ⟨h, t_1 ⟩
+  rcases t2 with ⟨a2 ⟩  | ⟨g, t_2⟩
+  by_cases i=a1
+
+  by_cases i=a2
+
+  exact Relblock.falsum
+
+  exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then ter else Term.var (reindex a2))
+
+  exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.var (reindex a1) else ter)
+  rename_i p
+  by_cases neq : p=0
+  rw [neq] at g t_2
+
+  by_cases ineqa : i=a1
+
+  exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  ter else Term.func g (fun i: Fin 0=>  nomatch i))
+
+  exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.var (reindex a1) else Term.func g (fun i: Fin 0=>  nomatch i))
+
+  have F_empty : IsEmpty (order_language[[ℝ]].Functions p)  := func0empty neq
+  apply F_empty.elim'
+  apply g
+
+  rename_i t
+  by_cases neq2 : t=0
+  rw [neq2] at h t_1
+  rcases t2 with ⟨a1 ⟩ |  ⟨g, t_2⟩
+  by_cases ineqa :i=a1
+  exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.func h (fun i: Fin 0=>  nomatch i) else ter)
+  exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.func h (fun i: Fin 0=>  nomatch i) else Term.var (reindex a1) )
+  rename_i e
+  by_cases neq2 : e=0
+  rw [neq2] at g t_2
+  exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.func h (fun i: Fin 0=>  nomatch i) else Term.func g (fun i: Fin 0=>  nomatch i) )
+
+  have F_empty : IsEmpty (order_language[[ℝ]].Functions e)  := func0empty neq2
+  apply F_empty.elim'
+  apply g
+
+  have F_empty : IsEmpty (order_language[[ℝ]].Functions t)  := func0empty neq2
+  apply F_empty.elim'
+  apply h
+  have F_empty : IsEmpty (order_language[[ℝ]].Relations l):= rel2empty neq
+  apply F_empty.elim'
+  apply R
 
 
-
-
-
-def Atomicblock.toRelblock (block : Atomicblock (order_language[[ℝ]]) (Fin 1) (1)) : Relblock (order_language[[ℝ]]) (Fin 1) 0 := by 
-rcases block with ⟨ _⟩|⟨_ ⟩ | ⟨t1 ,t2⟩ | ⟨R, f⟩| ⟨ f⟩ |⟨ ⟩
-
-exact Relblock.truth
-
-exact Relblock.falsum
-exact Relblock.truth 
-
-rename_i l 
-by_cases neq: l=2
-let t1:= f ⟨0, by linarith⟩
-let t2 := f ⟨1, by linarith⟩
-rcases t1 with ⟨a1 ⟩ | ⟨h, t_1 ⟩ 
-rcases t2 with ⟨a2 ⟩  | ⟨g, t_2⟩ 
-exact Relblock.truth 
-rename_i p
-by_cases neq : p=0
-rw [neq] at g t_2
-
-exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.var (reindex a1) else Term.func g (fun i: Fin 0=>  nomatch i) )
-
-have F_empty : IsEmpty (order_language[[ℝ]].Functions p)  := func0empty neq
-apply F_empty.elim'
-apply g
-rename_i p
-by_cases neq : p=0
-rw [neq] at h t_1
-
-rcases t2 with ⟨a1 ⟩ |  ⟨g, t_2⟩ 
-
-exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.func h (fun i: Fin 0=>  nomatch i) else Term.var (reindex a1) )
-rename_i e
-by_cases neq2 : e=0
-rw [neq2] at g t_2
-exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.func h (fun i: Fin 0=>  nomatch i) else Term.func g (fun i: Fin 0=> nomatch i) )
-
-have F_empty : IsEmpty (order_language[[ℝ]].Functions e)  := func0empty neq2
-apply F_empty.elim'
-apply g
-
-have F_empty : IsEmpty (order_language[[ℝ]].Functions p)  := func0empty neq
-apply F_empty.elim'
-apply h
-have F_empty : IsEmpty (order_language[[ℝ]].Relations l):= rel2empty neq
-apply F_empty.elim'
-apply R
-
-
-
-rename_i f
-exact f.toRelblock
-exact Relblock.falsum
-rename_i a t1 t2
-rcases t1 with ⟨i ⟩|  ⟨h,t_1 ⟩
-rcases t2 with ⟨j⟩|  ⟨g,t_2 ⟩
-
-exact (varelimAtomicblock i (Term.var (reindex j)) (a))
-rename_i l
-by_cases neq2 : l=0
-rw [neq2] at g t_2
-exact (varelimAtomicblock i (Term.func g (fun i: Fin 0=>  nomatch i)) (a))
-have F_empty : IsEmpty (order_language[[ℝ]].Functions l)  := func0empty neq2
-apply F_empty.elim'
-apply g
+  exact (varelimAtomicblock i ter t1).and (varelimAtomicblock i ter t1)
 
 
 
 
-rename_i t 
-by_cases neq2 : t=0
-rw [neq2] at h t_1  
-rcases t2 with ⟨a1 ⟩ |  ⟨g, t_2⟩ 
 
-exact (varelimAtomicblock a1 (Term.func h (fun i: Fin 0=>  nomatch i)) (a))
+def Atomicblock.toRelblock (block : Atomicblock (order_language[[ℝ]]) (Fin 1) (1)) : Relblock (order_language[[ℝ]]) (Fin 1) 0 := by
+  rcases block with ⟨ _⟩|⟨_ ⟩ | ⟨t1 ,t2⟩ | ⟨R, f⟩| ⟨ f⟩ |⟨ ⟩
 
-rename_i e
-by_cases neq2 : e=0
-rw [neq2] at g t_2
-by_cases h=g
-exact Relblock.truth
-exact Relblock.falsum
+  exact Relblock.truth
+
+  exact Relblock.falsum
+  exact Relblock.truth
+
+  rename_i l
+  by_cases neq: l=2
+  let t1:= f ⟨0, by linarith⟩
+  let t2 := f ⟨1, by linarith⟩
+  rcases t1 with ⟨a1 ⟩ | ⟨h, t_1 ⟩
+  rcases t2 with ⟨a2 ⟩  | ⟨g, t_2⟩
+  exact Relblock.truth
+  rename_i p
+  by_cases neq : p=0
+  rw [neq] at g t_2
+
+  exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.var (reindex a1) else Term.func g (fun i: Fin 0=>  nomatch i) )
+
+  have F_empty : IsEmpty (order_language[[ℝ]].Functions p)  := func0empty neq
+  apply F_empty.elim'
+  apply g
+  rename_i p
+  by_cases neq : p=0
+  rw [neq] at h t_1
+
+  rcases t2 with ⟨a1 ⟩ |  ⟨g, t_2⟩
+
+  exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.func h (fun i: Fin 0=>  nomatch i) else Term.var (reindex a1) )
+  rename_i e
+  by_cases neq2 : e=0
+  rw [neq2] at g t_2
+  exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.func h (fun i: Fin 0=>  nomatch i) else Term.func g (fun i: Fin 0=> nomatch i) )
+
+  have F_empty : IsEmpty (order_language[[ℝ]].Functions e)  := func0empty neq2
+  apply F_empty.elim'
+  apply g
+
+  have F_empty : IsEmpty (order_language[[ℝ]].Functions p)  := func0empty neq
+  apply F_empty.elim'
+  apply h
+  have F_empty : IsEmpty (order_language[[ℝ]].Relations l):= rel2empty neq
+  apply F_empty.elim'
+  apply R
 
 
-have F_empty : IsEmpty (order_language[[ℝ]].Functions e)  := func0empty neq2
-apply F_empty.elim'
-apply g
-have F_empty : IsEmpty (order_language[[ℝ]].Functions t)  := func0empty neq2
-apply F_empty.elim'
-apply h
 
-rename_i a l R f
-exact (Atomicblock.rel R f).toRelblock.and a.toRelblock
-rename_i a1 a2 a3
-exact (a1.toRelblock.and a2.toRelblock).and a3.toRelblock
+  rename_i f
+  exact f.toRelblock
+  exact Relblock.falsum
+  rename_i a t1 t2
+  rcases t1 with ⟨i ⟩|  ⟨h,t_1 ⟩
+  rcases t2 with ⟨j⟩|  ⟨g,t_2 ⟩
+
+  exact (varelimAtomicblock i (Term.var (reindex j)) (a))
+  rename_i l
+  by_cases neq2 : l=0
+  rw [neq2] at g t_2
+  exact (varelimAtomicblock i (Term.func g (fun i: Fin 0=>  nomatch i)) (a))
+  have F_empty : IsEmpty (order_language[[ℝ]].Functions l)  := func0empty neq2
+  apply F_empty.elim'
+  apply g
+
+
+
+
+  rename_i t
+  by_cases neq2 : t=0
+  rw [neq2] at h t_1
+  rcases t2 with ⟨a1 ⟩ |  ⟨g, t_2⟩
+
+  exact (varelimAtomicblock a1 (Term.func h (fun i: Fin 0=>  nomatch i)) (a))
+
+  rename_i e
+  by_cases neq2 : e=0
+  rw [neq2] at g t_2
+  by_cases h=g
+  exact Relblock.truth
+  exact Relblock.falsum
+
+
+  have F_empty : IsEmpty (order_language[[ℝ]].Functions e)  := func0empty neq2
+  apply F_empty.elim'
+  apply g
+  have F_empty : IsEmpty (order_language[[ℝ]].Functions t)  := func0empty neq2
+  apply F_empty.elim'
+  apply h
+
+  rename_i a l R f
+  exact (Atomicblock.rel R f).toRelblock.and a.toRelblock
+  rename_i a1 a2 a3
+  exact (a1.toRelblock.and a2.toRelblock).and a3.toRelblock
 
 
 
 
 def disjunctionAtomicblocks.todisjunctionRelblocks :disjunctionAtomicblocks (order_language[[ℝ]]) (Fin 1) (1)→ disjunctionRelblocks (order_language[[ℝ]]) (Fin 1) (0):= by
-intro disA
-rcases disA with ⟨atom ⟩ | ⟨d1, d2 ⟩
-exact (disjunctionRelblocks.relb (Atomicblock.toRelblock atom))
+  intro disA
+  rcases disA with ⟨atom ⟩ | ⟨d1, d2 ⟩
+  exact (disjunctionRelblocks.relb (Atomicblock.toRelblock atom))
 
-exact disjunctionRelblocks.or (d1.todisjunctionRelblocks) (d2.todisjunctionRelblocks)
+  exact disjunctionRelblocks.or (d1.todisjunctionRelblocks) (d2.todisjunctionRelblocks)
+
+
+def Existblock.todisjunctionAtomicblocks {n:ℕ } (block : Existblock (order_language[[ℝ]]) (Fin 1) n ) : disjunctionAtomicblocks (order_language[[ℝ]]) (Fin 1) n:= by
+  rcases block with ⟨ l⟩ | ⟨l1, l2 ⟩
+  exact l.todisjunctionAtomicblocks
+  exact l1.todisjunctionAtomicblocks.and l2.todisjunctionAtomicblocks
 
 
 def Existblock.Realize {L : Language} {α : Type} {M} [L.Structure M] {l} (φ : Existblock L α (l + 1)) (v : α → M) (xs : Fin l → M) : Prop :=
   φ.toImpAllFreeFormula.toBoundedFormula.Realize v xs
 
+
 @[simp]
 lemma Existblock.Realize_equiv {L : Language} {α : Type} {M} [L.Structure M] {l} (φ : Existblock L α (l + 1)) (v : α → M) (xs : Fin l → M) : φ.Realize v xs ↔ φ.toImpAllFreeFormula.toBoundedFormula.Realize v xs := by
   rfl
 
+
 def Relblock.Realize {L : Language} {α : Type} {M} [L.Structure M] {l} (φ : Relblock L α l) (v : α → M) (xs : Fin l → M) : Prop :=
   φ.toBoundedFormula.Realize v xs
+
 
 @[simp]
 lemma Relblock.Realize_equiv {L : Language} {α : Type} {M} [L.Structure M] {l} (φ : Relblock L α l) (v : α → M) (xs : Fin l → M) : φ.Realize v xs ↔ φ.toBoundedFormula.Realize v xs := by
   rfl
 
+
 def disjunctionAtomicblocks.RealRealize (φ : disjunctionAtomicblocks (order_language[[ℝ]]) (Fin 1) 1) (x: Fin 1 → ℝ ) : Prop :=
   φ.todisjunctionRelblocks.toBoundedFormula.Realize x (fun i : (Fin 0) => nomatch i)
+
 
 @[simp]
 lemma disjunctionAtomicblocks.RealRealize_equiv (φ : disjunctionAtomicblocks (order_language[[ℝ]]) (Fin 1) 1) (x : Fin 1 → ℝ) : φ.RealRealize x ↔ φ.todisjunctionRelblocks.toBoundedFormula.Realize x (fun i : (Fin 0) => nomatch i) := by
   rfl
+
 
 @[simp]
 lemma compatible (eb: Existblock (order_language[[ℝ]]) (Fin 1) (1)) (x: Fin 1 → ℝ ) :
@@ -602,8 +614,10 @@ lemma compatible (eb: Existblock (order_language[[ℝ]]) (Fin 1) (1)) (x: Fin 1 
     · sorry
      -- Lily
 
+
 @[simp]
 def ImpAllFreeFormula.toQFImpAllFreeFormula  : ImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) 0 → QFImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) 0:= by sorry -- Joos
+
 
 @[simp]
 lemma compatible2  (φ : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0 ) :
@@ -617,6 +631,7 @@ lemma compatible2  (φ : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0 ) :
 def Formulafiniteunion (ψ : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0 ): Prop :=
  DLO.interval.is_finite_union_of_intervalsP
   ({x : ℝ | @ψ.Realize (order_language[[ℝ]]) ℝ  _ _ _  (fun _: Fin 1=> x) (fun i:Fin 0 => nomatch i)})
+
 
 @[simp]
 lemma QFimpAllFreeFormulafiniteunion (φ : QFImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) 0 ):
