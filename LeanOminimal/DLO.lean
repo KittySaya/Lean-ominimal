@@ -15,6 +15,8 @@ class DLO (X : Type) extends order X where
 
 namespace DLO
 
+variable {X : Type} [DLO X]
+
 -- Basic lemma's of DLOs.
 -- Every dense linear order is asymetric.
 @[simp]
