@@ -206,7 +206,7 @@ An ExistBlock of a Language `L`, a Type `α`, and a number of free variables `m`
 is a conjunction of literals with `m+1` free variables, with an imaginary "exist" in front, that is added during conversions.
 -/
 inductive Existblock (L : Language) (α : Type) (m : ℕ) : Type _
-  | lit (l: Literal L α (m + 1)) : Existblock L α m
+  | lit (l: Literal L α m) : Existblock L α m
   | and (l1 l2 : Existblock L α m)  : Existblock L α m
 
 /--
@@ -352,7 +352,7 @@ def disjunctionRelblocks.toQFImpAllFreeFormula  {L} {α} {n} : disjunctionRelblo
 /--
 ???
 -/
-def Relblock.toExistblock {L} {α} {n}: Relblock L α (n + 1) → Existblock L α n
+def Relblock.toExistblock {L} {α} {n}: Relblock L α n → Existblock L α n
 | truth => Existblock.lit Literal.truth
 | falsum => Existblock.lit Literal.truth.not
 | .rel R f => Existblock.lit (Literal.rel R f)
@@ -363,7 +363,7 @@ Sends an existblock `∃x [Lit₁, Lit₂, Lit₃, ...]` to the ImpAllFreeFormul
 `Lit₁ ∧ Lit₂ ∧ Lit₃ ∧ Lit₄ ∧ ...`. Crucially, this does *not* add an ∃ in front of the
 formula! For that, use `Existblock.toImpAllFreeFormula`.
 -/
-def Existblock.toImpAllFreeFormulaWithoutExists {L} {α} {n}: Existblock L α n → ImpAllFreeFormula L α (n + 1)
+def Existblock.toImpAllFreeFormulaWithoutExists {L} {α} {n}: Existblock L α n → ImpAllFreeFormula L α n
   | .lit l => l.toImpAllFreeFormula -- Joos
   | .and l e => l.toImpAllFreeFormulaWithoutExists.and e.toImpAllFreeFormulaWithoutExists
 
@@ -371,7 +371,7 @@ def Existblock.toImpAllFreeFormulaWithoutExists {L} {α} {n}: Existblock L α n 
 Sends an existblock `∃x [Lit₁, Lit₂, Lit₃, ...]` to the ImpAllFreeFormula
 `∃x [Lit₁ ∧ Lit₂ ∧ Lit₃ ∧ Lit₄ ∧ ...]`.
 -/
-def Existblock.toImpAllFreeFormula {L} {α} {n}: Existblock L α n → ImpAllFreeFormula L α n :=
+def Existblock.toImpAllFreeFormula {L} {α} {n}: Existblock L α (n + 1) → ImpAllFreeFormula L α n :=
   fun φ => ImpAllFreeFormula.exists (φ.toImpAllFreeFormulaWithoutExists) -- Origineel door Joos, overgenomen door Lily
 
 /--
@@ -505,6 +505,7 @@ lemma isEmpty_of_relationsOrderLanguageR_of_ne_2 {n : ℕ} (h : ¬n=2) : IsEmpty
   · apply isEmpty_of_Empty
   · apply isEmpty_of_Empty
 
+alias rel2empty := isEmpty_of_relationsOrderLanguageR_of_ne_2
 
 /--
 If not `n = 0` where `n` is a natural number, then
@@ -837,11 +838,11 @@ exact a.todisjunctionAtomicblocks.todisjunctionRelblocks
 
 
 
-def Existblock.Realize {L : Language} {α : Type} {M} [L.Structure M] {l} (φ : Existblock L α (l + 1)) (v : α → M) (xs : Fin (l + 1) → M) : Prop :=
+def Existblock.Realize {L : Language} {α : Type} {M} [L.Structure M] {l} (φ : Existblock L α (l + 1)) (v : α → M) (xs : Fin l → M) : Prop :=
   φ.toImpAllFreeFormula.toBoundedFormula.Realize v xs
 
 @[simp]
-lemma Existblock.Realize_equiv {L : Language} {α : Type} {M} [L.Structure M] {l} (φ : Existblock L α (l + 1)) (v : α → M) (xs : Fin (l + 1) → M) : φ.Realize v xs ↔ φ.toImpAllFreeFormula.toBoundedFormula.Realize v xs := by
+lemma Existblock.Realize_equiv {L : Language} {α : Type} {M} [L.Structure M] {l} (φ : Existblock L α (l + 1)) (v : α → M) (xs : Fin l → M) : φ.Realize v xs ↔ φ.toImpAllFreeFormula.toBoundedFormula.Realize v xs := by
   rfl
 
 def Relblock.Realize {L : Language} {α : Type} {M} [L.Structure M] {l} (φ : Relblock L α l) (v : α → M) (xs : Fin l → M) : Prop :=
@@ -861,7 +862,7 @@ lemma disjunctionAtomicblocks.RealRealize_equiv (φ : disjunctionAtomicblocks (o
 
 @[simp]
 lemma compatible (eb: Existblock (order_language[[ℝ]]) (Fin 1) (1)) (x: Fin 1 → ℝ ) :
-    eb.Realize x (fun i : (Fin 1) => 0)
+    eb.Realize x (fun i : (Fin 0) => nomatch i)
       ↔ @eb.todisjunctionAtomicblocks.todisjunctionRelblocks.toBoundedFormula.Realize (order_language[[ℝ]]) ℝ  _ _ _  x (fun i : Fin 0 => nomatch i) := by sorry
 
 
@@ -929,7 +930,7 @@ def ImpAllFreeFormula.toQFImpAllFreeFormula  {n:ℕ } : ImpAllFreeFormula (order
 
 
 @[simp]
-lemma compatible2  (φ : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0 ) :
+lemma compatible2 (φ : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0 ) :
 ∀x:ℝ ,φ.Realize (fun i: Fin 1=> x) (fun i:Fin 0 => nomatch i)
  ↔ (QFImpAllFreeFormula.toBoundedFormula ((BoundedFormula.toImpAllFreeFormula φ).toQFImpAllFreeFormula)).Realize
     (fun i: Fin 1=> x) (fun i:Fin 0 => nomatch i) := by sorry -- Later
