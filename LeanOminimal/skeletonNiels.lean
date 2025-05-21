@@ -796,11 +796,11 @@ exact a.todisjunctionAtomicblocks.todisjunctionRelblocks
 
 
 
-def Existblock.Realize {L : Language} {α : Type} {M} [L.Structure M] {l} (φ : Existblock L α (l + 1)) (v : α → M) (xs : Fin l → M) : Prop :=
+def Existblock.Realize {L : Language} {α : Type} {M} [L.Structure M] {l} (φ : Existblock L α (l + 1)) (v : α → M) (xs : Fin (l + 1) → M) : Prop :=
   φ.toImpAllFreeFormula.toBoundedFormula.Realize v xs
 
 @[simp]
-lemma Existblock.Realize_equiv {L : Language} {α : Type} {M} [L.Structure M] {l} (φ : Existblock L α (l + 1)) (v : α → M) (xs : Fin l → M) : φ.Realize v xs ↔ φ.toImpAllFreeFormula.toBoundedFormula.Realize v xs := by
+lemma Existblock.Realize_equiv {L : Language} {α : Type} {M} [L.Structure M] {l} (φ : Existblock L α (l + 1)) (v : α → M) (xs : Fin (l + 1) → M) : φ.Realize v xs ↔ φ.toImpAllFreeFormula.toBoundedFormula.Realize v xs := by
   rfl
 
 def Relblock.Realize {L : Language} {α : Type} {M} [L.Structure M] {l} (φ : Relblock L α l) (v : α → M) (xs : Fin l → M) : Prop :=
@@ -820,19 +820,18 @@ lemma disjunctionAtomicblocks.RealRealize_equiv (φ : disjunctionAtomicblocks (o
 
 @[simp]
 lemma compatible (eb: Existblock (order_language[[ℝ]]) (Fin 1) (1)) (x: Fin 1 → ℝ ) :
-    eb.Realize x (fun i : (Fin 0) => nomatch i)
+    eb.Realize x (fun i : (Fin 1) => 0)
       ↔ @eb.todisjunctionAtomicblocks.todisjunctionRelblocks.toBoundedFormula.Realize (order_language[[ℝ]]) ℝ  _ _ _  x (fun i : Fin 0 => nomatch i) := by sorry
 
 
 
 
 @[simp]
-
-def disjunctionExistblocks.elim  {n:ℕ } : disjunctionExistblocks (order_language[[ℝ]]) (Fin 1) (n+1) → disjunctionExistblocks (order_language[[ℝ]]) (Fin 1) (n):= by
-intro existbl
-rcases existbl with ⟨ ex⟩ | ⟨ex1,ex2⟩
-exact ex.todisjunctionRelblocks.todisjunctionExistblocks
-exact ex1.elim.or ex2.elim
+def disjunctionExistblocks.elim  {n : ℕ} : disjunctionExistblocks (order_language[[ℝ]]) (Fin 1) (n+1) → disjunctionExistblocks (order_language[[ℝ]]) (Fin 1) n := by
+  intro existbl
+  rcases existbl with ⟨ ex⟩ | ⟨ex1,ex2⟩
+  exact ex.todisjunctionRelblocks.todisjunctionExistblocks
+  exact ex1.elim.or ex2.elim
 
 def notExistblockelim {n:ℕ } : disjunctionExistblocks (order_language[[ℝ]]) (Fin 1) (n+1) → disjunctionExistblocks (order_language[[ℝ]]) (Fin 1) (n):= by
 intro exbl
@@ -850,39 +849,39 @@ exact (notExistblockelim ex1).and (notExistblockelim ex2)
 
 
 def ImpAllFreeFormula.toQFImpAllFreeFormula  {n:ℕ } : ImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) (n) → QFImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) n:=
-let rec helper {n} : ImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) n →
-    disjunctionExistblocks (order_language[[ℝ]]) (Fin 1) n
-  | .falsum => disjunctionExistblocks.existbl (Existblock.lit (Literal.truth.not))
-  | .equal t1 t2 => disjunctionExistblocks.existbl (Existblock.lit (Literal.equal t1 t2))
-  | .rel R f => disjunctionExistblocks.existbl (Existblock.lit (Literal.rel R f))
-  | .and t1 t2=> (helper t1).and (helper t2)
-  | .or t1 t2=> (helper t1).or (helper t2)
-  | .not t => (helper t)
-  | .exists φ  => match φ with
-     | .falsum =>
-         disjunctionExistblocks.existbl (Existblock.lit (Literal.truth.not))
-     | .equal t1 t2 =>
-        (disjunctionExistblocks.existbl (Existblock.lit (Literal.equal t1 t2))).elim
-     | .rel R f =>
-         (disjunctionExistblocks.existbl (Existblock.lit (Literal.rel R f))).elim
-     | .not φ  =>
-         notExistblockelim (helper  φ )
-     | .or φ₁ φ₂ =>
-         (helper φ₁).elim.or (helper φ₂).elim
-     | .and φ₁ φ₂ =>
-         ((helper φ₁).and (helper φ₂)).elim
-     | .exists φ =>
-         (helper φ).elim.elim
+  let rec helper {n} : ImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) n →
+      disjunctionExistblocks (order_language[[ℝ]]) (Fin 1) n
+    | .falsum => disjunctionExistblocks.existbl (Existblock.lit (Literal.truth.not))
+    | .equal t1 t2 => disjunctionExistblocks.existbl (Existblock.lit (Literal.equal t1 t2))
+    | .rel R f => disjunctionExistblocks.existbl (Existblock.lit (Literal.rel R f))
+    | .and t1 t2=> (helper t1).and (helper t2)
+    | .or t1 t2=> (helper t1).or (helper t2)
+    | .not t => (helper t)
+    | .exists φ  => match φ with
+      | .falsum =>
+          disjunctionExistblocks.existbl (Existblock.lit (Literal.truth.not))
+      | .equal t1 t2 =>
+          (disjunctionExistblocks.existbl (Existblock.lit (Literal.equal t1 t2))).elim
+      | .rel R f =>
+          (disjunctionExistblocks.existbl (Existblock.lit (Literal.rel R f))).elim
+      | .not φ  =>
+          notExistblockelim (helper  φ )
+      | .or φ₁ φ₂ =>
+          (helper φ₁).elim.or (helper φ₂).elim
+      | .and φ₁ φ₂ =>
+          ((helper φ₁).and (helper φ₂)).elim
+      | .exists φ =>
+          (helper φ).elim.elim
 
-fun φ =>
-    match φ with
-    | .falsum        => QFImpAllFreeFormula.falsum
-    | .equal t1 t2   => QFImpAllFreeFormula.equal t1 t2
-    | .rel R f       => QFImpAllFreeFormula.rel R f
-    | .not φ         => φ.toQFImpAllFreeFormula.not
-    | .or φ₁ φ₂      => φ₁.toQFImpAllFreeFormula.or φ₂.toQFImpAllFreeFormula
-    | .and φ₁ φ₂     => φ₁.toQFImpAllFreeFormula.and φ₂.toQFImpAllFreeFormula
-    | .exists φ      => (helper (.exists φ)).toQFImpAllFreeFormula
+  fun φ =>
+      match φ with
+      | .falsum        => QFImpAllFreeFormula.falsum
+      | .equal t1 t2   => QFImpAllFreeFormula.equal t1 t2
+      | .rel R f       => QFImpAllFreeFormula.rel R f
+      | .not φ         => φ.toQFImpAllFreeFormula.not
+      | .or φ₁ φ₂      => φ₁.toQFImpAllFreeFormula.or φ₂.toQFImpAllFreeFormula
+      | .and φ₁ φ₂     => φ₁.toQFImpAllFreeFormula.and φ₂.toQFImpAllFreeFormula
+      | .exists φ      => (helper (.exists φ)).toQFImpAllFreeFormula
 
 
 
@@ -1003,7 +1002,6 @@ theorem definable_sets_left : ∀U : Set ℝ, isDefinable order_language U → D
   have φfin : Formulafiniteunion φ :=
     ((formulaequiv ψ φ (compatible2 φ))).mp ψfin
 
-<<<<<<< HEAD
   unfold Formulafiniteunion at φfin
   have seteq : U = {x : ℝ | φ.Realize (fun x_1 ↦ x) fun i ↦ nomatch i} := by
     ext x
@@ -1032,15 +1030,3 @@ theorem definable_sets_left : ∀U : Set ℝ, isDefinable order_language U → D
 
   rw [seteq]
   exact φfin
-=======
-unfold Formulafiniteunion at φfin
-have  seteq :u = {x | φ.Realize (fun x_1 ↦ x) fun i ↦ nomatch i}:=by sorry --
-rw[seteq]
-exact φfin
-
-
-
-
-
-
->>>>>>> 5f69a605d33a354d5befeef2b6c4bd5dc1adc9e8
