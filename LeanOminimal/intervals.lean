@@ -138,7 +138,7 @@ Given two finite union of intervals `U` and `V`, their intersection
 -/
 @[simp]
 lemma is_finite_union_of_intervalsP.intersection {U V : Set X} (hU : is_finite_union_of_intervalsP U) (hV : is_finite_union_of_intervalsP V) : is_finite_union_of_intervalsP (U ∩ V) := by
-  have point_left {c : X} {U : Set X} : is_finite_union_of_intervalsP (U ∩ singleton c) := by
+  have point_right {c : X} {U : Set X} : is_finite_union_of_intervalsP (U ∩ singleton c) := by
     by_cases h : c ∈ U
     · have : U ∩ singleton c = singleton c := by
         refine inter_eq_right.mpr ?_
@@ -187,7 +187,7 @@ lemma is_finite_union_of_intervalsP.intersection {U V : Set X} (hU : is_finite_u
     exact is_finite_union_of_intervalsP.empty
 
   repeat' case point =>
-    apply point_left
+    apply point_right
 
   repeat' case union =>
     rw [inter_union_distrib_left]
