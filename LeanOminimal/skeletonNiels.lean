@@ -181,6 +181,9 @@ inductive disjunctionRelblocks (L : Language)  (α : Type) : ℕ → Type _
 | relb  {m:ℕ } (r: Relblock L α m): disjunctionRelblocks L α m
 | or {m:ℕ } (f1 f2 :disjunctionRelblocks L α m ): disjunctionRelblocks L α m
 
+inductive disjunctionExistblocks (L : Language)  (α : Type) : ℕ → Type _
+| existbl  {m:ℕ } (r: Existblock L α m): disjunctionExistblocks L α m
+| or {m:ℕ } (f1 f2 :disjunctionExistblocks L α m ): disjunctionExistblocks L α m
 
 --- All inclusions of types:
 def QFImpAllFreeFormula.toImpAllFreeFormula {L} {α} {n}: QFImpAllFreeFormula L α n→ ImpAllFreeFormula L α n
@@ -223,8 +226,9 @@ def Relblock.toBoundedFormula {L} {α} {n}: Relblock L α n→ BoundedFormula L 
  | .rel R ts => .rel R ts
  | .and t1 t2 => (t1.toBoundedFormula.imp (t2.toBoundedFormula.imp BoundedFormula.falsum)).imp BoundedFormula.falsum
 
-def disjunctionRelblocks.toQFImpAllFreeFormula  {L} {α} {n}: disjunctionRelblocks L α n→ QFImpAllFreeFormula L α n:= by sorry 
+def disjunctionExistblocks.toQFImpAllFreeFormula  {L} {α} {n}: disjunctionExistblocks L α n→ QFImpAllFreeFormula L α n:= by sorry 
 
+def disjunctionRelblocks.todisjunctionExistblocks {L} {α} {n}: disjunctionRelblocks L α n→ disjunctionExistblocks L α n := by sorry 
 
 def disjunctionRelblocks.toBoundedFormula {L} {α} {n}: disjunctionRelblocks L α n→ BoundedFormula L α n := by
   intro disj
@@ -302,6 +306,20 @@ def disjunctionRelblocks.and
   | or a₁ a₂, b =>
       or (disjunctionRelblocks.and a₁ b)
         (disjunctionRelblocks.and a₂ b)
+
+def disjunctionExistblocks.and
+    {L : Language} {α : Type} {n : ℕ}
+    (f₁ f₂ : disjunctionExistblocks L α n) : disjunctionExistblocks L α n :=
+  match f₁, f₂ with
+  | existbl a₁, existbl a₂ => existbl (Existblock.and a₁ a₂)
+  | existbl a₁, or b₁ b₂ =>
+      or (disjunctionExistblocks.and (existbl a₁) b₁)
+        (disjunctionExistblocks.and (existbl a₁) b₂)
+  | or a₁ a₂, b =>
+      or (disjunctionExistblocks.and a₁ b)
+        (disjunctionExistblocks.and a₂ b)
+
+
 
 
 lemma rel2empty {n:ℕ }(h : ¬ n=2) : IsEmpty (order_language[[ℝ]].Relations n) :=by
@@ -574,6 +592,7 @@ rename_i a1 a2 a3
 exact (a1.toRelblock.and a2.toRelblock).and a3.toRelblock
 
 
+
 def Existblock.todisjunctionAtomicblocks {n:ℕ } (block : Existblock (order_language[[ℝ]]) (Fin 1) n ) : disjunctionAtomicblocks (order_language[[ℝ]]) (Fin 1) n:= by
  rcases block with ⟨ l⟩ | ⟨l1, l2 ⟩
  exact l.todisjunctionAtomicblocks
@@ -630,48 +649,52 @@ lemma compatible (eb: Existblock (order_language[[ℝ]]) (Fin 1) (1)) (x: Fin 1 
 
 @[simp]
 
-def disjunctionRelblocks.elim  {n:ℕ } : disjunctionRelblocks (order_language[[ℝ]]) (Fin 1) (n+1) → disjunctionRelblocks (order_language[[ℝ]]) (Fin 1) (n):= by 
-intro relb
-rcases relb with ⟨ relb⟩ | ⟨rel1,rel2⟩ 
-exact (relb.toExistblock).todisjunctionRelblocks
-exact rel1.elim.or rel2.elim
+def disjunctionExistblocks.elim  {n:ℕ } : disjunctionExistblocks (order_language[[ℝ]]) (Fin 1) (n+1) → disjunctionExistblocks (order_language[[ℝ]]) (Fin 1) (n):= by 
+intro existbl
+rcases existbl with ⟨ ex⟩ | ⟨ex1,ex2⟩ 
+exact ex.todisjunctionRelblocks.todisjunctionExistblocks
+exact ex1.elim.or ex2.elim
 
-def notRelblockelim {n:ℕ } : disjunctionRelblocks (order_language[[ℝ]]) (Fin 1) (n+1) → disjunctionRelblocks (order_language[[ℝ]]) (Fin 1) (n):= by 
-intro relb
-rcases relb with ⟨ relb⟩ | ⟨rel1,rel2⟩ 
-rcases relb with ⟨ ⟩ | ⟨ ⟩ | ⟨ R, f⟩ | ⟨rel1,rel2⟩ 
-exact disjunctionRelblocks.relb Relblock.falsum
-exact disjunctionRelblocks.relb Relblock.truth
+def notExistblockelim {n:ℕ } : disjunctionExistblocks (order_language[[ℝ]]) (Fin 1) (n+1) → disjunctionExistblocks (order_language[[ℝ]]) (Fin 1) (n):= by 
+intro exbl
+rcases exbl with ⟨ exbl⟩ | ⟨ex1,ex2⟩ 
 
-exact (Existblock.lit (Literal.rel R f).not).todisjunctionRelblocks
+rcases exbl with ⟨lit ⟩ 
 
-exact (notRelblockelim (disjunctionRelblocks.relb rel1)).or  (notRelblockelim (disjunctionRelblocks.relb rel2))
+exact (disjunctionExistblocks.existbl (Existblock.lit lit )).elim
+rename_i ex1 ex2
+exact (notExistblockelim (disjunctionExistblocks.existbl ex1)).or (notExistblockelim (disjunctionExistblocks.existbl ex1))
 
-exact (notRelblockelim rel1).and (notRelblockelim rel2)
-
+exact (notExistblockelim ex1).and (notExistblockelim ex2)
 
 
 
 
 def ImpAllFreeFormula.toQFImpAllFreeFormula  {n:ℕ } : ImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) (n) → QFImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) n:=
 let rec helper {n} : ImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) n →
-    disjunctionRelblocks (order_language[[ℝ]]) (Fin 1) n
+    disjunctionExistblocks (order_language[[ℝ]]) (Fin 1) n
+  | .falsum => disjunctionExistblocks.existbl (Existblock.lit (Literal.truth.not))
+  | .equal t1 t2 => disjunctionExistblocks.existbl (Existblock.lit (Literal.equal t1 t2))
+  | .rel R f => disjunctionExistblocks.existbl (Existblock.lit (Literal.rel R f))
+  | .and t1 t2=> (helper t1).and (helper t2)
+  | .or t1 t2=> (helper t1).or (helper t2)
+  | .not t => (helper t)
   | .exists φ  => match φ with 
      | .falsum => 
-         disjunctionRelblocks.relb Relblock.falsum
+         disjunctionExistblocks.existbl (Existblock.lit (Literal.truth.not))
      | .equal t1 t2 =>
-         (Existblock.lit (Literal.equal t1 t2)).todisjunctionAtomicblocks.todisjunctionRelblocks
+        (disjunctionExistblocks.existbl (Existblock.lit (Literal.equal t1 t2))).elim
      | .rel R f =>
-         (Existblock.lit (Literal.rel R f)).todisjunctionAtomicblocks.todisjunctionRelblocks
+         (disjunctionExistblocks.existbl (Existblock.lit (Literal.rel R f))).elim
      | .not φ  =>
-         notRelblockelim (helper  φ )
+         notExistblockelim (helper  φ )
      | .or φ₁ φ₂ =>
          (helper φ₁).elim.or (helper φ₂).elim
      | .and φ₁ φ₂ =>
          ((helper φ₁).and (helper φ₂)).elim
      | .exists φ =>
          (helper φ).elim.elim
-  | _ => disjunctionRelblocks.relb Relblock.falsum
+  
 fun φ =>
     match φ with
     | .falsum        => QFImpAllFreeFormula.falsum
@@ -797,3 +820,9 @@ unfold Formulafiniteunion at φfin
 have  seteq :u = {x | φ.Realize (fun x_1 ↦ x) fun i ↦ nomatch i}:=by sorry --
 rw[seteq]
 exact φfin
+
+
+
+
+
+
