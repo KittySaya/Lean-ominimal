@@ -31,7 +31,7 @@ def order_language : FirstOrder.Language where
 
 /--
 The model `(ℝ, <)` of `order_language = (<₀)` equipped with
-the real numbers and the standard less than order.
+the real numbers and the standard `<`, i.e., `less than` order.
 -/
 @[simp]
 instance real_order : order ℝ where

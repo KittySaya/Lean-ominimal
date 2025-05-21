@@ -126,6 +126,28 @@ end real_DLO
 
 --- Definition of all types:
 
+/--
+An `ImpAllFreeFormula`, short for `Implication_and_ForAll_free_formula`,
+is a representation of some formula `φ` of a Language `L`, a Type `α` and a number of free variables `n`
+written in such a way that it doesn't contain any → or ∀ symbols.
+That is, it consists solely of:
+
+  falsum, or falsehood.
+
+  equality of terms.
+
+  relations of terms.
+
+  negation (¬) of other ImpAllFreeFormula.
+
+  disjunction (or, ∨) of other ImpAllFreeFormula.
+
+  conjunction (and, ∧) of other ImpAllFreeFormula.
+
+  existentials (exists, ∃) of other ImpAllFreeFormula.
+
+It should be noted that, in classical logic, every formula is equivalent to an ImpAllFreeFormula.
+-/
 inductive ImpAllFreeFormula (L : Language) (α : Type) : ℕ → Type _
   | falsum {n : ℕ} : ImpAllFreeFormula L α n
   | equal  {n : ℕ}   (t₁ t₂ : L.Term (α ⊕ (Fin n))) : ImpAllFreeFormula L α n
@@ -135,7 +157,27 @@ inductive ImpAllFreeFormula (L : Language) (α : Type) : ℕ → Type _
   | and    {n : ℕ}   (f₁ f₂ : ImpAllFreeFormula L α n) : ImpAllFreeFormula L α n
   | exists {n : ℕ}   (f : ImpAllFreeFormula L α (n + 1)) : ImpAllFreeFormula L α n
 
-inductive QFImpAllFreeFormula (L : Language) (α : Type) : ℕ → Type _
+/--
+An `QFImpAllFreeFormula`, short for `Quantiefier_and_Implication_and_ForAll_free_formula`,
+is a squantifier-free formula `φ` of a Language `L`, a Type `α` and a number of free variables `n`
+written in such a way that it doesn't contain any → symbols.
+That is, it consists solely of:
+
+  falsum, or falsehood.
+
+  equality of terms.
+
+  relations of terms.
+
+  negation (¬) of other QFImpAllFreeFormula.
+
+  disjunction (or, ∨) of other QFImpAllFreeFormula.
+
+  conjunction (and, ∧) of other QFImpAllFreeFormula.
+
+It should be noted that, in classical logic, every quantifier free formula is equivalent to a QFImpAllFreeFormula.
+-/
+inductive QFImpAllFreeFormula (L : Language) (α : Type) : ℕ → Type _ --After the move, change this to QFImpFreeFormula, to avoid the double all free.
   | falsum {n : ℕ} : QFImpAllFreeFormula L α n
   | equal  {n : ℕ}   (t₁ t₂ : L.Term (α ⊕ (Fin n))) : QFImpAllFreeFormula L α n
   | rel    {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : QFImpAllFreeFormula L α n
@@ -143,46 +185,91 @@ inductive QFImpAllFreeFormula (L : Language) (α : Type) : ℕ → Type _
   | or     {n : ℕ}   (f₁ f₂ : QFImpAllFreeFormula L α n) : QFImpAllFreeFormula L α n
   | and    {n : ℕ}   (f₁ f₂ : QFImpAllFreeFormula L α n) : QFImpAllFreeFormula L α n
 
+/--
+A Literal of a Language `L`, a Type `α`, and a number of free variables `n`
+is a formula consisting solely of
 
+  equality of terms
+
+  relations of terms
+
+  and lastly, negation of either of those
+-/
 inductive Literal (L : Language) (α : Type) (n : ℕ) : Type _
   | equal (t₁ t₂ : L.Term (α ⊕ (Fin n))) : Literal L α n
   | rel {l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : Literal L α n
   | not (f : Literal L α n) : Literal L α n
 
 -- def Existblock (L : Language) (α : Type) (m : ℕ) := List (Literal L α m)
+/--
+An ExistBlock of a Language `L`, a Type `α`, and a number of free variables `n`
+is a conjunction of literals, with an imaginary "exist" in front, that is added during conversions.
+-/ -- Shouldn't it have *n+1* free variables? Because it always has a single variable for the exist quantifier.
 inductive Existblock (L : Language) (α : Type) (m : ℕ) : Type _
   | lit (l: Literal L α m) : Existblock L α m
   | and (l : Literal L α m) (e : Existblock L α m) : Existblock L α m
 
+/--
+A Atomicblock of a Language `L`, a Type `α`, and a number of free variables `n`
+is a formula consisting solely of
 
+  truth
 
+  falsum
+
+  equality of terms
+
+  relations of terms
+
+  and lastly, conjunctions (and) of two atomic blocks.
+-/
 inductive Atomicblock (L : Language) (α : Type) : ℕ → Type _
-  | truth {n} :  Atomicblock L α n
+  | truth  {n} : Atomicblock L α n
   | falsum {n} : Atomicblock L α n
-  | equal {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : Atomicblock L α n
-  | rel   {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : Atomicblock L α n
-  | and   {n : ℕ} (f1 f2 : Atomicblock L α n) : Atomicblock L α n
+  | equal  {n} (t₁ t₂ : L.Term (α ⊕ (Fin n))) : Atomicblock L α n
+  | rel    {n} {l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : Atomicblock L α n
+  | and    {n} (f1 f2 : Atomicblock L α n) : Atomicblock L α n
 
-
+/--
+A disjunction of atomicblock blocks of a Language `L`, a Type `α`, and a number of free variables `n`
+is a number of atomic blocks connected with "or" `∨`.
+-/
 inductive disjunctionAtomicblocks (L : Language)  (α : Type) : ℕ → Type _
   | atom {m : ℕ} (a : Atomicblock L α m): disjunctionAtomicblocks L α m
   | or {m : ℕ} (f1 f2 :disjunctionAtomicblocks L α m ): disjunctionAtomicblocks L α m
 
+/--
+A Relblock of a Language `L`, a Type `α`, and a number of free variables `n`
+is a formula consisting solely of
 
+  truth
+
+  falsum
+
+  relations of terms
+
+  and lastly, conjunctions (and) of two atomic blocks.
+-/
 inductive Relblock (L : Language) (α : Type) : ℕ → Type _
   | truth  {n} : Relblock L α n
   | falsum {n} : Relblock L α n
   | rel {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : Relblock L α n
   | and {n : ℕ} (f1 f2 : Relblock L α n) : Relblock L α n
 
-
+/--
+A disjunction of relblocks of a Language `L`, a Type `α`, and a number of free variables `n`
+is a number of relblocks connected with "or" `∨`.
+-/
 inductive disjunctionRelblocks (L : Language)  (α : Type) : ℕ → Type _
-  | relb  {m : ℕ} (r: Relblock L α m) : disjunctionRelblocks L α m
-  | or {m : ℕ} (f1 f2 :disjunctionRelblocks L α m ): disjunctionRelblocks L α m
+  | relb  {m : ℕ} (r : Relblock L α m) : disjunctionRelblocks L α m
+  | or    {m : ℕ} (f1 f2 :disjunctionRelblocks L α m ): disjunctionRelblocks L α m
 
 
 --- All inclusions of types:
-def QFImpAllFreeFormula.toImpAllFreeFormula {L} {α} {n}: QFImpAllFreeFormula L α n→ ImpAllFreeFormula L α n
+/--
+Sends a QFImpAllFreeFormula `φ` to their respective ImpAllFreeFormula by lifting the appropriate terms.
+-/
+def QFImpAllFreeFormula.toImpAllFreeFormula {L} {α} {n}: QFImpAllFreeFormula L α n → ImpAllFreeFormula L α n
   | .falsum => .falsum
   | .equal t₁ t₂ => .equal t₁ t₂
   | .rel R ts => .rel R ts
@@ -190,8 +277,9 @@ def QFImpAllFreeFormula.toImpAllFreeFormula {L} {α} {n}: QFImpAllFreeFormula L 
   | .or  f₁ f₂  => (QFImpAllFreeFormula.toImpAllFreeFormula f₁).or (QFImpAllFreeFormula.toImpAllFreeFormula f₂)
   | .and f₁ f₂  => (QFImpAllFreeFormula.toImpAllFreeFormula f₁).and (QFImpAllFreeFormula.toImpAllFreeFormula f₂)
 
-
-
+/--
+Sends a BoundedFormula `φ` to their ImpAllFreeFormula representation.
+-/
 def BoundedFormula.toImpAllFreeFormula {L : Language} {α : Type} {n : ℕ} : BoundedFormula L α n → ImpAllFreeFormula L α n
   | .falsum => .falsum
   | .equal t₁ t₂ => .equal t₁ t₂
@@ -199,12 +287,17 @@ def BoundedFormula.toImpAllFreeFormula {L : Language} {α : Type} {n : ℕ} : Bo
   | .imp f₁ f₂ => ((BoundedFormula.toImpAllFreeFormula f₁).not).or (BoundedFormula.toImpAllFreeFormula f₂)
   | .all f => (((BoundedFormula.toImpAllFreeFormula f).not).exists).not
 
-
+/--
+Sends a Literal `φ` to their respective ImpAllFreeFormula by lifting the appropriate terms.
+-/
 def Literal.toImpAllFreeFormula {L} {α} {n} : Literal L α n → ImpAllFreeFormula L α n
   | .equal t₁ t₂ => .equal t₁ t₂
   | .rel R ts => .rel R ts
   | .not f => .not f.toImpAllFreeFormula
 
+/--
+Sends a Atomic Block `φ` to their respective ImpAllFreeFormula by lifting the appropriate terms.
+-/
 def Atomicblock.toImpAllFreeFormula {L} {α} {n} : (Atomicblock L α n) → ImpAllFreeFormula L α n
   | truth => ImpAllFreeFormula.falsum.not
   | falsum => ImpAllFreeFormula.falsum
@@ -212,9 +305,15 @@ def Atomicblock.toImpAllFreeFormula {L} {α} {n} : (Atomicblock L α n) → ImpA
   | .rel   R ts => .rel R ts
   | .and   f₁ f₂ => f₁.toImpAllFreeFormula.and f₂.toImpAllFreeFormula
 
-def Atomicblock.todisjunctionAtomicblocks {m : ℕ}{L} {α} (a: Atomicblock L α m) :  disjunctionAtomicblocks L α m  :=
-disjunctionAtomicblocks.atom a
+/--
+Sends an AtomicBlock `a` to the disjunction of atomic blocks consisting solely of itself.
+-/
+def Atomicblock.todisjunctionAtomicblocks {m : ℕ} {L} {α} (a: Atomicblock L α m) :  disjunctionAtomicblocks L α m  :=
+  disjunctionAtomicblocks.atom a
 
+/--
+Sends a RelBlock `φ` to their respective BoundedFormula by lifting the appropriate terms.
+-/
 def Relblock.toBoundedFormula {L} {α} {n}: Relblock L α n→ BoundedFormula L α n
  | truth => BoundedFormula.falsum.imp BoundedFormula.falsum
  | falsum => BoundedFormula.falsum
@@ -224,7 +323,7 @@ def Relblock.toBoundedFormula {L} {α} {n}: Relblock L α n→ BoundedFormula L 
 
 
 /--
-Sends a disjunction of rel blocks to a disjunction of the falsum formula.
+Sends a disjunction of rel blocks to a disjunction of the falsum formula, for some reason.
 -/
 def disjunctionRelblocks.toBoundedFormula {L} {α} {n} : disjunctionRelblocks L α n → BoundedFormula L α n := by
   intro disj
@@ -473,11 +572,12 @@ def Atomicblock.toRelblock (block : Atomicblock (order_language[[ℝ]]) (Fin 1) 
   exact Relblock.truth
 
   exact Relblock.falsum
+
   exact Relblock.truth
 
   rename_i l
   by_cases neq: l=2
-  let t1:= f ⟨0, by linarith⟩
+  let t1 := f ⟨0, by linarith⟩
   let t2 := f ⟨1, by linarith⟩
   rcases t1 with ⟨a1 ⟩ | ⟨h, t_1 ⟩
   rcases t2 with ⟨a2 ⟩  | ⟨g, t_2⟩
