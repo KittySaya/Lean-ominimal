@@ -877,16 +877,16 @@ def disjunctionExistblocks.elim  {n:ℕ } : disjunctionExistblocks (order_langua
   exact ex1.elim.or ex2.elim
 
 def notExistblockelim {n : ℕ} : disjunctionExistblocks (order_language[[ℝ]]) (Fin 1) (n+1) → disjunctionExistblocks (order_language[[ℝ]]) (Fin 1) (n):= by
-intro exbl
-rcases exbl with ⟨ exbl⟩ | ⟨ex1,ex2⟩
+  intro exbl
+  rcases exbl with ⟨ exbl⟩ | ⟨ex1,ex2⟩
 
-rcases exbl with ⟨lit ⟩
+  rcases exbl with ⟨lit ⟩
 
-exact (disjunctionExistblocks.existbl (Existblock.lit lit )).elim
-rename_i ex1 ex2
-exact (notExistblockelim (disjunctionExistblocks.existbl ex1)).or (notExistblockelim (disjunctionExistblocks.existbl ex1))
+  exact (disjunctionExistblocks.existbl (Existblock.lit lit )).elim
+  rename_i ex1 ex2
+  exact (notExistblockelim (disjunctionExistblocks.existbl ex1)).or (notExistblockelim (disjunctionExistblocks.existbl ex1))
 
-exact (notExistblockelim ex1).and (notExistblockelim ex2)
+  exact (notExistblockelim ex1).and (notExistblockelim ex2)
 
 
 
@@ -946,16 +946,16 @@ def Formulafiniteunion (ψ : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0 ):
   ({x : ℝ | @ψ.Realize (order_language[[ℝ]]) ℝ  _ _ _  (fun _: Fin 1=> x) (fun i:Fin 0 => nomatch i)})
 
 @[simp]
-lemma QFimpAllFreeFormulafiniteunion (φ : QFImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) 0 ):
+lemma QFimpAllFreeFormulafiniteunion (φ : QFImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) 0 ) :
     Formulafiniteunion φ.toBoundedFormula := by
   unfold Formulafiniteunion
-  induction' φ with a b c d e not_formula ih_not_formula h i j k l m n o p q r s t u v w x y z
+  induction' φ with a b l R ts not_formula ih_not_formula or_left or_right orl_ih orr_ih and_left and_right andr_ih andl_ih
   · unfold QFImpAllFreeFormula.toBoundedFormula
     show DLO.interval.is_finite_union_of_intervalsP ∅
     exact DLO.interval.is_finite_union_of_intervalsP.empty
 
   · dsimp!
-    by_cases h : a = b
+    by_cases h : Term.realize (Sum.elim (fun x_1 ↦ (0 : ℝ)) fun i ↦ nomatch i) a = Term.realize (Sum.elim (fun x_1 ↦ 0) fun i ↦ nomatch i) b
     · have is_entire : {x | @Term.realize (order_language[[ℝ]]) ℝ _ _ (Sum.elim (fun x_1 : Fin 1 ↦ x) (fun i : Fin 0 ↦ nomatch i)) a = Term.realize (Sum.elim (fun x_1 : Fin 1 ↦ x) (fun i : Fin 0 ↦ nomatch i)) b} = univ := by
         ext x
         constructor
@@ -964,9 +964,7 @@ lemma QFimpAllFreeFormulafiniteunion (φ : QFImpAllFreeFormula (order_language[[
         · intro h
           clear h
           rw [Set.mem_setOf]
-          rw[h]
-      --- entire is finite
-
+          sorry --!!! - Need assistance...
 
       rw [is_entire]
       have h : DLO.interval.is_finite_union_of_intervalsP (univ : Set ℝ) := by
@@ -990,12 +988,63 @@ lemma QFimpAllFreeFormulafiniteunion (φ : QFImpAllFreeFormula (order_language[[
       rw [is_empty]
       exact DLO.interval.is_finite_union_of_intervalsP.empty
 
-  ·
-    sorry
   · unfold QFImpAllFreeFormula.toBoundedFormula
 
-    sorry
-  repeat1' sorry -- Lily
+    by_cases h : l = 2
+    · subst h
+      let a := ts 0
+      let b := ts 0
+      -- have {x : ℝ} : (BoundedFormula.rel R ts).Realize (fun x_1 ↦ x) (fun i : Fin 0 ↦ nomatch i) ↔ a < b := by
+        -- sorry
+      simp!
+      unfold Structure.RelMap
+      sorry -- !!! - Need assistance...
+    · exfalso
+      have : IsEmpty (order_language[[ℝ]].Relations l) := by
+        exact rel2empty h
+      exact IsEmpty.false R
+
+
+  · unfold QFImpAllFreeFormula.toBoundedFormula
+    have this : {x : ℝ | (∼not_formula.toBoundedFormula).Realize (fun x_1 : Fin 1 ↦ x) fun i ↦ nomatch i} = {x | (not_formula.toBoundedFormula).Realize (fun x_1 ↦ x) fun i ↦ nomatch i}ᶜ := by
+      exact rfl
+
+    rw [this]
+    have h {U} : DLO.interval.is_finite_union_of_intervalsP (U : Set ℝ) → DLO.interval.is_finite_union_of_intervalsP (Uᶜ : Set ℝ) := by
+        sorry -- Proven in the new documents.
+
+    apply h
+    assumption
+
+
+  · unfold QFImpAllFreeFormula.toBoundedFormula
+    have this : {x : ℝ | (or_left.toBoundedFormula ⊔ or_right.toBoundedFormula).Realize (fun x_1 ↦ x) fun i ↦ nomatch i} =
+                 {x | or_left.toBoundedFormula.Realize (fun x_1 ↦ x) fun i ↦ nomatch i} ∪ {x | or_right.toBoundedFormula.Realize (fun x_1 ↦ x) fun i ↦ nomatch i} := by
+      ext x
+      rw [mem_union]
+      repeat rw [mem_setOf]
+      exact BoundedFormula.realize_sup
+
+    rw [this]
+    apply DLO.interval.is_finite_union_of_intervalsP.union
+    assumption'
+
+
+  · unfold QFImpAllFreeFormula.toBoundedFormula
+    have this : {x : ℝ | (and_left.toBoundedFormula ⊓ and_right.toBoundedFormula).Realize (fun x_1 ↦ x) fun i ↦ nomatch i} =
+                 {x | and_left.toBoundedFormula.Realize (fun x_1 ↦ x) fun i ↦ nomatch i} ∩ {x | and_right.toBoundedFormula.Realize (fun x_1 ↦ x) fun i ↦ nomatch i} := by
+      ext x
+      rw [mem_inter_iff]
+      repeat rw [mem_setOf]
+      exact BoundedFormula.realize_inf
+
+    rw [this]
+    have h {U V} : DLO.interval.is_finite_union_of_intervalsP (U : Set ℝ) → DLO.interval.is_finite_union_of_intervalsP (V : Set ℝ) → DLO.interval.is_finite_union_of_intervalsP (U ∩ V : Set ℝ) := by
+        sorry -- Sorry'd in the new documents.
+
+    apply h
+    assumption'
+  -- Lily
 
 @[simp]
 
