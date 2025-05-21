@@ -18,7 +18,7 @@ namespace DLO
 -- Basic lemma's of DLOs.
 -- Every dense linear order is asymetric.
 @[simp]
-lemma asymm {X : Type} [DLO X] (x y : X) : ¬(x <₀ y ∧ y <₀ x) := by
+lemma asymm (x y : X) : ¬(x <₀ y ∧ y <₀ x) := by
   by_contra h
   apply DLO.irrefl x
   apply DLO.trans x y x
@@ -27,7 +27,7 @@ lemma asymm {X : Type} [DLO X] (x y : X) : ¬(x <₀ y ∧ y <₀ x) := by
 
 -- A different way to characterise no end points.
 @[simp]
-lemma no_left_extrema {X} [DLO X] : ¬∃y : X, ∀z : X, y = z ∨ y <₀ z := by
+lemma no_left_extrema : ¬∃y : X, ∀z : X, y = z ∨ y <₀ z := by
   push_neg
   intro y
   have h : ∃w: X, w <₀ y := DLO.no_l_end y
@@ -43,7 +43,7 @@ lemma no_left_extrema {X} [DLO X] : ¬∃y : X, ∀z : X, y = z ∨ y <₀ z := 
     trivial
 
 @[simp]
-lemma no_right_extrema {X} [DLO X] : ¬∃y : X, ∀z : X, y = z ∨ y >₀ z := by
+lemma no_right_extrema : ¬∃y : X, ∀z : X, y = z ∨ y >₀ z := by
   push_neg
   intro y
   have h : ∃w: X, w >₀ y := DLO.no_r_end y
