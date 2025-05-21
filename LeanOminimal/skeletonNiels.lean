@@ -866,16 +866,17 @@ lemma compatible (eb: Existblock (order_language[[ℝ]]) (Fin 1) (1)) (x: Fin 1 
       ↔ @eb.todisjunctionAtomicblocks.todisjunctionRelblocks.toBoundedFormula.Realize (order_language[[ℝ]]) ℝ  _ _ _  x (fun i : Fin 0 => nomatch i) := by sorry
 
 
-
+def disjunctionRelblocks.todisjunctionExistblocks {L} {α} {n}: disjunctionRelblocks L α n → disjunctionExistblocks L α n := by
+  sorry
 
 @[simp]
-def disjunctionExistblocks.elim  {n : ℕ} : disjunctionExistblocks (order_language[[ℝ]]) (Fin 1) (n+1) → disjunctionExistblocks (order_language[[ℝ]]) (Fin 1) n := by
+def disjunctionExistblocks.elim  {n:ℕ } : disjunctionExistblocks (order_language[[ℝ]]) (Fin 1) (n+1) → disjunctionExistblocks (order_language[[ℝ]]) (Fin 1) (n):= by
   intro existbl
   rcases existbl with ⟨ ex⟩ | ⟨ex1,ex2⟩
   exact ex.todisjunctionRelblocks.todisjunctionExistblocks
   exact ex1.elim.or ex2.elim
 
-def notExistblockelim {n:ℕ } : disjunctionExistblocks (order_language[[ℝ]]) (Fin 1) (n+1) → disjunctionExistblocks (order_language[[ℝ]]) (Fin 1) (n):= by
+def notExistblockelim {n : ℕ} : disjunctionExistblocks (order_language[[ℝ]]) (Fin 1) (n+1) → disjunctionExistblocks (order_language[[ℝ]]) (Fin 1) (n):= by
 intro exbl
 rcases exbl with ⟨ exbl⟩ | ⟨ex1,ex2⟩
 
@@ -889,6 +890,8 @@ exact (notExistblockelim ex1).and (notExistblockelim ex2)
 
 
 
+def disjunctionExistblocks.toQFImpAllFreeFormula  {L} {α} {n}: disjunctionExistblocks L α n→ QFImpAllFreeFormula L α n:= by
+  sorry
 
 def ImpAllFreeFormula.toQFImpAllFreeFormula  {n:ℕ } : ImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) (n) → QFImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) n:=
   let rec helper {n} : ImpAllFreeFormula (order_language[[ℝ]]) (Fin 1) n →
