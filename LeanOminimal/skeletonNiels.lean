@@ -669,9 +669,50 @@ def varelimAtomicblock {n} (i: Fin 1 ⊕ Fin (n+1) ) (ter : order_language[[ℝ]
 def Atomicblock.toRelblock {n} : Atomicblock (order_language[[ℝ]]) (Fin 1) (n+1) → Relblock (order_language[[ℝ]]) (Fin 1) n
   | truth       => .truth
   | falsum      => .falsum
-  | equal t₁ t₂ => sorry
-  | rel R ts    => sorry
   | and f₁ f₂   => f₁.toRelblock.and f₂.toRelblock
+  | equal t₁ t₂ => .truth --sorry --Originally it had "truth" but I don't know if that's right. Are you certain it's correct?
+
+  | rel R ts    => by --I copied the original here.
+    rename_i l
+    by_cases neq: l=2
+    · let t1 := ts ⟨0, by linarith⟩
+      let t2 := ts ⟨1, by linarith⟩
+      rcases t1 with ⟨a1 ⟩ | ⟨h, t_1 ⟩
+      · rcases t2 with ⟨a2 ⟩  | ⟨g, t_2⟩
+        exact Relblock.truth
+        rename_i p
+        by_cases neq : p=0
+        rw [neq] at g t_2
+
+        exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.var (reindex a1) else Term.func g (fun i: Fin 0=>  nomatch i) )
+
+        have F_empty : IsEmpty (order_language[[ℝ]].Functions p)  := isEmpty_of_functionsOrderLanguageR_of_ne_0 neq
+        apply F_empty.elim'
+        apply g
+
+      · rename_i p
+        by_cases neq : p=0
+        · rw [neq] at h t_1
+
+          rcases t2 with ⟨a1 ⟩ |  ⟨g, t_2⟩
+
+          · exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.func h (fun i: Fin 0=>  nomatch i) else Term.var (reindex a1) )
+          · rename_i e
+            by_cases neq2 : e=0
+            rw [neq2] at g t_2
+            exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.func h (fun i: Fin 0=>  nomatch i) else Term.func g (fun i: Fin 0=> nomatch i) )
+
+            have F_empty : IsEmpty (order_language[[ℝ]].Functions e)  := isEmpty_of_functionsOrderLanguageR_of_ne_0 neq2
+            apply F_empty.elim'
+            apply g
+
+        · have F_empty : IsEmpty (order_language[[ℝ]].Functions p)  := isEmpty_of_functionsOrderLanguageR_of_ne_0 neq
+          apply F_empty.elim'
+          apply h
+
+    · have F_empty : IsEmpty (order_language[[ℝ]].Relations l):= isEmpty_of_relationsOrderLanguageR_of_ne_2 neq
+      apply F_empty.elim'
+      apply R
 
   -- rcases block with ⟨ _⟩|⟨_ ⟩ | ⟨t1 ,t2⟩ | ⟨R, f⟩| ⟨ f⟩ |⟨ ⟩
 
@@ -977,12 +1018,16 @@ def Formulaisbounded  (φ : Formula (order_language[[ℝ]]) (Fin 1)  ) : Bounded
   (by simp : BoundedFormula (order_language[[ℝ]]) (Fin 1) 0  =Formula (order_language[[ℝ]]) (Fin 1)  ) ▸ φ
 
 
+/--
+Every set that is definable in the Language `(ℝ, <)` is a finite union of intervals.
+-/
 theorem definable_sets_left : ∀U : Set ℝ, isDefinable order_language U → DLO.interval.is_finite_union_of_intervalsP U := by
   intro U is_def_U
   rcases is_def_U with ⟨φ', set_eq⟩
 
   have langhom: order_language[[@univ ℝ]] = order_language[[ℝ]] := by
     sorry -- donderdag Johan
+    -- Wat we *willen* is dat de formule `φ'` een `order_language[[ℝ]]` formule wordt.
 
   rw [langhom] at φ'
   expose_names
