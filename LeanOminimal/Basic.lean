@@ -49,7 +49,7 @@ instance Rstruc : Language.Structure order_language ℝ where
     | _ => false
 
 
-section SomeSectionName
+section Const
 
 open FirstOrder.Language
 open Set
@@ -65,4 +65,4 @@ def constterm {X : Type} (L : FirstOrder.Language) (b : X) : FirstOrder.Language
 def constR  (b : ℝ ) : FirstOrder.Language.Term (order_language [[univ (α := ℝ)]]) (Fin 1) :=
   Term.func (Sum.inr (constantsOn_toFunctions0 ⟨b, Set.mem_univ b⟩)) (λ i => nomatch i)
 
-end SomeSectionName
+end Const
