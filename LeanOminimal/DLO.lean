@@ -64,7 +64,7 @@ lemma no_right_extrema : ¬∃y : X, ∀z : X, y = z ∨ y >₀ z := by
 end DLO
 
 /--
-Proof that `(ℝ, <)`, the real numbers with the stadard order,
+The model `(ℝ, <)` of real numbers with the stadard order,
 is a dense linear order.
 -/
 @[simp]

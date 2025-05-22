@@ -29,6 +29,7 @@ def order_language : FirstOrder.Language where
   Functions := λ _ => Empty
   Relations := λ n => if n = 2 then ordsymbol else Empty
 
+noncomputable section reals
 /--
 The model `(ℝ, <)` of `order_language = (<₀)` equipped with
 the real numbers and the standard `<`, i.e., `less than` order.
@@ -47,6 +48,8 @@ instance Rstruc : Language.Structure order_language ℝ where
     match n with
     | 2 => real_order.ord f -- Why are we matching with something that only has one case?
     | _ => false
+
+end reals
 
 
 section Const

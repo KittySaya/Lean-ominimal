@@ -7,7 +7,10 @@ open Set
 
 namespace Definability
 
-lemma emptyInterval : isDefinable order_language (∅ : Set ℝ) := by
+/--
+The empty interval `∅` is definable.
+-/
+lemma isDefinable_emptyInterval : isDefinable order_language (∅ : Set ℝ) := by
   simp only [isDefinable]
   unfold Definable₁
   unfold Definable
@@ -28,7 +31,10 @@ lemma emptyInterval : isDefinable order_language (∅ : Set ℝ) := by
   exact Eq.symm ((fun {x} ↦ EReal.coe_eq_one.mp) (congrArg Real.toEReal h))
 
 
-lemma upperInterval (a : ℝ) : isDefinable order_language (DLO.interval.upper a):= by
+/--
+The interval `(←, a)` is definable.
+-/
+lemma isDefinable_upperInterval (a : ℝ) : isDefinable order_language (DLO.interval.upper a):= by
   simp only [isDefinable]
   unfold Definable₁
   unfold Definable
@@ -47,7 +53,10 @@ lemma upperInterval (a : ℝ) : isDefinable order_language (DLO.interval.upper a
     apply h
 
 
-lemma lowerInterval (b : ℝ) : isDefinable order_language (DLO.interval.lower b):= by
+/--
+The interval `(a, →)` is definable.
+-/
+lemma isDefinable_lowerInterval (b : ℝ) : isDefinable order_language (DLO.interval.lower b):= by
   simp only [isDefinable]
   unfold Definable₁
   unfold Definable
@@ -66,7 +75,10 @@ lemma lowerInterval (b : ℝ) : isDefinable order_language (DLO.interval.lower b
     apply h
 
 
-lemma boundInterval (a b : ℝ) : isDefinable order_language (DLO.interval.bounded a b) := by
+/--
+The interval `(a, b)` is definable.
+-/
+lemma isDefinable_boundInterval (a b : ℝ) : isDefinable order_language (DLO.interval.bounded a b) := by
   simp only [isDefinable]
   unfold Definable₁
   unfold Definable
@@ -96,7 +108,10 @@ lemma boundInterval (a b : ℝ) : isDefinable order_language (DLO.interval.bound
     · apply h2
 
 
-lemma singletonInterval (b : ℝ) : isDefinable order_language (singleton b):=  by
+/--
+The interval `[a, a]` is definable.
+-/
+lemma isDefinable_singletonInterval (b : ℝ) : isDefinable order_language (singleton b):=  by
   simp only [isDefinable]
   unfold Definable₁
   unfold Definable
@@ -110,7 +125,10 @@ lemma singletonInterval (b : ℝ) : isDefinable order_language (singleton b):=  
   rfl
 
 
-lemma unionInterval {X L} (U V : Set X) [DLO X] [Language.Structure L X] : isDefinable L U → isDefinable L V → isDefinable L (U ∪ V) := by
+/--
+The union of two definable intervals is definable.
+-/
+lemma isDefinable_unionInterval {X L} (U V : Set X) [DLO X] [Language.Structure L X] : isDefinable L U → isDefinable L V → isDefinable L (U ∪ V) := by
   simp
   unfold Definable₁
   unfold Definable
@@ -148,14 +166,19 @@ lemma unionInterval {X L} (U V : Set X) [DLO X] [Language.Structure L X] : isDef
       rw [<- hψ] at x_in_psiset
       exact x_in_psiset
 
+
+/--
+Every set of real numbers that is a finite union of intervals
+is definable.
+-/
 theorem finite_unions_are_definable : ∀U : Set ℝ, DLO.interval.is_finite_union_of_intervalsP U → isDefinable order_language U := by
   intro U is_finite_union
   induction' is_finite_union with a b a b x A B _ _ A_ih B_ih
-  · exact emptyInterval
-  · exact boundInterval a b
-  · exact lowerInterval a
-  · exact upperInterval b
-  · exact singletonInterval x
-  · exact unionInterval A B A_ih B_ih
+  · exact isDefinable_emptyInterval
+  · exact isDefinable_boundInterval a b
+  · exact isDefinable_lowerInterval a
+  · exact isDefinable_upperInterval b
+  · exact isDefinable_singletonInterval x
+  · exact isDefinable_unionInterval A B A_ih B_ih
 
 end Definability
