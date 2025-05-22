@@ -1112,8 +1112,7 @@ theorem definable_sets_left : ∀U : Set ℝ, isDefinable order_language U → D
   rcases is_def_U with ⟨φ', set_eq⟩
 
   have langhom: order_language[[@univ ℝ]] = order_language[[@univ ℝ]] := by
-    sorry -- donderdag Johan
-    -- Wat we *willen* is dat de formule `φ'` een `order_language[[@univ ℝ]]` formule wordt.
+    rfl
 
   let φ := Formulaisbounded φ'
   let ψ := QFImpAllFreeFormula.toBoundedFormula ((BoundedFormula.toImpAllFreeFormula φ).toQFImpAllFreeFormula)
