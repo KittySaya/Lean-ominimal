@@ -836,8 +836,9 @@ def Existblock.todisjunctionAtomicblocks {n : ℕ} : Existblock (order_language[
 
 
 -- Docstring missing
-def disjunctionAtomicblocks.todisjunctionRelblocks {n} : disjunctionAtomicblocks (order_language[[@univ ℝ]]) (Fin 1) (n+1) → disjunctionRelblocks (order_language[[@univ ℝ]]) (Fin 1) (n)
-  | atomblock => sorry
+def disjunctionAtomicblocks.todisjunctionRelblocks {n} : disjunctionAtomicblocks (order_language[[@univ ℝ]]) (Fin 1) (n+1) → disjunctionRelblocks (order_language[[@univ ℝ]]) (Fin 1) n
+  | atom a   => disjunctionRelblocks.relb (Atomicblock.toRelblock a)
+  | or f₁ f₂ => disjunctionRelblocks.or (f₁.todisjunctionRelblocks) (f₂.todisjunctionRelblocks)
 
   -- intro disA
   -- rcases disA with ⟨atom ⟩ | ⟨d1, d2 ⟩
@@ -1100,8 +1101,9 @@ lemma formulaequiv (φ ψ : BoundedFormula (order_language[[@univ ℝ]]) (Fin 1)
     rw [this]
     exact psi
 
+-- Docstring missing
 def Formulaisbounded  (φ : Formula (order_language[[@univ ℝ]]) (Fin 1)  ) : BoundedFormula (order_language[[@univ ℝ]]) (Fin 1) 0 :=
-  (by simp : BoundedFormula (order_language[[@univ ℝ]]) (Fin 1) 0  =Formula (order_language[[@univ ℝ]]) (Fin 1)  ) ▸ φ
+  (by simp : BoundedFormula (order_language[[@univ ℝ]]) (Fin 1) 0 = Formula (order_language[[@univ ℝ]]) (Fin 1)) ▸ φ
 
 
 /--
