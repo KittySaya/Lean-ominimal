@@ -368,7 +368,7 @@ lemma is_finite_union_of_intervalsP.intersection {U V : Set X} (hU : is_finite_u
 
 
 
-
+  -- Note to self, use the commutativity of intersections
   repeat1' sorry
   -- The statement is largely obvious but tedious to implement.
   -- Unless either of you is keen on proving all 30 different cases.
