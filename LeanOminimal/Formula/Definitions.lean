@@ -48,7 +48,7 @@ inductive ImpAllFreeFormula (L : Language) (α : Type) : ℕ → Type _
 
 alias Implication_ForAll_free_formula := ImpAllFreeFormula
 
-
+------------------------------------------------------
 
 /--
 A `Quantiefier_Implication_free_formula`, also known as a `QFImpAllFreeFormula`,
@@ -88,6 +88,7 @@ alias Quantiefier_Implication_free_formula := QFImpAllFreeFormula
 
 end AllPurpose_Formulas
 
+------------------------------------------------------
 
 section Specific_Formulas
 /--
@@ -107,6 +108,7 @@ inductive Literal (L : Language) (α : Type) (n : ℕ) : Type _
                                           : Literal L α n
   | not (f : Literal L α n)               : Literal L α n
 
+------------------------------------------------------
 
 section Existblock
 /--
@@ -149,6 +151,7 @@ def disjunctionExistblocks.and
 
 end Existblock
 
+------------------------------------------------------
 
 section Atomicblock
 /--
@@ -202,6 +205,7 @@ def disjunctionAtomicblocks.and
 
 end Atomicblock
 
+------------------------------------------------------
 
 section Relblock
 /--
@@ -255,4 +259,7 @@ def disjunctionRelblocks.and
         (disjunctionRelblocks.and a₂ b)
 
 end Relblock
+
+------------------------------------------------------
+
 end Specific_Formulas
