@@ -128,6 +128,25 @@ inductive disjunctionExistblocks (L : Language)  (α : Type) : ℕ → Type _
 | or      {m : ℕ} (f₁ f₂ :disjunctionExistblocks L α m ) : disjunctionExistblocks L α m
 
 alias disjunctionExistBlocks := disjunctionExistblocks
+
+/--
+Models the conjunction `∧` to work with `disjunctionExistblocks`,
+using the distribution laws of and over or:
+`σ ∧ (φ ∨ ψ) ↔ (σ ∧ φ) ∨ (σ ∧ ψ)` and
+`(φ ∨ ψ) ∧ σ ↔ (φ ∧ σ) ∨ (ψ ∧ σ)`.
+-/
+def disjunctionExistblocks.and
+    {L : Language} {α : Type} {n : ℕ}
+    (f₁ f₂ : disjunctionExistblocks L α n) : disjunctionExistblocks L α n :=
+  match f₁, f₂ with
+  | existbl a₁, existbl a₂ => existbl (Existblock.and a₁ a₂)
+  | existbl a₁, or b₁ b₂ =>
+      or (disjunctionExistblocks.and (existbl a₁) b₁)
+        (disjunctionExistblocks.and (existbl a₁) b₂)
+  | or a₁ a₂, b =>
+      or (disjunctionExistblocks.and a₁ b)
+        (disjunctionExistblocks.and a₂ b)
+
 end Existblock
 
 
@@ -153,8 +172,6 @@ inductive Atomicblock (L : Language) (α : Type) : ℕ → Type _
   | rel    {n} {l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : Atomicblock L α n
   | and    {n} (f₁ f₂ : Atomicblock L α n) : Atomicblock L α n
 
-
-
 /--
 A disjunction of atomicblock blocks of a Language `L`, a Type `α`, and a number of free variables `n`
 is a number of atomic blocks connected with "or" `∨`.
@@ -164,9 +181,29 @@ inductive disjunctionAtomicblocks (L : Language)  (α : Type) : ℕ → Type _
 | or    {m : ℕ} (f₁ f₂ :disjunctionAtomicblocks L α m ) : disjunctionAtomicblocks L α m
 
 alias disjunctionAtomicBlocks := disjunctionAtomicblocks
+
+/--
+Models the conjunction `∧` to work with `disjunctionAtomicblocks`,
+using the distribution laws of and over or:
+`σ ∧ (φ ∨ ψ) ↔ (σ ∧ φ) ∨ (σ ∧ ψ)` and
+`(φ ∨ ψ) ∧ σ ↔ (φ ∧ σ) ∨ (ψ ∧ σ)`.
+-/
+def disjunctionAtomicblocks.and
+    {L : Language} {α : Type} {n : ℕ}
+    (f₁ f₂ : disjunctionAtomicblocks L α n) : disjunctionAtomicblocks L α n :=
+  match f₁, f₂ with
+  | atom a₁, atom a₂ => atom (Atomicblock.and a₁ a₂)
+  | atom a₁, or b₁ b₂ =>
+      or (disjunctionAtomicblocks.and (atom a₁) b₁)
+        (disjunctionAtomicblocks.and (atom a₁) b₂)
+  | or a₁ a₂, b =>
+      or (disjunctionAtomicblocks.and a₁ b)
+        (disjunctionAtomicblocks.and a₂ b)
+
 end Atomicblock
 
 
+section Relblock
 /--
 A Relblock of a Language `L`, a Type `α`, and a number of free variables `n`
 is a formula consisting solely of
@@ -199,4 +236,23 @@ inductive disjunctionRelblocks (L : Language) (α : Type) : ℕ → Type _
 
 alias disjunctionRelBlocks := disjunctionRelblocks
 
+/--
+Models the conjunction `∧` to work with `disjunctionRelblocks`,
+using the distribution laws of and over or:
+`σ ∧ (φ ∨ ψ) ↔ (σ ∧ φ) ∨ (σ ∧ ψ)` and
+`(φ ∨ ψ) ∧ σ ↔ (φ ∧ σ) ∨ (ψ ∧ σ)`.
+-/
+def disjunctionRelblocks.and
+    {L : Language} {α : Type} {n : ℕ}
+    (f₁ f₂ : disjunctionRelblocks L α n) : disjunctionRelblocks L α n :=
+  match f₁, f₂ with
+  | relb a₁, relb a₂ => relb (Relblock.and a₁ a₂)
+  | relb a₁, or b₁ b₂ =>
+      or (disjunctionRelblocks.and (relb a₁) b₁)
+        (disjunctionRelblocks.and (relb a₁) b₂)
+  | or a₁ a₂, b =>
+      or (disjunctionRelblocks.and a₁ b)
+        (disjunctionRelblocks.and a₂ b)
+
+end Relblock
 end Specific_Formulas
