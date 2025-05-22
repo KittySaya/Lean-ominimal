@@ -125,7 +125,7 @@ alias ExistBlock := Existblock
 A disjunction of existblock blocks of a Language `L`, a Type `α`, and a number of free variables `n`
 is a number of exist blocks connected with "or" `∨`.
 -/
-inductive disjunctionExistblocks (L : Language)  (α : Type) : ℕ → Type _
+inductive disjunctionExistblocks (L : Language) (α : Type) : ℕ → Type _
 | existbl {m : ℕ} (r: Existblock L α m)                  : disjunctionExistblocks L α m
 | or      {m : ℕ} (f₁ f₂ :disjunctionExistblocks L α m ) : disjunctionExistblocks L α m
 

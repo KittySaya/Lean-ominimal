@@ -127,3 +127,13 @@ lemma isEmpty_of_functionsOrderLanguageR_of_ne_0 {n : ℕ} (h : ¬n=0) : IsEmpty
 alias func0empty := isEmpty_of_functionsOrderLanguageR_of_ne_0
 
 end order_language_ℝ
+
+section some_section
+
+-- !!! - docstring missing
+def reindex{n} (i : Fin 1 ⊕ Fin (n+1)) : Fin 1 ⊕ Fin n  :=
+ Sum.inl (match i with
+  | Sum.inl x => x
+  | Sum.inr x => x)
+
+end some_section

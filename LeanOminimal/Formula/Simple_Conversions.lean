@@ -1,8 +1,8 @@
-import LeanOminimal.Basic
 import LeanOminimal.Formula.Definitions
 
 open FirstOrder
 open Language
+open Set
 
 namespace FirstOrder
 namespace Language
@@ -113,8 +113,8 @@ This lemma states that both methods are the same.
 lemma conversion_equivalence {L} {α} {n} (lit : Literal L α n): lit.toQFImpAllFreeFormula.toImpAllFreeFormula = lit.toImpAllFreeFormula := by
   induction' lit
   repeat' rfl
-  · dsimp!
-    congr
+  dsimp!
+  congr
 
 end Literal
 
@@ -137,7 +137,6 @@ Sends an existblock `∃x [Lit₁, Lit₂, Lit₃, ...]` to the ImpAllFreeFormul
 -/
 def toImpAllFreeFormula {L} {α} {n}: Existblock L α (n + 1) → ImpAllFreeFormula L α n :=
   fun φ => ImpAllFreeFormula.exists (φ.toQFImpAllFreeFormula.toImpAllFreeFormula)
-
 
 
 /--
@@ -165,6 +164,12 @@ end disjunctionExistblocks
 namespace Atomicblock
 
 /--
+Sends an AtomicBlock `a` to the disjunction of atomic blocks consisting solely of itself.
+-/
+def todisjunctionAtomicblocks {m : ℕ} {L} {α} : Atomicblock L α m → disjunctionAtomicblocks L α m :=
+  fun a => disjunctionAtomicblocks.atom a
+
+/--
 Sends a Atomic Block `φ` to their respective ImpAllFreeFormula by lifting the appropriate terms.
 -/
 def toImpAllFreeFormula {L} {α} {n} : (Atomicblock L α n) → ImpAllFreeFormula L α n
@@ -185,12 +190,6 @@ end Atomicblock
 ------------------------------------------------------
 
 namespace disjunctionAtomicblocks
-
-/--
-Sends an AtomicBlock `a` to the disjunction of atomic blocks consisting solely of itself.
--/
-def Atomicblock.todisjunctionAtomicblocks {m : ℕ} {L} {α} : Atomicblock L α m → disjunctionAtomicblocks L α m :=
-  fun a => disjunctionAtomicblocks.atom a
 
 end disjunctionAtomicblocks
 

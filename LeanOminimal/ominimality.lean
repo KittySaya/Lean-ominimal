@@ -1,5 +1,4 @@
 import LeanOminimal.DLO
-import LeanOminimal.Definability
 import LeanOminimal.Definability.Left
 import LeanOminimal.Definability.Right
 
