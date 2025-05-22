@@ -156,15 +156,17 @@ lemma is_finite_union_of_intervalsP.intersection {U V : Set X} (hU : is_finite_u
       exact empty
 
   induction' hU with a b a a a U₁ U₂ hU₁ hU₂ U₁_ih U₂_ih
-  · rw [empty_inter V]
+  simp_all only [singleton, setOf_eq_eq_singleton, empty_inter]
+
+  case empty =>
     exact is_finite_union_of_intervalsP.empty
 
   case point =>
     by_cases h : a ∈ V
-    · have : singleton a ∩ V = singleton a := by
+    simp_all only [singleton, setOf_eq_eq_singleton]
+    · have : {a} ∩ V = singleton a := by
         refine inter_eq_left.mpr ?_
         intro x hx
-        rw [mem_singleton_iff] at hx
         subst hx
         assumption
       rw [this]
@@ -194,7 +196,8 @@ lemma is_finite_union_of_intervalsP.intersection {U V : Set X} (hU : is_finite_u
     apply union
     assumption'
 
-  · rcases DLO.total a c with ac_less | ac_eq | ac_more
+  case bounded.bounded =>
+    rcases DLO.total a c with ac_less | ac_eq | ac_more
     · have this : interval.bounded a b ∩ interval.bounded c d = interval.bounded c b ∩ interval.bounded c d := by
         refine inter_congr_right ?_ ?_
         · intro x hx
@@ -226,9 +229,145 @@ lemma is_finite_union_of_intervalsP.intersection {U V : Set X} (hU : is_finite_u
         rw [thiss]
         exact bounded c b
 
-      repeat1' sorry
+      · have thiss : interval.bounded c b ∩ interval.bounded c d = interval.bounded c b := by
+          refine inter_eq_left.mpr ?_
+          intro x hx
+          repeat rw [mem_bounded_iff] at *
+          rcases hx with ⟨c_lt, lt_b⟩
+          constructor
+          · assumption
+          · subst bd_eq
+            assumption'
 
-    repeat1' sorry
+        rw [thiss]
+        exact bounded c b
+      · have thiss : interval.bounded c b ∩ interval.bounded c d = interval.bounded c d := by
+          refine inter_eq_right.mpr ?_
+          intro x hx
+          repeat rw [mem_bounded_iff] at *
+          rcases hx with ⟨c_lt, lt_b⟩
+          constructor
+          · assumption
+          · apply DLO.trans x d b
+            assumption'
+
+        rw [thiss]
+        exact bounded c d
+
+    · have this : interval.bounded a b ∩ interval.bounded c d = interval.bounded c b ∩ interval.bounded c d := by
+        refine inter_congr_right ?_ ?_
+        · intro x hx
+          rw [mem_inter_iff] at hx
+          repeat rw [mem_bounded_iff] at *
+          rcases hx with ⟨⟨c_lt, lt_b⟩, ⟨c_lt, lt_d⟩⟩
+          constructor
+          · subst ac_eq
+            assumption'
+          · assumption
+        · intro x hx
+          rw [mem_inter_iff] at hx
+          repeat rw [mem_bounded_iff] at *
+          rcases hx with ⟨⟨a_lt, lt_b⟩, ⟨c_lt, lt_d⟩⟩
+          trivial
+
+      rw [this]
+      rcases DLO.total b d with bd_less | bd_eq | bd_more
+      · have thiss : interval.bounded c b ∩ interval.bounded c d = interval.bounded c b := by
+          refine inter_eq_left.mpr ?_
+          intro x hx
+          repeat rw [mem_bounded_iff] at *
+          rcases hx with ⟨c_lt, lt_b⟩
+          constructor
+          · assumption
+          · apply DLO.trans x b d
+            assumption'
+
+        rw [thiss]
+        exact bounded c b
+
+      · have thiss : interval.bounded c b ∩ interval.bounded c d = interval.bounded c b := by
+          refine inter_eq_left.mpr ?_
+          intro x hx
+          repeat rw [mem_bounded_iff] at *
+          rcases hx with ⟨c_lt, lt_b⟩
+          constructor
+          · assumption
+          · subst bd_eq
+            assumption'
+
+        rw [thiss]
+        exact bounded c b
+      · have thiss : interval.bounded c b ∩ interval.bounded c d = interval.bounded c d := by
+          refine inter_eq_right.mpr ?_
+          intro x hx
+          repeat rw [mem_bounded_iff] at *
+          rcases hx with ⟨c_lt, lt_b⟩
+          constructor
+          · assumption
+          · apply DLO.trans x d b
+            assumption'
+
+        rw [thiss]
+        exact bounded c d
+    · have this : interval.bounded a b ∩ interval.bounded c d = interval.bounded a b ∩ interval.bounded a d := by
+        refine inter_congr_left ?_ ?_
+        · intro x hx
+          rw [mem_inter_iff] at hx
+          repeat rw [mem_bounded_iff] at *
+          rcases hx with ⟨⟨c_lt, lt_b⟩, ⟨c_lt, lt_d⟩⟩
+          constructor
+          · apply DLO.trans c a x
+            assumption'
+          · assumption
+        · intro x hx
+          rw [mem_inter_iff] at hx
+          repeat rw [mem_bounded_iff] at *
+          rcases hx with ⟨⟨a_lt, lt_b⟩, ⟨c_lt, lt_d⟩⟩
+          trivial
+
+      rw [this]
+      rcases DLO.total b d with bd_less | bd_eq | bd_more
+      · have thiss : interval.bounded a b ∩ interval.bounded a d = interval.bounded a b := by
+          refine inter_eq_left.mpr ?_
+          intro x hx
+          repeat rw [mem_bounded_iff] at *
+          rcases hx with ⟨c_lt, lt_b⟩
+          constructor
+          · assumption
+          · apply DLO.trans x b d
+            assumption'
+
+        rw [thiss]
+        exact bounded a b
+
+      · have thiss : interval.bounded a b ∩ interval.bounded a d = interval.bounded a b := by
+          refine inter_eq_left.mpr ?_
+          intro x hx
+          repeat rw [mem_bounded_iff] at *
+          rcases hx with ⟨c_lt, lt_b⟩
+          constructor
+          · assumption
+          · subst bd_eq
+            assumption'
+
+        rw [thiss]
+        exact bounded a b
+
+      · have thiss : interval.bounded a b ∩ interval.bounded a d = interval.bounded a d := by
+          refine inter_eq_right.mpr ?_
+          intro x hx
+          repeat rw [mem_bounded_iff] at *
+          rcases hx with ⟨c_lt, lt_b⟩
+          constructor
+          · assumption
+          · apply DLO.trans x d b
+            assumption'
+
+        rw [thiss]
+        exact bounded a d
+
+
+
 
   repeat1' sorry
   -- The statement is largely obvious but tedious to implement.
