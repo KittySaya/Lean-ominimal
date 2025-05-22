@@ -16,6 +16,6 @@ Definability.Right             ; Finished   ; Proves finite unions of intervals 
 Definability.Left              ; Incomplete ; Proves definable sets are finite unions of intervals.
 Definability.Definitions       ; Debatable  ; Defines what it means to be definable.
 
-Formula.Definitions            ; Deprecated?; Contains the different instances of formula types. To be replaced by Skeleton_right_implication
-Formula.Rewrite                ; Deprecated?; Shows rewriting of one type of formula to a different one.
-Formula.Existential_Elimination; Deprecated?; Proof that Real_order admits Quantifier Elimination
+Formula.Definitions            ; Finished   ; Contains the different instances of formula types.
+Formula.Conversions; WIP; Contains functions on how to move one formula type to another.
+Formula.Conversions; DOC MISSING; Misses some docstrings
