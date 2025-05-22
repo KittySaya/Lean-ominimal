@@ -1085,7 +1085,7 @@ lemma QFimpAllFreeFormulafiniteunion (φ : QFImpAllFreeFormula (order_language[[
 
 -- Docstring missing
 -- Joos
-lemma formulaequiv (φ ψ : BoundedFormula (order_language[[@univ ℝ]]) (Fin 1) 0 ):
+lemma formulaequiv (φ ψ : BoundedFormula (order_language[[@univ ℝ]]) (Fin 1) 0) :
 (∀ x:ℝ,  ψ.Realize (fun _: Fin 1=> x) (fun i:Fin 0 => nomatch i) ↔ φ.Realize (fun _: Fin 1=> x) (fun i:Fin 0 => nomatch i)) → (Formulafiniteunion φ ↔ Formulafiniteunion ψ) := by
   intro hyp
   unfold Formulafiniteunion at *
@@ -1105,7 +1105,7 @@ lemma formulaequiv (φ ψ : BoundedFormula (order_language[[@univ ℝ]]) (Fin 1)
 def Formulaisbounded  (φ : Formula (order_language[[@univ ℝ]]) (Fin 1)  ) : BoundedFormula (order_language[[@univ ℝ]]) (Fin 1) 0 :=
   (by simp : BoundedFormula (order_language[[@univ ℝ]]) (Fin 1) 0 = Formula (order_language[[@univ ℝ]]) (Fin 1)) ▸ φ
 
-
+--moved to Definability.Left
 /--
 Every set that is definable in the Language `(ℝ, <)` is a finite union of intervals.
 -/
