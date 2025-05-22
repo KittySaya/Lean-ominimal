@@ -1111,9 +1111,6 @@ theorem definable_sets_left : ∀U : Set ℝ, isDefinable order_language U → D
   intro U is_def_U
   rcases is_def_U with ⟨φ', set_eq⟩
 
-  have langhom: order_language[[@univ ℝ]] = order_language[[@univ ℝ]] := by
-    rfl
-
   let φ := Formulaisbounded φ'
   let ψ := QFImpAllFreeFormula.toBoundedFormula ((BoundedFormula.toImpAllFreeFormula φ).toQFImpAllFreeFormula)
 
