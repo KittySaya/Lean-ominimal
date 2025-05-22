@@ -406,7 +406,7 @@ def disjunctionExistblocks.toQFImpAllFreeFormula  {L} {α} {n}: disjunctionExist
   | .or f1 f2 => f1.toQFImpAllFreeFormula.or f2.toQFImpAllFreeFormula
 
 
-def disjunctionRelblocks.todisjunctionExistblocks {L} {α} {n}: disjunctionRelblocks L α n→ disjunctionExistblocks L α n 
+def disjunctionRelblocks.todisjunctionExistblocks {L} {α} {n}: disjunctionRelblocks L α n→ disjunctionExistblocks L α n
   | .relb r => disjunctionExistblocks.existbl r.toExistblock
   | .or f1 f2 =>  f1.todisjunctionExistblocks.or f2.todisjunctionExistblocks
 
@@ -425,13 +425,8 @@ This lemma states that, for an existblock `eb`, calling `eb.toImpAllFreeFormulaW
 is the same as calling `eb.toImpAllFreeFormula`.
 -/
 @[simp]
-<<<<<<< HEAD:LeanOminimal-old/skeletonNiels.lean
 lemma Existblock.toImpAllFreeFormula_equivalence {L} {α} {n} (eb : Existblock L α (n+1)) : eb.toImpAllFreeFormula = eb.toImpAllFreeFormulaWithoutExists.exists :=
   rfl
-=======
-lemma Existblock.toImpAllFreeFormula_equivalence {L} {α} {n} (eb : Existblock L α (n+1) ) : eb.toImpAllFreeFormula = eb.toQFImpAllFreeFormula.toImpAllFreeFormula.exists := rfl
-
->>>>>>> origin/main:LeanOminimal/skeletonNiels.lean
 
 /--
 Sends ImpAllFreeFormula `φ` to their BoundedFormula representation.
@@ -582,7 +577,6 @@ lemma isEmpty_of_functionsOrderLanguageR_of_ne_0 {n : ℕ} (h : ¬n=0) : IsEmpty
       apply isEmpty_of_Empty
     · apply functions_is_empty
 
-<<<<<<< HEAD:LeanOminimal-old/skeletonNiels.lean
 alias func0empty := isEmpty_of_functionsOrderLanguageR_of_ne_0
 
 -- Docstring missing
@@ -737,8 +731,6 @@ def Literal.todisjunctionAtomicblocks {n : ℕ}
           apply h
 
 -- Docstring missing
-=======
->>>>>>> origin/main:LeanOminimal/skeletonNiels.lean
 def reindex{n} (i : Fin 1 ⊕ Fin (n+1)) : Fin 1 ⊕ Fin n  :=
  Sum.inl (match i with
   | Sum.inl x => x
@@ -791,11 +783,11 @@ def Literal.todisjunctionAtomicblocks {n : ℕ}
         by_cases neq : l = 0
         case pos =>
           by_cases neq2 : t = 0
-          case pos => 
+          case pos =>
             rw [neq] at h t1
             let const1 := Term.func h t1
             let const2 := Term.func g t2
-            exact disjunctionAtomicblocks.atom (Atomicblock.equal const1 const2) 
+            exact disjunctionAtomicblocks.atom (Atomicblock.equal const1 const2)
           case neg =>
             have F_empty : IsEmpty (order_language[[ℝ]].Functions t) := isEmpty_of_functionsOrderLanguageR_of_ne_0 neq2
             apply F_empty.elim'
@@ -812,7 +804,7 @@ def Literal.todisjunctionAtomicblocks {n : ℕ}
 -- Match on all .not variants explicitly
 | Literal.not (Literal.rel R f) =>
     by
-        rename_i l 
+        rename_i l
         by_cases neq: l = 2
         case pos =>
           let ter1 := f ⟨0, by linarith⟩
@@ -833,7 +825,7 @@ def Literal.todisjunctionAtomicblocks {n : ℕ}
           let QF1 := Atomicblock.rel (Sum.inl ordsymbol.lt) ![ter1, ter2]
           let QF2 := Atomicblock.rel (Sum.inl ordsymbol.lt) ![ter2, ter1]
           exact (disjunctionAtomicblocks.atom QF1).or (disjunctionAtomicblocks.atom QF2)
-    
+
 
 | Literal.not (Literal.equal (.var a1) (.func g t2)) =>
     by
@@ -879,7 +871,7 @@ def Literal.todisjunctionAtomicblocks {n : ℕ}
         by_cases neq : l = 0
         case pos =>
           by_cases neq2 : t = 0
-          case pos => 
+          case pos =>
             rw [neq] at h t1
             let const1 := Term.func h t1
             let const2 := Term.func g t2
@@ -895,7 +887,7 @@ def Literal.todisjunctionAtomicblocks {n : ℕ}
           apply F_empty.elim'
           apply h
 
-    
+
 
 
 def varelimAtomicblock {n} (i: Fin 1 ⊕ Fin (n+1) ) (ter : order_language[[ℝ]].Term (Fin 1 ⊕ Fin n)): Atomicblock (order_language[[ℝ]]) (Fin 1) (n+1) →  Relblock (order_language[[ℝ]]) (Fin 1) n:= by
@@ -1169,7 +1161,7 @@ lemma compatible (eb: Existblock (order_language[[ℝ]]) (Fin 1) (1)) (x: Fin 1 
 def disjunctionRelblocks.todisjunctionExistblocks {L} {α} {n}: disjunctionRelblocks L α n → disjunctionExistblocks L α n := fun
   | .relb r => by r.todisjunctionExistblocks
   | .or f1 f2 => (f1.todisjunctionExistblocks).or f2.todisjunctionExistblocks
-  
+
 
 @[simp]
 def disjunctionExistblocks.elim  {n:ℕ } : disjunctionExistblocks (order_language[[ℝ]]) (Fin 1) (n+1) → disjunctionExistblocks (order_language[[ℝ]]) (Fin 1) (n):= by
@@ -1279,7 +1271,7 @@ lemma QFimpAllFreeFormulafiniteunion (φ : QFImpAllFreeFormula (order_language[[
         ext x
         constructor
         · intro h₁
-          rw [Set.mem_setOf] at h₁ 
+          rw [Set.mem_setOf] at h₁
           exfalso
           apply h
           clear h
