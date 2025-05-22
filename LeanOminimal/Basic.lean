@@ -69,3 +69,61 @@ def constR  (b : ℝ ) : FirstOrder.Language.Term (order_language [[univ (α := 
   Term.func (Sum.inr (constantsOn_toFunctions0 ⟨b, Set.mem_univ b⟩)) (λ i => nomatch i)
 
 end Const
+
+section order_language_ℝ
+
+open FirstOrder
+open Language
+open Set
+
+/--
+If not `n = 2` where `n` is a natural number, then
+in the language `order_language[[@univ ℝ]]`, the set relations of arity `n`
+is empty.
+-/
+lemma isEmpty_of_relationsOrderLanguageR_of_ne_2 {n : ℕ} (h : ¬n=2) : IsEmpty (order_language[[@univ ℝ]].Relations n) := by
+  have const_eq_empty: (constantsOn ℝ ).Relations n = Empty :=
+    FirstOrder.Language.constantsOn_Relations ℝ n
+  have rel_eq_empty:  order_language.Relations n = Empty := by
+    simp
+    intro ass
+    contradiction
+  have coerc : order_language[[@univ ℝ]].Relations n = (order_language.Relations n ⊕ (constantsOn ℝ).Relations n) := by
+    rfl
+  rw [coerc]
+  rw [const_eq_empty, rel_eq_empty]
+  have isEmpty_of_Empty : IsEmpty Empty := Empty.instIsEmpty
+  apply isEmpty_sum.mpr
+  constructor
+  · apply isEmpty_of_Empty
+  · apply isEmpty_of_Empty
+
+alias rel2empty := isEmpty_of_relationsOrderLanguageR_of_ne_2
+
+/--
+If not `n = 0` where `n` is a natural number, then
+in the language `order_language[[@univ ℝ]]`, the set of functions of arity `n`
+is empty.
+-/
+lemma isEmpty_of_functionsOrderLanguageR_of_ne_0 {n : ℕ} (h : ¬n=0) : IsEmpty (order_language[[@univ ℝ]].Functions n) := by
+  have functions_eq_empty : order_language.Functions n = Empty := by
+    simp
+  have coerc : order_language[[@univ ℝ]].Functions n = (order_language.Functions n ⊕ (constantsOn (@univ ℝ) ).Functions n) := by
+    rfl
+  rw [coerc]
+  rcases n with _ | k
+  · exfalso
+    trivial
+
+  · have functions_is_empty : IsEmpty ((constantsOn ℝ ).Functions (k+1)) :=
+      FirstOrder.Language.isEmpty_functions_constantsOn_succ
+    rw [functions_eq_empty]
+    apply isEmpty_sum.mpr
+    constructor
+    · have isEmpty_of_Empty : IsEmpty Empty := Empty.instIsEmpty
+      apply isEmpty_of_Empty
+    · apply functions_is_empty
+
+alias func0empty := isEmpty_of_functionsOrderLanguageR_of_ne_0
+
+end order_language_ℝ
