@@ -545,64 +545,158 @@ lemma isEmpty_of_functionsOrderLanguageR_of_ne_0 {n : ℕ} (h : ¬n=0) : IsEmpty
 alias func0empty := isEmpty_of_functionsOrderLanguageR_of_ne_0
 
 -- Docstring missing
-def Literal.todisjunctionAtomicblocks {n:ℕ }(l : Literal (order_language[[@univ ℝ]]) (Fin 1) n) : disjunctionAtomicblocks (order_language[[@univ ℝ]]) (Fin 1) n := by
-  rcases l with ⟨ ⟩ | ⟨t1 ,t2⟩ | ⟨R, f⟩ | ⟨ ⟩ | ⟨t1, t2⟩ | ⟨R, f⟩ | f
 
-  exact disjunctionAtomicblocks.atom (Atomicblock.truth)
+def Literal.todisjunctionAtomicblocks {n : ℕ}
+  : Literal (order_language[[ℝ]]) (Fin 1) n → disjunctionAtomicblocks (order_language[[ℝ]]) (Fin 1) n
+| Literal.truth =>
+    disjunctionAtomicblocks.atom Atomicblock.truth
 
-  rcases t1 with ⟨a1 ⟩ | ⟨f, t1 ⟩
-  rcases t2 with ⟨a2 ⟩  | ⟨g, t2⟩
+| Literal.equal (.var a1) (.var a2) =>
+    let QF := Atomicblock.equal (@Term.var _ ((Fin 1) ⊕ Fin n) a1)
+                                 (@Term.var _ ((Fin 1) ⊕ Fin n) a2)
+    QF.todisjunctionAtomicblocks
 
-  let QF :=  Atomicblock.equal (@Term.var  (order_language[[@univ ℝ]]) (Fin 1 ⊕ Fin n) a1 ) (@Term.var  (order_language[[@univ ℝ]]) ((Fin 1) ⊕ Fin n) a2)
+| Literal.equal (.var a1) (.func g t2) =>
+    by
+        rename_i l
+        by_cases neq : l = 0
+        case pos =>
+          rw [neq] at g t2
+          let const := Term.func g t2
+          let ter := @Term.var (order_language[[ℝ]]) ((Fin 1) ⊕ Fin n) a1
+          let QF := Atomicblock.equal const ter
+          exact QF.todisjunctionAtomicblocks
+        case neg =>
+          have F_empty : IsEmpty (order_language[[ℝ]].Functions l) := isEmpty_of_functionsOrderLanguageR_of_ne_0 neq
+          apply F_empty.elim'
+          apply g
 
+| Literal.equal (.func f t1) (.var a2) =>
+    by
+        rename_i l
+        by_cases neq : l = 0
+        case pos =>
+          rw [neq] at f t1
+          let const1 := Term.func f t1
+          let ter := @Term.var (order_language[[ℝ]]) ((Fin 1) ⊕ Fin n) a2
+          let QF := Atomicblock.equal const1 ter
+          exact QF.todisjunctionAtomicblocks
+        case neg =>
+          have F_empty : IsEmpty (order_language[[ℝ]].Functions l) := isEmpty_of_functionsOrderLanguageR_of_ne_0 neq
+          apply F_empty.elim'
+          apply f
 
-  exact QF.todisjunctionAtomicblocks
-  let ter := (@Term.var  (order_language[[@univ ℝ]]) ((Fin 1) ⊕ Fin n) a1 )
-  rename_i l
-  by_cases neq : l=0
-  rw [neq] at t2 g
-  let const := Term.func g t2
-  let QF:= Atomicblock.equal const ter
-  exact QF.todisjunctionAtomicblocks
+| Literal.equal (.func h t1) (.func g t2) =>
+    by
+        rename_i l t
+        by_cases neq : l = 0
+        case pos =>
+          by_cases neq2 : t = 0
+          case pos => 
+            rw [neq] at h t1
+            let const1 := Term.func h t1
+            let const2 := Term.func g t2
+            exact disjunctionAtomicblocks.atom (Atomicblock.equal const1 const2) 
+          case neg =>
+            have F_empty : IsEmpty (order_language[[ℝ]].Functions t) := isEmpty_of_functionsOrderLanguageR_of_ne_0 neq2
+            apply F_empty.elim'
+            apply g
+        case neg =>
+          have F_empty : IsEmpty (order_language[[ℝ]].Functions l) := isEmpty_of_functionsOrderLanguageR_of_ne_0 neq
+          apply F_empty.elim'
+          apply h
 
-  have F_empty : IsEmpty (order_language[[@univ ℝ]].Functions l)  := isEmpty_of_functionsOrderLanguageR_of_ne_0 neq
-  apply F_empty.elim'
-  apply g
+| Literal.rel R f =>
+    let QF := Atomicblock.rel R f
+    QF.todisjunctionAtomicblocks
 
+-- Match on all .not variants explicitly
+| Literal.not (Literal.rel R f) =>
+    by
+        rename_i l 
+        by_cases neq: l = 2
+        case pos =>
+          let ter1 := f ⟨0, by linarith⟩
+          let ter2 := f ⟨1, by linarith⟩
+          let QF1 := Atomicblock.rel (Sum.inl ordsymbol.lt) ![ter2, ter1]
+          let QF2 := Atomicblock.equal ter1 ter2
+          exact disjunctionAtomicblocks.or QF1.todisjunctionAtomicblocks QF2.todisjunctionAtomicblocks
+        case neg =>
+          exfalso
+          have F_empty : IsEmpty (order_language[[ℝ]].Relations l) := isEmpty_of_relationsOrderLanguageR_of_ne_2 neq
+          apply F_empty.elim'
+          apply R
 
-  rename_i l
+| Literal.not (Literal.equal (.var a1) (.var a2)) =>
+    by
+          let ter1:= @Term.var (order_language[[ℝ]]) ((Fin 1) ⊕ Fin n) a1
+          let ter2 := @Term.var (order_language[[ℝ]]) ((Fin 1) ⊕ Fin n) a2
+          let QF1 := Atomicblock.rel (Sum.inl ordsymbol.lt) ![ter1, ter2]
+          let QF2 := Atomicblock.rel (Sum.inl ordsymbol.lt) ![ter2, ter1]
+          exact (disjunctionAtomicblocks.atom QF1).or (disjunctionAtomicblocks.atom QF2)
+    
 
+| Literal.not (Literal.equal (.var a1) (.func g t2)) =>
+    by
+        rename_i l
+        by_cases neq : l = 0
+        case pos =>
+          rw [neq] at g t2
+          let const := Term.func g t2
+          let ter := @Term.var (order_language[[ℝ]]) ((Fin 1) ⊕ Fin n) a1
+          let QF1 := Atomicblock.rel (Sum.inl ordsymbol.lt) ![ter, const]
+          let QF2 := Atomicblock.rel (Sum.inl ordsymbol.lt) ![const, ter]
+          exact (disjunctionAtomicblocks.atom QF1).or (disjunctionAtomicblocks.atom QF2)
+        case neg =>
+          have F_empty : IsEmpty (order_language[[ℝ]].Functions l) := isEmpty_of_functionsOrderLanguageR_of_ne_0 neq
+          apply F_empty.elim'
+          apply g
 
-  by_cases neq : l=0
-  rw [neq] at f t1
-  let const1 := Term.func f t1
-  let QF:= Atomicblock.equal const1 t2
-  exact QF.todisjunctionAtomicblocks
+| Literal.not (Literal.equal (.func f t1) (.var a2)) =>
+    by
+        rename_i l
+        by_cases neq : l = 0
+        case pos =>
+          rw [neq] at f t1
+          let const := Term.func f t1
+          let ter := @Term.var (order_language[[ℝ]]) ((Fin 1) ⊕ Fin n) a2
+          let QF1 := Atomicblock.rel (Sum.inl ordsymbol.lt) ![ter, const]
+          let QF2 := Atomicblock.rel (Sum.inl ordsymbol.lt) ![const, ter]
+          exact (disjunctionAtomicblocks.atom QF1).or (disjunctionAtomicblocks.atom QF2)
+        case neg =>
+          have F_empty : IsEmpty (order_language[[ℝ]].Functions l) := isEmpty_of_functionsOrderLanguageR_of_ne_0 neq
+          apply F_empty.elim'
+          apply f
 
-  have F_empty : IsEmpty (order_language[[@univ ℝ]].Functions l)  := isEmpty_of_functionsOrderLanguageR_of_ne_0 neq
-  apply F_empty.elim'
-  apply f
+| Literal.not Literal.truth =>
+    disjunctionAtomicblocks.atom Atomicblock.falsum
 
-  let QF :=  Atomicblock.rel R f
-  exact QF.todisjunctionAtomicblocks
-  exact disjunctionAtomicblocks.atom (Atomicblock.falsum)
-  let QF1 := Atomicblock.rel (Sum.inl ordsymbol.lt) (fun (i:Fin 2)=>  if i=0 then t1 else t2  )
-  let QF2 := Atomicblock.rel (Sum.inl ordsymbol.lt) (fun (i:Fin 2)=> if i=0 then t2 else t1 )
-  exact disjunctionAtomicblocks.or QF1.todisjunctionAtomicblocks QF2.todisjunctionAtomicblocks
-  rename_i l
-  by_cases neq: l=2
-  let ter1:= f ⟨0, by linarith⟩
-  let ter2 := f ⟨1, by linarith⟩
-  let QF1 := Atomicblock.rel (Sum.inl ordsymbol.lt) (fun (i:Fin 2)=>  if i=0 then ter2 else ter1  )
-  let QF2 := Atomicblock.equal ter1 ter2
-  exact disjunctionAtomicblocks.or QF1.todisjunctionAtomicblocks QF2.todisjunctionAtomicblocks
-  exfalso
-  have F_empty : IsEmpty (order_language[[@univ ℝ]].Relations l)  := isEmpty_of_relationsOrderLanguageR_of_ne_2 neq
-  apply F_empty.elim'
-  apply R
+| Literal.not (Literal.not f) =>
+    f.todisjunctionAtomicblocks
 
+| Literal.not (Literal.equal (.func h t1) (.func g t2)) =>
+      by
+        rename_i l t
+        by_cases neq : l = 0
+        case pos =>
+          by_cases neq2 : t = 0
+          case pos => 
+            rw [neq] at h t1
+            let const1 := Term.func h t1
+            let const2 := Term.func g t2
+            let QF1 := Atomicblock.rel (Sum.inl ordsymbol.lt) ![const1, const2]
+            let QF2 := Atomicblock.rel (Sum.inl ordsymbol.lt) ![const2, const1]
+            exact (disjunctionAtomicblocks.atom QF1).or (disjunctionAtomicblocks.atom QF2)
+          case neg =>
+            have F_empty : IsEmpty (order_language[[ℝ]].Functions t) := isEmpty_of_functionsOrderLanguageR_of_ne_0 neq2
+            apply F_empty.elim'
+            apply g
+        case neg =>
+          have F_empty : IsEmpty (order_language[[ℝ]].Functions l) := isEmpty_of_functionsOrderLanguageR_of_ne_0 neq
+          apply F_empty.elim'
+          apply h
 
-  exact f.todisjunctionAtomicblocks
+    
 
 -- Docstring missing
 def reindex{n} (i : Fin 1 ⊕ Fin (n+1)) : Fin 1 ⊕ Fin n  :=
