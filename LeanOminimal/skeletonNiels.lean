@@ -294,11 +294,11 @@ def BoundedFormula.toImpAllFreeFormula {L : Language} {α : Type} {n : ℕ} : Bo
 /--
 Sends a Literal `φ` to their respective ImpAllFreeFormula by lifting the appropriate terms.
 -/
-def Literal.toImpAllFreeFormula {L} {α} {n} : Literal L α n → ImpAllFreeFormula L α n
-  | truth => ImpAllFreeFormula.falsum.not
+def Literal.toQFImpAllFreeFormula {L} {α} {n} : Literal L α n → QFImpAllFreeFormula L α n
+  | truth => QFImpAllFreeFormula.falsum.not
   | .equal t₁ t₂ => .equal t₁ t₂
   | .rel R ts => .rel R ts
-  | .not f => .not f.toImpAllFreeFormula
+  | .not f => .not f.toQFImpAllFreeFormula
 
 /--
 Sends a Atomic Block `φ` to their respective ImpAllFreeFormula by lifting the appropriate terms.
@@ -363,24 +363,35 @@ Sends an existblock `∃x [Lit₁, Lit₂, Lit₃, ...]` to the ImpAllFreeFormul
 `Lit₁ ∧ Lit₂ ∧ Lit₃ ∧ Lit₄ ∧ ...`. Crucially, this does *not* add an ∃ in front of the
 formula! For that, use `Existblock.toImpAllFreeFormula`.
 -/
-def Existblock.toImpAllFreeFormulaWithoutExists {L} {α} {n}: Existblock L α n → ImpAllFreeFormula L α n
-  | .lit l => l.toImpAllFreeFormula -- Joos
-  | .and l e => l.toImpAllFreeFormulaWithoutExists.and e.toImpAllFreeFormulaWithoutExists
+def Existblock.toQFImpAllFreeFormula {L} {α} {n}: Existblock L α (n ) → QFImpAllFreeFormula L α (n )
+  | .lit l => l.toQFImpAllFreeFormula -- Joos
+  | .and l e => l.toQFImpAllFreeFormula.and e.toQFImpAllFreeFormula
 
 /--
 Sends an existblock `∃x [Lit₁, Lit₂, Lit₃, ...]` to the ImpAllFreeFormula
 `∃x [Lit₁ ∧ Lit₂ ∧ Lit₃ ∧ Lit₄ ∧ ...]`.
 -/
+
 def Existblock.toImpAllFreeFormula {L} {α} {n}: Existblock L α (n + 1) → ImpAllFreeFormula L α n :=
-  fun φ => ImpAllFreeFormula.exists (φ.toImpAllFreeFormulaWithoutExists) -- Origineel door Joos, overgenomen door Lily
+  fun φ => ImpAllFreeFormula.exists (φ.toQFImpAllFreeFormula.toImpAllFreeFormula) -- Origineel door Joos, overgenomen door Lily
+
+def disjunctionExistblocks.toQFImpAllFreeFormula  {L} {α} {n}: disjunctionExistblocks L α n→ QFImpAllFreeFormula L α n:= fun
+  | .existbl r => r.toQFImpAllFreeFormula
+  | .or f1 f2 => f1.toQFImpAllFreeFormula.or f2.toQFImpAllFreeFormula
+
+
+def disjunctionRelblocks.todisjunctionExistblocks {L} {α} {n}: disjunctionRelblocks L α n→ disjunctionExistblocks L α n 
+  | .relb r => disjunctionExistblocks.existbl r.toExistblock
+  | .or f1 f2 =>  f1.todisjunctionExistblocks.or f2.todisjunctionExistblocks
+
 
 /--
 This lemma states that, for an existblock `eb`, calling `eb.toImpAllFreeFormulaWithoutExists` and then adding `.exists`
 is the same as calling `eb.toImpAllFreeFormula`.
 -/
 @[simp]
-lemma Existblock.toImpAllFreeFormula_equivalence {L} {α} {n} (eb : Existblock L α (n+1) ) : eb.toImpAllFreeFormula = eb.toImpAllFreeFormulaWithoutExists.exists :=
-  rfl
+lemma Existblock.toImpAllFreeFormula_equivalence {L} {α} {n} (eb : Existblock L α (n+1) ) : eb.toImpAllFreeFormula = eb.toQFImpAllFreeFormula.toImpAllFreeFormula.exists := rfl
+
 
 /--
 Sends ImpAllFreeFormula `φ` to their BoundedFormula representation.
