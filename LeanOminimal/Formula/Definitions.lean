@@ -6,6 +6,8 @@ open Language
 namespace FirstOrder
 namespace Language
 
+
+section AllPurpose_Formulas
 /--
 An `Implication_ForAll_free_formula`, also known as a `ImpAllFreeFormula`,
 is a representation of some formula `φ` of a Language `L`, a Type `α` and a number of free variables `n`
@@ -28,23 +30,23 @@ That is, it consists solely of:
 
 It should be noted that, in classical logic, every formula is equivalent to an Implication_ForAll_free_formula.
 -/
-inductive Implication_ForAll_free_formula (L : Language) (α : Type) : ℕ → Type _
+inductive ImpAllFreeFormula (L : Language) (α : Type) : ℕ → Type _
   /--Falsum is always evaluatued as false.-/
-  | falsum {n : ℕ}                                                            : Implication_ForAll_free_formula L α n
+  | falsum {n : ℕ}                                                            : ImpAllFreeFormula L α n
   /--Equality of two terms.-/
-  | equal  {n : ℕ}   (t₁ t₂ : L.Term (α ⊕ (Fin n)))                          : Implication_ForAll_free_formula L α n
+  | equal  {n : ℕ}   (t₁ t₂ : L.Term (α ⊕ (Fin n)))                          : ImpAllFreeFormula L α n
   /--Relations of terms-/
-  | rel    {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : Implication_ForAll_free_formula L α n
+  | rel    {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : ImpAllFreeFormula L α n
   /--negation (`¬`) of other Implication_ForAll_free_formula.-/
-  | not    {n : ℕ}   (f     : Implication_ForAll_free_formula L α n)          : Implication_ForAll_free_formula L α n
+  | not    {n : ℕ}   (f     : ImpAllFreeFormula L α n)                        : ImpAllFreeFormula L α n
   /--disjunction (or, `∨`) of other Implication_ForAll_free_formula.-/
-  | or     {n : ℕ}   (f₁ f₂ : Implication_ForAll_free_formula L α n)          : Implication_ForAll_free_formula L α n
+  | or     {n : ℕ}   (f₁ f₂ : ImpAllFreeFormula L α n)                        : ImpAllFreeFormula L α n
   /--conjunction (and, `∧`) of other Implication_ForAll_free_formula.-/
-  | and    {n : ℕ}   (f₁ f₂ : Implication_ForAll_free_formula L α n)          : Implication_ForAll_free_formula L α n
+  | and    {n : ℕ}   (f₁ f₂ : ImpAllFreeFormula L α n)                        : ImpAllFreeFormula L α n
   /--existentials (exists, `∃`) of other Implication_ForAll_free_formula.-/
-  | exists {n : ℕ}   (f : Implication_ForAll_free_formula L α (n + 1))        : Implication_ForAll_free_formula L α n
+  | exists {n : ℕ}   (f : ImpAllFreeFormula L α (n + 1))                      : ImpAllFreeFormula L α n
 
-alias ImpAllFreeFormula := Implication_ForAll_free_formula
+alias Implication_ForAll_free_formula := ImpAllFreeFormula
 
 
 
@@ -68,24 +70,26 @@ That is, it consists solely of:
 
 It should be noted that, in classical logic, every quantifier free formula is equivalent to a Quantiefier_Implication_free_formula.
 -/
-inductive Quantiefier_Implication_free_formula (L : Language) (α : Type) : ℕ → Type _
+inductive QFImpAllFreeFormula (L : Language) (α : Type) : ℕ → Type _
   /--Falsum is always evaluatued as false.-/
-  | falsum {n : ℕ}                                                            : Quantiefier_Implication_free_formula L α n
+  | falsum {n : ℕ}                                                            : QFImpAllFreeFormula L α n
   /--Equality of two terms.-/
-  | equal  {n : ℕ}   (t₁ t₂ : L.Term (α ⊕ (Fin n)))                          : Quantiefier_Implication_free_formula L α n
+  | equal  {n : ℕ}   (t₁ t₂ : L.Term (α ⊕ (Fin n)))                          : QFImpAllFreeFormula L α n
   /--Relations of terms-/
-  | rel    {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : Quantiefier_Implication_free_formula L α n
+  | rel    {n l : ℕ} (R : L.Relations l) (ts : Fin l → L.Term (α ⊕ (Fin n))) : QFImpAllFreeFormula L α n
   /--negation (`¬`) of other Quantiefier_Implication_free_formula.-/
-  | not    {n : ℕ}   (f     : Quantiefier_Implication_free_formula L α n)     : Quantiefier_Implication_free_formula L α n
+  | not    {n : ℕ}   (f     : QFImpAllFreeFormula L α n)                      : QFImpAllFreeFormula L α n
   /--disjunction (or, `∨`) of other Quantiefier_Implication_free_formula.-/
-  | or     {n : ℕ}   (f₁ f₂ : Quantiefier_Implication_free_formula L α n)     : Quantiefier_Implication_free_formula L α n
+  | or     {n : ℕ}   (f₁ f₂ : QFImpAllFreeFormula L α n)                      : QFImpAllFreeFormula L α n
   /--conjunction (and, `∧`) of other Quantiefier_Implication_free_formula.-/
-  | and    {n : ℕ}   (f₁ f₂ : Quantiefier_Implication_free_formula L α n)     : Quantiefier_Implication_free_formula L α n
+  | and    {n : ℕ}   (f₁ f₂ : QFImpAllFreeFormula L α n)                      : QFImpAllFreeFormula L α n
 
-alias QFImpAllFreeFormula := Quantiefier_Implication_free_formula
+alias Quantiefier_Implication_free_formula := QFImpAllFreeFormula
+
+end AllPurpose_Formulas
 
 
-
+section Specific_Formulas
 /--
 A Literal of a Language `L`, a Type `α`, and a number of free variables `n`
 is a formula consisting solely of
@@ -104,7 +108,7 @@ inductive Literal (L : Language) (α : Type) (n : ℕ) : Type _
   | not (f : Literal L α n)               : Literal L α n
 
 
-
+section Existblock
 /--
 An ExistBlock of a Language `L`, a Type `α`, and a number of free variables `m`
 is a conjunction of literals with `m` free variables, with an imaginary "exist" in front, that is added during conversions.
@@ -115,8 +119,19 @@ inductive Existblock (L : Language) (α : Type) (m : ℕ) : Type _
 
 alias ExistBlock := Existblock
 
+/--
+A disjunction of existblock blocks of a Language `L`, a Type `α`, and a number of free variables `n`
+is a number of exist blocks connected with "or" `∨`.
+-/
+inductive disjunctionExistblocks (L : Language)  (α : Type) : ℕ → Type _
+| existbl {m : ℕ} (r: Existblock L α m)                  : disjunctionExistblocks L α m
+| or      {m : ℕ} (f₁ f₂ :disjunctionExistblocks L α m ) : disjunctionExistblocks L α m
+
+alias disjunctionExistBlocks := disjunctionExistblocks
+end Existblock
 
 
+section Atomicblock
 /--
 A Atomicblock of a Language `L`, a Type `α`, and a number of free variables `n`
 is a formula consisting solely of
@@ -148,6 +163,8 @@ inductive disjunctionAtomicblocks (L : Language)  (α : Type) : ℕ → Type _
 | atom  {m : ℕ} (a : Atomicblock L α m) : disjunctionAtomicblocks L α m
 | or    {m : ℕ} (f₁ f₂ :disjunctionAtomicblocks L α m ) : disjunctionAtomicblocks L α m
 
+alias disjunctionAtomicBlocks := disjunctionAtomicblocks
+end Atomicblock
 
 
 /--
@@ -181,3 +198,5 @@ inductive disjunctionRelblocks (L : Language) (α : Type) : ℕ → Type _
   | or   {m : ℕ} (f₁ f₂ :disjunctionRelblocks L α m ) : disjunctionRelblocks L α m
 
 alias disjunctionRelBlocks := disjunctionRelblocks
+
+end Specific_Formulas
