@@ -122,6 +122,7 @@ end Literal
 
 namespace Existblock
 
+-- !!! - Docstring missing (seems misplaced)
 /--
 Sends an existblock `∃x [Lit₁, Lit₂, Lit₃, ...]` to the ImpAllFreeFormula
 `Lit₁ ∧ Lit₂ ∧ Lit₃ ∧ Lit₄ ∧ ...`. Crucially, this does *not* add an ∃ in front of the
@@ -152,8 +153,10 @@ end Existblock
 
 namespace disjunctionExistblocks
 
--- !!! - Missing docstring
-def toQFImpAllFreeFormula  {L} {α} {n}: disjunctionExistblocks L α n→ QFImpAllFreeFormula L α n:= fun
+/--
+Sends an disjunction of existblocks recursively to a QFImpAllFreeFormula
+-/
+def toQFImpAllFreeFormula  {L} {α} {n}: disjunctionExistblocks L α n → QFImpAllFreeFormula L α n:= fun
   | .existbl r => r.toQFImpAllFreeFormula
   | .or f1 f2 => f1.toQFImpAllFreeFormula.or f2.toQFImpAllFreeFormula
 

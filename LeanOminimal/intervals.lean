@@ -7,6 +7,12 @@ namespace DLO.interval
 variable {X : Type} [DLO X]
 
 omit [DLO X] in
+/--
+Given two set `U` and `V`,
+if the intersection of `U` and `V` is the empty set (`U ∩ V = ∅`),
+and the union of `U` and `V` is the entire set (`U ∪ V = univ`),
+then `V` must be the complement of `U` (`V = Uᶜ`).
+-/
 theorem eqCompl_of_entireUnion_of_emptyIntersection {U V : Set X} (entireUnion : U ∪ V = univ) (emptyIntersection : U ∩ V = ∅) : U = Vᶜ := by
   refine Subset.antisymm ?_ ?_
   · intro x hx
@@ -366,7 +372,7 @@ lemma is_finite_union_of_intervalsP.intersection {U V : Set X} (hU : is_finite_u
         rw [thiss]
         exact bounded a d
 
-
+  -- The rest of the cases are done through a similair process.
 
   -- Note to self, use the commutativity of intersections
   repeat1' sorry

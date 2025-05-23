@@ -85,6 +85,7 @@ def varelimAtomicblock {n} (i: Fin 1 ⊕ Fin (n+1) ) (ter : order_language[[@uni
 ----------------------------------------------------------
 
 
+-- !!! - docstring missing
 def Atomicblock.toRelblock {n} : Atomicblock (order_language[[@univ ℝ]]) (Fin 1) (n+1) → Relblock (order_language[[@univ ℝ]]) (Fin 1) n
   | truth       => .truth
   | falsum      => .falsum
@@ -140,7 +141,7 @@ def disjunctionAtomicblocks.todisjunctionRelblocks {n} : disjunctionAtomicblocks
 
 -----------------------------------------------------------
 
--- Docstring missing
+-- !!! - Docstring missing
 def Literal.todisjunctionAtomicblocks {n : ℕ} : Literal (order_language[[@univ ℝ]]) (Fin 1) n → disjunctionAtomicblocks (order_language[[@univ ℝ]]) (Fin 1) n
   | Literal.truth =>
       disjunctionAtomicblocks.atom Atomicblock.truth
@@ -292,12 +293,18 @@ def Literal.todisjunctionAtomicblocks {n : ℕ} : Literal (order_language[[@univ
 
 -----------------------------------------------------------
 
+/--
+Sends an existblock recursively to a disjunction of atomic blocks
+-/
 def Existblock.todisjunctionAtomicblocks {n : ℕ} : Existblock (order_language[[@univ ℝ]]) (Fin 1) n → disjunctionAtomicblocks (order_language[[@univ ℝ]]) (Fin 1) n
   | lit l     => l.todisjunctionAtomicblocks
   | and e₁ e₂ => e₁.todisjunctionAtomicblocks.and e₂.todisjunctionAtomicblocks
 
 -----------------------------------------------------------
 
+/--
+Sends an existblock to a disjunction of rel blocks through a disjunction of atomic blocks.
+-/
 def Existblock.todisjunctionRelblocks {n} : Existblock (order_language[[@univ ℝ]]) (Fin 1) (n+1) → disjunctionRelblocks (order_language[[@univ ℝ]]) (Fin 1) n :=
     fun eb => eb.todisjunctionAtomicblocks.todisjunctionRelblocks
 
@@ -310,8 +317,14 @@ def disjunctionExistblocks.elim  {n : ℕ} : disjunctionExistblocks (order_langu
   | or f₁ f₂   => f₁.elim.or f₂.elim
 
 -- !!! - Docstring missing
--- !!! - To match?
-def notExistblockelim {n : ℕ} : disjunctionExistblocks (order_language[[@univ ℝ]]) (Fin 1) (n+1) → disjunctionExistblocks (order_language[[@univ ℝ]]) (Fin 1) (n):= by
+def notExistblockelim {n : ℕ} : disjunctionExistblocks (order_language[[@univ ℝ]]) (Fin 1) (n+1) → disjunctionExistblocks (order_language[[@univ ℝ]]) (Fin 1) (n)
+  | .existbl eb => match eb with
+    | .lit lit => (disjunctionExistblocks.existbl (Existblock.lit lit )).elim
+    | .and ex₁ ex₂ => (notExistblockelim (disjunctionExistblocks.existbl ex₁)).or (notExistblockelim (disjunctionExistblocks.existbl ex₂))
+  | .or f₁ f₂   => (notExistblockelim f₁).and (notExistblockelim f₂)
+
+-- !!! - To match? - Done so, maybe delete this.
+def notExistblockelim.old {n : ℕ} : disjunctionExistblocks (order_language[[@univ ℝ]]) (Fin 1) (n+1) → disjunctionExistblocks (order_language[[@univ ℝ]]) (Fin 1) (n):= by
   intro exbl
   rcases exbl with ⟨ exbl⟩ | ⟨ex1,ex2⟩
 
@@ -319,9 +332,24 @@ def notExistblockelim {n : ℕ} : disjunctionExistblocks (order_language[[@univ 
 
   exact (disjunctionExistblocks.existbl (Existblock.lit lit )).elim
   rename_i ex1 ex2
-  exact (notExistblockelim (disjunctionExistblocks.existbl ex1)).or (notExistblockelim (disjunctionExistblocks.existbl ex1))
+  exact (notExistblockelim.old (disjunctionExistblocks.existbl ex1)).or (notExistblockelim.old (disjunctionExistblocks.existbl ex2))
 
-  exact (notExistblockelim ex1).and (notExistblockelim ex2)
+  exact (notExistblockelim.old ex1).and (notExistblockelim.old ex2)
+
+lemma notExistblockelim.equiv {n : ℕ} (deb : disjunctionExistblocks (order_language[[@univ ℝ]]) (Fin 1) (n+1)) : notExistblockelim.old deb = notExistblockelim deb := by
+  induction' deb with r f1 f2 f1ih f2ih
+  induction' r with l l1 l2 l1ih l2ih
+  unfold notExistblockelim
+  unfold notExistblockelim.old
+  dsimp
+  unfold notExistblockelim
+  unfold notExistblockelim.old
+  dsimp
+  congr
+  unfold notExistblockelim
+  unfold notExistblockelim.old
+  dsimp
+  congr
 
 ------------------------------------------------------------------
 

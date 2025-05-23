@@ -8,13 +8,11 @@ QuantifierEliminator           ; Incomplete ; Defines what it means to admit qua
 ominimality                    ; Finished   ; Proves that real numbers are O Minimal.
 DLO                            ; Finished   ; Defines what a Dense Linear is, and proves that the real numbers are a dense linear order.
 intervals                      ; Unfinished ; Defines the types of intervals, and the property that some subset is a finite union of intervals.
-Skeleton_right_implication     ; Unknown    ; Unknown
-Literal                        ; Blank      ; Unknown, Deprecated?
-BigAnd                         ; Unknown    ; An implication of the and connective over a finite list of propositions.
+BigAnd                         ; Deprecated?    ; An implication of the and connective over a finite list of propositions.
 
 Definability.Right             ; Finished   ; Proves finite unions of intervals are definable.
 Definability.Left              ; Incomplete ; Proves definable sets are finite unions of intervals.
-Definability.Definitions       ; Debatable  ; Defines what it means to be definable.
+Definability.Definitions       ; Finished  ; Defines what it means to be definable.
 
 Formula.Definitions            ; Finished   ; Contains the different instances of formula types.
 Formula.Conversions; WIP; Contains functions on how to move one formula type to another.

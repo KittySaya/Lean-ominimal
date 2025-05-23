@@ -160,7 +160,7 @@ def reindex {n : ℕ} (i : Fin 1 ⊕ Fin (n + 1)) (a : Fin 1 ⊕ Fin (n + 1)) (h
     · rename_i val
       exact Sum.inl ⟨inli, hypi ⟩
 
-  · rcases a with ⟨ inla ,hypa⟩ | ⟨inla, hypa ⟩
+  · rcases a with ⟨inla, hypa⟩ | ⟨inla, hypa ⟩
     · exact Sum.inl ⟨inla, hypa ⟩
 
     · by_cases neq:  inla < inli
