@@ -140,10 +140,32 @@ end order_language_ℝ
 
 section some_section
 
--- !!! - docstring missing
-def reindex{n} (i : Fin 1 ⊕ Fin (n+1)) : Fin 1 ⊕ Fin n  :=
- Sum.inl (match i with
-  | Sum.inl x => x
-  | Sum.inr x => x)
+/--
+This function will remove the ith member of the right type,
+and shuffle all others back one.
+-/
+def reindex {n} (removal_index : Fin (n+2)) : (Fin 1 ⊕ Fin (n+2)) → Fin 1 ⊕ Fin (n+1)
+  | Sum.inl x => Sum.inl x
+  | Sum.inr x =>
+    if h : x < removal_index then by
+      right
+      exact (↑x : Fin (n+1))
+
+    else if h_eq : x = removal_index then
+      -- This is the deleted element. You might handle this specially.
+      -- Placeholder: we map it to 0 (or remove via Option type instead)
+      Sum.inr (0 : Fin (n+1))
+    else
+      Sum.inr (x - 1)
+
+#check @reindex 10 3
+#eval @reindex 10 3 ((Sum.inl 0) : Fin 1 ⊕ Fin 12) --L0
+#eval @reindex 10 3 ((Sum.inr 0) : Fin 1 ⊕ Fin 12) --R0
+#eval @reindex 10 3 ((Sum.inr 1) : Fin 1 ⊕ Fin 12) --R1
+#eval @reindex 10 3 ((Sum.inr 2) : Fin 1 ⊕ Fin 12) --R2
+#eval @reindex 10 3 ((Sum.inr 3) : Fin 1 ⊕ Fin 12) --R0
+#eval @reindex 10 3 ((Sum.inr 4) : Fin 1 ⊕ Fin 12) --R3
+#eval @reindex 10 3 ((Sum.inr 5) : Fin 1 ⊕ Fin 12) --R4
+#eval @reindex 10 3 ((Sum.inr 10) : Fin 1 ⊕ Fin 12) --R9
 
 end some_section
