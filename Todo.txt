@@ -1,6 +1,6 @@
 To Do:
-- Merge fixen (Lily)
-- var elim omschrijven naar Match (Lily)
+- Merge fixen (Lily) - Completed?
+- var elim omschrijven naar Match (Lily) - Deels gelukt
 - Intersection lemma bewijzen (Joos)
 - Formulafiniteunion (allemaal)
 - Code migratie (Lily) - Completed!
