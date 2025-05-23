@@ -162,70 +162,136 @@ def Literal.todisjunctionAtomicblocks {n : ℕ}
 
 
 
-def varelimAtomicblock {n} (i: Fin 1 ⊕ Fin (n+1) ) (ter : order_language[[ℝ]].Term (Fin 1 ⊕ Fin n)): Atomicblock (order_language[[ℝ]]) (Fin 1) (n+1) →  Relblock (order_language[[ℝ]]) (Fin 1) n:= by
-  intro rel
-  rcases rel with ⟨ _⟩|  ⟨ _⟩|⟨t1,t2 ⟩ |  ⟨R,f ⟩ | ⟨t1,t2 ⟩
+def varelimAtomicblock {n} (i: Fin 1 ⊕ Fin (n+1) ) (ter : order_language[[ℝ]].Term (Fin 1 ⊕ Fin n)): Atomicblock (order_language[[ℝ]]) (Fin 1) (n+1) →  Relblock (order_language[[ℝ]]) (Fin 1) n:= by 
+intro rel 
+rcases rel with ⟨ _⟩|  ⟨ _⟩|⟨t1,t2 ⟩ |  ⟨R,f ⟩ | ⟨t1,t2 ⟩ 
 
-  exact Relblock.truth
+exact Relblock.truth
 
-  exact Relblock.falsum
-  exact Relblock.truth
-
-
-  rename_i l
-  by_cases neq: l=2
-  let t1:= f ⟨0, by linarith⟩
-  let t2 := f ⟨1, by linarith⟩
-  rcases t1 with ⟨a1 ⟩ | ⟨h, t_1 ⟩
-  rcases t2 with ⟨a2 ⟩  | ⟨g, t_2⟩
-  by_cases i=a1
-
-  by_cases i=a2
-
-  exact Relblock.falsum
-
-  exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then ter else Term.var (reindex a2))
-
-  exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.var (reindex a1) else ter)
-  rename_i p
-  by_cases neq : p=0
-  rw [neq] at g t_2
-
-  by_cases ineqa : i=a1
-
-  exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  ter else Term.func g (fun i: Fin 0=>  nomatch i))
-
-  exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.var (reindex a1) else Term.func g (fun i: Fin 0=>  nomatch i))
-
-  have F_empty : IsEmpty (order_language[[ℝ]].Functions p)  := isEmpty_of_functionsOrderLanguageR_of_ne_0 neq
-  apply F_empty.elim'
-  apply g
-
-  rename_i t
-  by_cases neq2 : t=0
-  rw [neq2] at h t_1
-  rcases t2 with ⟨a1 ⟩ |  ⟨g, t_2⟩
-  by_cases ineqa :i=a1
-  exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.func h (fun i: Fin 0=>  nomatch i) else ter)
-  exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.func h (fun i: Fin 0=>  nomatch i) else Term.var (reindex a1) )
-  rename_i e
-  by_cases neq2 : e=0
-  rw [neq2] at g t_2
-  exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.func h (fun i: Fin 0=>  nomatch i) else Term.func g (fun i: Fin 0=>  nomatch i) )
-
-  have F_empty : IsEmpty (order_language[[ℝ]].Functions e)  := isEmpty_of_functionsOrderLanguageR_of_ne_0 neq2
-  apply F_empty.elim'
-  apply g
-
-  have F_empty : IsEmpty (order_language[[ℝ]].Functions t)  := isEmpty_of_functionsOrderLanguageR_of_ne_0 neq2
-  apply F_empty.elim'
-  apply h
-  have F_empty : IsEmpty (order_language[[ℝ]].Relations l):= isEmpty_of_relationsOrderLanguageR_of_ne_2 neq
-  apply F_empty.elim'
-  apply R
+exact Relblock.falsum
+exact Relblock.truth
 
 
-  exact (varelimAtomicblock i ter t1).and (varelimAtomicblock i ter t1)
+rename_i l 
+by_cases neq: l=2
+let t1:= f ⟨0, by linarith⟩
+let t2 := f ⟨1, by linarith⟩
+rcases t1 with ⟨a1 ⟩ | ⟨h, t_1 ⟩ 
+rcases t2 with ⟨a2 ⟩  | ⟨g, t_2⟩ 
+
+by_cases neq1: i=a1
+
+by_cases neq2 :i=a2
+
+exact Relblock.falsum
+
+exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then ter else Term.var (reindex i a2 neq2))
+
+exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.var (reindex i a1 neq1 ) else ter)
+rename_i p
+by_cases neq : p=0
+rw [neq] at g t_2
+
+by_cases ineqa : i=a1
+
+exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  ter else Term.func g (fun i: Fin 0=>  nomatch i))
+
+exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.var (reindex i a1 ineqa ) else Term.func g (fun i: Fin 0=>  nomatch i))
+
+have F_empty : IsEmpty (order_language[[ℝ]].Functions p)  := func0empty neq
+apply F_empty.elim'
+apply g
+
+rename_i t 
+by_cases neq2 : t=0
+rw [neq2] at h t_1  
+rcases t2 with ⟨a1 ⟩ |  ⟨g, t_2⟩ 
+by_cases ineqa :i=a1
+exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.func h (fun i: Fin 0=>  nomatch i) else ter)
+exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.func h (fun i: Fin 0=>  nomatch i) else Term.var (reindex i a1 ineqa) )
+rename_i e
+by_cases neq2 : e=0
+rw [neq2] at g t_2
+exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then  Term.func h (fun i: Fin 0=>  nomatch i) else Term.func g (fun i: Fin 0=>  nomatch i) )
+
+have F_empty : IsEmpty (order_language[[ℝ]].Functions e)  := func0empty neq2
+apply F_empty.elim'
+apply g
+
+have F_empty : IsEmpty (order_language[[ℝ]].Functions t)  := func0empty neq2
+apply F_empty.elim'
+apply h
+have F_empty : IsEmpty (order_language[[ℝ]].Relations l):= rel2empty neq
+apply F_empty.elim'
+apply R
+
+
+exact (varelimAtomicblock i ter t1).and (varelimAtomicblock i ter t1)
+
+
+
+
+
+def Atomicblock.toRelblock {n}(block : Atomicblock (order_language[[ℝ]]) (Fin 1) ((n+1))) : Relblock (order_language[[ℝ]]) (Fin 1) n := by 
+rcases block with ⟨ _⟩|⟨_ ⟩ | ⟨t1 ,t2⟩ | ⟨R, f⟩| ⟨ f⟩ |⟨ ⟩
+
+exact Relblock.truth
+
+exact Relblock.falsum
+
+exact Relblock.truth 
+
+exact Relblock.truth 
+
+
+
+rename_i f
+exact f.toRelblock
+exact Relblock.falsum
+rename_i a t1 t2
+rcases t1 with ⟨i ⟩|  ⟨h,t_1 ⟩
+rcases t2 with ⟨j⟩|  ⟨g,t_2 ⟩
+by_cases neq: i=j
+exact  Relblock.truth
+exact (varelimAtomicblock i (Term.var (reindex i j neq)) (a))
+rename_i l
+by_cases neq2 : l=0
+rw [neq2] at g t_2
+exact (varelimAtomicblock i (Term.func g (fun i: Fin 0=>  nomatch i)) (a))
+have F_empty : IsEmpty (order_language[[ℝ]].Functions l)  := func0empty neq2
+apply F_empty.elim'
+apply g
+
+
+
+
+rename_i t 
+by_cases neq2 : t=0
+rw [neq2] at h t_1  
+rcases t2 with ⟨a1 ⟩ |  ⟨g, t_2⟩ 
+
+exact (varelimAtomicblock a1 (Term.func h (fun i: Fin 0=>  nomatch i)) (a))
+
+rename_i e
+by_cases neq2 : e=0
+rw [neq2] at g t_2
+by_cases h=g
+exact Relblock.truth
+exact Relblock.falsum
+
+
+have F_empty : IsEmpty (order_language[[ℝ]].Functions e)  := func0empty neq2
+apply F_empty.elim'
+apply g
+have F_empty : IsEmpty (order_language[[ℝ]].Functions t)  := func0empty neq2
+apply F_empty.elim'
+apply h
+
+rename_i a l R f
+exact (Atomicblock.rel R f).toRelblock.and a.toRelblock
+rename_i a1 a2 a3
+exact (a1.toRelblock.and a2.toRelblock).and a3.toRelblock
+
 
 
 
