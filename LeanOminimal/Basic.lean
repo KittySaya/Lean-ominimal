@@ -144,44 +144,47 @@ section some_section
 This function will remove the ith member of the right type,
 and shuffle all others back one.
 -/
-def reindex {n : ℕ} (i : Fin 1 ⊕ Fin (n + 1)) (a : Fin 1 ⊕ Fin (n + 1)) (h : i ≠ a) : Fin 1 ⊕ Fin n :=by
-rcases i with ⟨ inli ,hypi⟩ | ⟨inli,hypi ⟩
-rcases a with ⟨ inla ,hypa⟩ 
-exfalso
-have i: inli =0:= by linarith
-have a: inla =0:= by linarith
-have eq: inli =inla := by 
- rw[i,a]
-exfalso
-apply h 
-simp
-apply eq
-rename_i val
-exact Sum.inl ⟨inli, hypi ⟩ 
-rcases a with ⟨ inla ,hypa⟩ | ⟨inla, hypa ⟩
-exact Sum.inl ⟨inla, hypa ⟩ 
-by_cases neq:  inla< inli
-have hypa': inla< n := by 
-  linarith
-exact Sum.inr ⟨inla, hypa' ⟩
-have eq:  inla=inli ∨ inla>inli := by 
- apply not_lt_iff_eq_or_lt.1 neq
-rcases eq with h_eq 
-simp at h
-have temp: inla > inli := by
- cases eq 
- rename_i h1
- rw [h1.symm] at h
- contradiction
- rename_i o
- apply o
+def reindex {n : ℕ} (i : Fin 1 ⊕ Fin (n + 1)) (a : Fin 1 ⊕ Fin (n + 1)) (h : i ≠ a) : Fin 1 ⊕ Fin n := by
+  rcases i with ⟨inli, hypi⟩ | ⟨inli, hypi⟩
+  · rcases a with ⟨inla, hypa⟩
+    · exfalso
+      have i : inli = 0 := by linarith
+      have a : inla = 0 := by linarith
+      have eq: inli = inla := by
+        rw[i, a]
+      exfalso
+      apply h
+      simp
+      apply eq
 
-have  hypa' : inla-1< n :=by 
- refine Nat.sub_one_lt_of_le ?_ ?_ 
- linarith
- linarith
- 
-exact Sum.inr ⟨inla-1,hypa'⟩
+    · rename_i val
+      exact Sum.inl ⟨inli, hypi ⟩
+
+  · rcases a with ⟨ inla ,hypa⟩ | ⟨inla, hypa ⟩
+    · exact Sum.inl ⟨inla, hypa ⟩
+
+    · by_cases neq:  inla < inli
+      · have hypa': inla < n := by
+          linarith
+        exact Sum.inr ⟨inla, hypa' ⟩
+
+      · have eq:  inla=inli ∨ inla>inli := by
+          apply not_lt_iff_eq_or_lt.mp neq
+        simp at h
+        have temp: inla > inli := by
+          cases heq : eq
+          · rename_i h1
+            rw [h1.symm] at h
+            contradiction
+          · rename_i o
+            apply o
+
+        have  hypa' : inla-1 < n :=by
+          refine Nat.sub_one_lt_of_le ?_ ?_
+          linarith
+          linarith
+
+        exact Sum.inr ⟨inla-1, hypa'⟩
 
 
 
