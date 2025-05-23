@@ -1,7 +1,10 @@
-import Mathlib
+import Mathlib --Sadly, we weren't able to isolate what we needed from Mathlib, and imported it all.
 
 open FirstOrder
 
+/--
+An `order` is a class with a single binary relation symbol, `ord`.
+-/
 class order (X : Type) : Type where
   ord : (Fin 2 → X) → Prop
 
@@ -9,9 +12,16 @@ namespace order
 
 variable {X : Type} [order X]
 
+/--
+This function translates `lt x y` to `ord F`, where `F` is the function
+that sends `0` to `x` and `1` to `y`.
+-/
 @[simp]
-def lt (a b : X) [order X] : Prop :=
-  ord (λ i => if i=0 then a else b)
+def lt (x y : X) [order X] : Prop :=
+  ord (λ i => match i with
+    | 0 => x
+    | 1 => y)
+
 
 infix:50 " <₀ " => lt
 notation x " >₀ " y => y <₀ x
@@ -46,7 +56,7 @@ instance Rstruc : Language.Structure order_language ℝ where
   funMap := λ empt => Empty.elim empt
   RelMap {n : ℕ} := λ _ f =>
     match n with
-    | 2 => real_order.ord f -- Why are we matching with something that only has one case?
+    | 2 => real_order.ord f
     | _ => false
 
 end reals
