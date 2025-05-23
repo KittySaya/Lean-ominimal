@@ -17,6 +17,7 @@ def BoundedFormula_setOf_is_FiniteUnion (ψ : BoundedFormula (order_language[[@u
 
 alias Formulafiniteunion := BoundedFormula_setOf_is_FiniteUnion
 
+
 @[simp]
 lemma QFImpAllFreeFormula_setOf_is_FiniteUnion (φ : QFImpAllFreeFormula (order_language[[@univ ℝ]]) (Fin 1) 0 ) :
     BoundedFormula_setOf_is_FiniteUnion φ.toBoundedFormula := by
@@ -137,6 +138,8 @@ lemma formulaequiv (φ ψ : BoundedFormula (order_language[[@univ ℝ]]) (Fin 1)
 -- Docstring missing
 def Formula_to_BoundedFormula  (φ : Formula (order_language[[@univ ℝ]]) (Fin 1)  ) : BoundedFormula (order_language[[@univ ℝ]]) (Fin 1) 0 :=
   (by simp : BoundedFormula (order_language[[@univ ℝ]]) (Fin 1) 0 = Formula (order_language[[@univ ℝ]]) (Fin 1)) ▸ φ
+
+alias Formulaisbounded := Formula_to_BoundedFormula
 
 /--
 Every set that is definable in the Language `(ℝ, <)` is a finite union of intervals.

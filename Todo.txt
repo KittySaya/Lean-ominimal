@@ -1,0 +1,9 @@
+To Do:
+- Merge fixen (Lily)
+- var elim omschrijven naar Match (Lily)
+- Intersection lemma bewijzen (Joos)
+- Formulafiniteunion (allemaal)
+- Code migratie (Lily) - Completed!
+- Verslag wiskundige deel (Joos)
+- Verslag Lean + diagram deel (Niels)
+- Verslag samenwerkingsdeel (allemaal)

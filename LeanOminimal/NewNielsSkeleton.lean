@@ -2,7 +2,6 @@ import Mathlib
 import LeanOminimal.intervals
 import LeanOminimal.Definability.Definition
 import LeanOminimal.Formula.Definitions
-import LeanOminimal.Formula.Conversions
 
 open FirstOrder
 open Set
