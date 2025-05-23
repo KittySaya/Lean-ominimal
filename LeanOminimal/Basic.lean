@@ -144,28 +144,45 @@ section some_section
 This function will remove the ith member of the right type,
 and shuffle all others back one.
 -/
-def reindex {n} (removal_index : Fin (n+2)) : (Fin 1 ⊕ Fin (n+2)) → Fin 1 ⊕ Fin (n+1)
-  | Sum.inl x => Sum.inl x
-  | Sum.inr x =>
-    if h : x < removal_index then by
-      right
-      exact (↑x : Fin (n+1))
+def reindex {n : ℕ} (i : Fin 1 ⊕ Fin (n + 1)) (a : Fin 1 ⊕ Fin (n + 1)) (h : i ≠ a) : Fin 1 ⊕ Fin n :=by
+rcases i with ⟨ inli ,hypi⟩ | ⟨inli,hypi ⟩
+rcases a with ⟨ inla ,hypa⟩ 
+exfalso
+have i: inli =0:= by linarith
+have a: inla =0:= by linarith
+have eq: inli =inla := by 
+ rw[i,a]
+exfalso
+apply h 
+simp
+apply eq
+rename_i val
+exact Sum.inl ⟨inli, hypi ⟩ 
+rcases a with ⟨ inla ,hypa⟩ | ⟨inla, hypa ⟩
+exact Sum.inl ⟨inla, hypa ⟩ 
+by_cases neq:  inla< inli
+have hypa': inla< n := by 
+  linarith
+exact Sum.inr ⟨inla, hypa' ⟩
+have eq:  inla=inli ∨ inla>inli := by 
+ apply not_lt_iff_eq_or_lt.1 neq
+rcases eq with h_eq 
+simp at h
+have temp: inla > inli := by
+ cases eq 
+ rename_i h1
+ rw [h1.symm] at h
+ contradiction
+ rename_i o
+ apply o
 
-    else if h_eq : x = removal_index then
-      -- This is the deleted element. You might handle this specially.
-      -- Placeholder: we map it to 0 (or remove via Option type instead)
-      Sum.inr (0 : Fin (n+1))
-    else
-      Sum.inr (x - 1)
+have  hypa' : inla-1< n :=by 
+ refine Nat.sub_one_lt_of_le ?_ ?_ 
+ linarith
+ linarith
+ 
+exact Sum.inr ⟨inla-1,hypa'⟩
 
-#check @reindex 10 3
-#eval @reindex 10 3 ((Sum.inl 0) : Fin 1 ⊕ Fin 12) --L0
-#eval @reindex 10 3 ((Sum.inr 0) : Fin 1 ⊕ Fin 12) --R0
-#eval @reindex 10 3 ((Sum.inr 1) : Fin 1 ⊕ Fin 12) --R1
-#eval @reindex 10 3 ((Sum.inr 2) : Fin 1 ⊕ Fin 12) --R2
-#eval @reindex 10 3 ((Sum.inr 3) : Fin 1 ⊕ Fin 12) --R0
-#eval @reindex 10 3 ((Sum.inr 4) : Fin 1 ⊕ Fin 12) --R3
-#eval @reindex 10 3 ((Sum.inr 5) : Fin 1 ⊕ Fin 12) --R4
-#eval @reindex 10 3 ((Sum.inr 10) : Fin 1 ⊕ Fin 12) --R9
+
 
 end some_section
