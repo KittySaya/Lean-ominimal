@@ -7,6 +7,7 @@ open Set
 namespace FirstOrder
 namespace Language
 
+noncomputable section
 
 ----------------------------------------------------------
 
@@ -86,8 +87,6 @@ def varelimAtomicblock {n} (i: Fin 1 ⊕ Fin (n+1) ) (ter : order_language[[@uni
 
 
 -- !!! - docstring missing
-
-noncomputable
 def Atomicblock.toRelblock {n} (block : Atomicblock (order_language[[@univ ℝ]]) (Fin 1) (n+1)) : Relblock (order_language[[@univ ℝ]]) (Fin 1) n := by
   rcases block with ⟨ _⟩|⟨_ ⟩ | ⟨t1 ,t2⟩ | ⟨R, f⟩| ⟨ f⟩ |⟨ ⟩
 
@@ -150,7 +149,6 @@ def Atomicblock.toRelblock {n} (block : Atomicblock (order_language[[@univ ℝ]]
 
 
 -- !!! - Docstring missing
-noncomputable
 def disjunctionAtomicblocks.todisjunctionRelblocks {n} : disjunctionAtomicblocks (order_language[[@univ ℝ]]) (Fin 1) (n+1) → disjunctionRelblocks (order_language[[@univ ℝ]]) (Fin 1) (n)
   | atom  a  => disjunctionRelblocks.relb (Atomicblock.toRelblock a)
   | or f₁ f₂ => disjunctionRelblocks.or (f₁.todisjunctionRelblocks) (f₂.todisjunctionRelblocks)
