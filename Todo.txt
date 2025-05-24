@@ -7,3 +7,4 @@ To Do:
 - Verslag wiskundige deel (Joos)
 - Verslag Lean + diagram deel (Niels)
 - Verslag samenwerkingsdeel (allemaal)
+- Complex Conversions aanpassen
