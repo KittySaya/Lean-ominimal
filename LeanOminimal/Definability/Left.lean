@@ -35,8 +35,7 @@ lemma QFImpAllFreeFormula_setOf_is_FiniteUnion (φ : QFImpAllFreeFormula (order_
         constructor
         · intro h₁
           exact trivial
-        · intro h
-          clear h
+        · intro _
           rw [Set.mem_setOf]
           rw [h]
 
@@ -51,7 +50,10 @@ lemma QFImpAllFreeFormula_setOf_is_FiniteUnion (φ : QFImpAllFreeFormula (order_
           exfalso
           apply h
           clear h
-          rw [<- BoundedFormula.realize_bdEqual] at h₁
+          simp [h₁]
+          -- rw [<- BoundedFormula.realize_bdEqual] at h₁
+          -- simp at h₁
+
           sorry --!!!
         · intro h₁
           exfalso
