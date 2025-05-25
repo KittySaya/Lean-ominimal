@@ -39,6 +39,10 @@ lemma ofAllTrue (n : ℕ) : BigAnd n fun _ => True := by
   · apply BigAnd.SuccDef _ trivial
     exact ih
 
+/--
+For an `n : ℕ`, if `P : Fin n → Prop` is a formula, such that for any `i ∈ Fin n`,
+the proposition `P i` is proven, then `BigAnd n P` holds
+-/
 @[simp]
 lemma ofAllProven (n : ℕ) (P : Fin n → Prop) (all_proven : ∀ i : Fin n, P i) : BigAnd n P := by
   have P_is_essentially_truth_function : P = fun _ => True := by
@@ -47,6 +51,10 @@ lemma ofAllProven (n : ℕ) (P : Fin n → Prop) (all_proven : ∀ i : Fin n, P 
   subst P_is_essentially_truth_function
   exact BigAnd.ofAllTrue n
 
+/--
+For a natural number `n`, a function `P : Fin n → Prop`,
+if `BigAnd n P` holds, then for any `i : Fin n`, `P i` holds.
+-/
 lemma eliminationAtIndex {n : ℕ} {P : Fin n → Prop} (bigand_P : BigAnd n P) (i : Fin n) : P i := by
   induction' n with n ih
   · exfalso
