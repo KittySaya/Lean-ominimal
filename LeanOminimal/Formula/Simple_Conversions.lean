@@ -122,26 +122,24 @@ end Literal
 
 namespace Existblock
 
--- !!! - Docstring missing (seems misplaced)
+
 /--
-Sends an existblock `∃x [Lit₁, Lit₂, Lit₃, ...]` to the ImpAllFreeFormula
-`Lit₁ ∧ Lit₂ ∧ Lit₃ ∧ Lit₄ ∧ ...`. Crucially, this does *not* add an ∃ in front of the
-formula! For that, use `Existblock.toImpAllFreeFormula`.
+An existblock in particular is a QFImpAllFreeFormula. The function sends an existblock to its counterpart QFImpAllFreeFormula. 
 -/
 def toQFImpAllFreeFormula {L} {α} {n}: Existblock L α (n ) → QFImpAllFreeFormula L α (n )
   | .lit l => l.toQFImpAllFreeFormula
   | .and l e => l.toQFImpAllFreeFormula.and e.toQFImpAllFreeFormula
 
 /--
-Sends an existblock `∃x [Lit₁, Lit₂, Lit₃, ...]` to the ImpAllFreeFormula
-`∃x [Lit₁ ∧ Lit₂ ∧ Lit₃ ∧ Lit₄ ∧ ...]`.
+Whenever an existblock is preceded by an exist, we map it to the ImpAllFreeFormula 
+`∃x [Lit₁ ∧ Lit₂ ∧ Lit₃ ∧ Lit₄ ∧ ...]`, with the following function. 
 -/
 def toImpAllFreeFormula {L} {α} {n}: Existblock L α (n + 1) → ImpAllFreeFormula L α n :=
   fun φ => ImpAllFreeFormula.exists (φ.toQFImpAllFreeFormula.toImpAllFreeFormula)
 
 
 /--
-This lemma states that, for an existblock `eb`, calling `eb.toImpAllFreeFormulaWithoutExists` and then adding `.exists`
+This lemma states that, for an existblock `eb`, calling `eb.toQFImpAllFreeFormula` and then adding `.exists`
 is the same as calling `eb.toImpAllFreeFormula`.
 -/
 @[simp]
@@ -231,9 +229,9 @@ lemma QFImpAllFree_Bounded_conversion_equivalence {L} {α} {n} (R : Relblock L �
   · dsimp!
     congr
 
--- !!! - Docstring missing
+
 /--
-???
+A Relblocks is a particular case of an Existblock. This function maps a Relblock to an Existblock. 
 -/
 def toExistblock {L} {α} {n}: Relblock L α n → Existblock L α n
 | truth      => Existblock.lit Literal.truth
@@ -262,7 +260,7 @@ def toQFImpAllFreeFormula  {L} {α} {n} : disjunctionRelblocks L α n → QFImpA
   | relb r   => r.toQFImpAllFreeFormula
   | or f₁ f₂ => f₁.toQFImpAllFreeFormula.or f₂.toQFImpAllFreeFormula
 
--- !!! - Docstring missing
+-- a disjunction of Relblocks to a disjunction of Existblocks.  
 def todisjunctionExistblocks {L} {α} {n}: disjunctionRelblocks L α n→ disjunctionExistblocks L α n
   | .relb r => disjunctionExistblocks.existbl r.toExistblock
   | .or f1 f2 =>  f1.todisjunctionExistblocks.or f2.todisjunctionExistblocks
