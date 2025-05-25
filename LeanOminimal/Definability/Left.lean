@@ -10,14 +10,18 @@ open Set
 
 namespace Definability
 
--- Docstring missing
+/--
+A proposition that states whenever a BoundedFormula can be written as a finite union of points and intervals. 
+-/
 @[simp]
 def BoundedFormula_setOf_is_FiniteUnion (ψ : BoundedFormula (order_language[[@univ ℝ]]) (Fin 1) 0) : Prop :=
  DLO.interval.is_finite_union_of_intervalsP ({x : ℝ | @ψ.Realize (order_language[[@univ ℝ]]) ℝ  _ _ _  (fun _: Fin 1=> x) (fun i:Fin 0 => nomatch i)})
 
 alias Formulafiniteunion := BoundedFormula_setOf_is_FiniteUnion
 
-
+/--
+A QFImpAllFreeFormula is a finite union of intervals. 
+-/
 @[simp]
 lemma QFImpAllFreeFormula_setOf_is_FiniteUnion (φ : QFImpAllFreeFormula (order_language[[@univ ℝ]]) (Fin 1) 0 ) :
     BoundedFormula_setOf_is_FiniteUnion φ.toBoundedFormula := by
@@ -118,7 +122,9 @@ lemma QFImpAllFreeFormula_setOf_is_FiniteUnion (φ : QFImpAllFreeFormula (order_
 
 alias QFimpAllFreeFormulafiniteunion := QFImpAllFreeFormula_setOf_is_FiniteUnion
 
-
+/--
+Two formulas that are true precisely if the other is true define a finite union of intervals precisely when the other one does. 
+-/
 lemma formulaequiv (φ ψ : BoundedFormula (order_language[[@univ ℝ]]) (Fin 1) 0 ) : (∀ x:ℝ,  ψ.Realize (fun _: Fin 1=> x) (fun i:Fin 0 => nomatch i) ↔ φ.Realize (fun _: Fin 1=> x) (fun i:Fin 0 => nomatch i)) → (Formulafiniteunion φ ↔ Formulafiniteunion ψ) := by
   intro hyp
   unfold Formulafiniteunion at *
@@ -136,8 +142,9 @@ lemma formulaequiv (φ ψ : BoundedFormula (order_language[[@univ ℝ]]) (Fin 1)
     rw [this]
     exact psi
 
-
--- Docstring missing
+/--
+Type coercion from a Formula to a BoundedFormula. 
+-/
 def Formula_to_BoundedFormula  (φ : Formula (order_language[[@univ ℝ]]) (Fin 1)  ) : BoundedFormula (order_language[[@univ ℝ]]) (Fin 1) 0 :=
   (by simp : BoundedFormula (order_language[[@univ ℝ]]) (Fin 1) 0 = Formula (order_language[[@univ ℝ]]) (Fin 1)) ▸ φ
 
