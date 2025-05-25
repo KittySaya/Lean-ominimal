@@ -11,16 +11,22 @@ noncomputable section
 
 ----------------------------------------------------------
 
--- Docstring missing
+/--
+Function that takes in a variable index and a term, and swaps every variable with that particular index for the term with one free variable less.
+The resulting function effectively eliminated the variables at the given index. We will only be using this function whenever our atomicblock is preceded by an 
+existential quantifier. 
+-/
+
 def varelimAtomicblock {n} (i: Fin 1 ⊕ Fin (n+1) ) (ter : order_language[[@univ ℝ]].Term (Fin 1 ⊕ Fin n)) : Atomicblock (order_language[[@univ ℝ]]) (Fin 1) (n+1) → Relblock (order_language[[@univ ℝ]]) (Fin 1) n
   | .truth       => Relblock.truth
   | .falsum      => Relblock.falsum
 
   | .and f₁ f₂   => (varelimAtomicblock i ter f₁).and (varelimAtomicblock i ter f₁)
 
-  | .equal t₁ t₂ => Relblock.truth --Is this always ∃x[a = x], or can this also be ∃x[a = b]?
+  | .equal t₁ t₂ => Relblock.truth -- These should be thought of as \exists (x=a). This statement is always true. The case \exists (a=b), cannot happen since every term contains at least one variable. 
 
-  | .rel R ts    => by --!!! - docstring missing
+  | .rel R ts    => by  -- We check whether the term of the form 'x<a' contains the variable in question, if so, we replace it by the given term. 
+  
     expose_names
     by_cases l_val : l=2
 
@@ -41,7 +47,7 @@ def varelimAtomicblock {n} (i: Fin 1 ⊕ Fin (n+1) ) (ter : order_language[[@uni
 
           · by_cases neq2 : i=a2
 
-            · exact Relblock.falsum
+            · exact Relblock.falsum -- Terms of the form 'x<x' are always false
 
             · exact Relblock.rel (Sum.inl ordsymbol.lt) (fun (j:Fin 2)=>  if j=0 then ter else Term.var ((reindex i a2 neq2)))
 
@@ -86,7 +92,11 @@ def varelimAtomicblock {n} (i: Fin 1 ⊕ Fin (n+1) ) (ter : order_language[[@uni
 ----------------------------------------------------------
 
 
--- !!! - docstring missing
+
+/--
+Function that takes an element of the form \exists Atomicblock and sends it to a disjunction of Relblocks, thereby effectively eliminating the 
+existential quantifier. This function will only be used on a formula preceded by an existential quantifier. 
+-/
 def Atomicblock.toRelblock {n} (block : Atomicblock (order_language[[@univ ℝ]]) (Fin 1) (n+1)) : Relblock (order_language[[@univ ℝ]]) (Fin 1) n := by
   rcases block with ⟨ _⟩|⟨_ ⟩ | ⟨t1 ,t2⟩ | ⟨R, f⟩| ⟨ f⟩ |⟨ ⟩
 
@@ -94,12 +104,11 @@ def Atomicblock.toRelblock {n} (block : Atomicblock (order_language[[@univ ℝ]]
 
   exact Relblock.falsum
 
-  exact Relblock.truth
+  exact Relblock.truth -- Atomicblocks of the form \exists x=a are always true. 
 
-  exact Relblock.truth
-
-
-
+  exact Relblock.truth -- Atomicblocks of the form \exists x<a, \exists a<x are always true by the 'no endpoint' axioms of a DLO. 
+ 
+  -- Whenever we have a function of the form (x=y \and \phi ) we swap every variable y for x in the formula \phi and remove the equal. 
   rename_i f
   exact f.toRelblock
   exact Relblock.falsum
@@ -148,14 +157,19 @@ def Atomicblock.toRelblock {n} (block : Atomicblock (order_language[[@univ ℝ]]
   exact (a1.toRelblock.and a2.toRelblock).and a3.toRelblock
 
 
--- !!! - Docstring missing
+/--
+Since an existential quantifier distributes over a disjunction, we extend the previous function to a function from a disjunction of Atomicblocks 
+to a disjunction of Relblocks. 
+-/
 def disjunctionAtomicblocks.todisjunctionRelblocks {n} : disjunctionAtomicblocks (order_language[[@univ ℝ]]) (Fin 1) (n+1) → disjunctionRelblocks (order_language[[@univ ℝ]]) (Fin 1) (n)
   | atom  a  => disjunctionRelblocks.relb (Atomicblock.toRelblock a)
   | or f₁ f₂ => disjunctionRelblocks.or (f₁.todisjunctionRelblocks) (f₂.todisjunctionRelblocks)
 
 -----------------------------------------------------------
 
--- !!! - Docstring missing
+/--
+Function that takes a literal and sends it to a disjunction of atomicblocks. It does this by using the theory of dense linear orders to rewrite every negation. 
+-/
 def Literal.todisjunctionAtomicblocks {n : ℕ} : Literal (order_language[[@univ ℝ]]) (Fin 1) n → disjunctionAtomicblocks (order_language[[@univ ℝ]]) (Fin 1) n
   | Literal.truth =>
       disjunctionAtomicblocks.atom Atomicblock.truth
@@ -324,46 +338,30 @@ def Existblock.todisjunctionRelblocks {n} : Existblock (order_language[[@univ �
 
 -----------------------------------------------------------
 
--- !!! - Docstring missing
+/--
+Function that takes a disjunction of existsblocks preceded by an existential quantifier and sends it to a disjunction of Relblocks without a quantifier. 
+It again uses the distributivity of the existential quantifier over the disjunction. The function outputs a disjunction of Relblock, which is a particular case of a disjunction of existblocks.
+-/
 @[simp]
 def disjunctionExistblocks.elim  {n : ℕ} : disjunctionExistblocks (order_language[[@univ ℝ]]) (Fin 1) (n+1) → disjunctionExistblocks (order_language[[@univ ℝ]]) (Fin 1) n
   | existbl eb => eb.todisjunctionRelblocks.todisjunctionExistblocks
   | or f₁ f₂   => f₁.elim.or f₂.elim
 
--- !!! - Docstring missing
+
+
+
+/--
+This function shows how to eliminate the quantifier from an expression of the form \exist(\not disjunctionExistblocks). It does this by using
+de Morgan's laws. 
+-/
 def notExistblockelim {n : ℕ} : disjunctionExistblocks (order_language[[@univ ℝ]]) (Fin 1) (n+1) → disjunctionExistblocks (order_language[[@univ ℝ]]) (Fin 1) (n)
   | .existbl eb => match eb with
-    | .lit lit => (disjunctionExistblocks.existbl (Existblock.lit lit )).elim
+    | .lit lit => (disjunctionExistblocks.existbl (Existblock.lit lit.not )).elim
     | .and ex₁ ex₂ => (notExistblockelim (disjunctionExistblocks.existbl ex₁)).or (notExistblockelim (disjunctionExistblocks.existbl ex₂))
   | .or f₁ f₂   => (notExistblockelim f₁).and (notExistblockelim f₂)
 
--- !!! - To match? - Done so, maybe delete this.
-def notExistblockelim.old {n : ℕ} : disjunctionExistblocks (order_language[[@univ ℝ]]) (Fin 1) (n+1) → disjunctionExistblocks (order_language[[@univ ℝ]]) (Fin 1) (n):= by
-  intro exbl
-  rcases exbl with ⟨ exbl⟩ | ⟨ex1,ex2⟩
 
-  rcases exbl with ⟨lit ⟩
 
-  exact (disjunctionExistblocks.existbl (Existblock.lit lit )).elim
-  rename_i ex1 ex2
-  exact (notExistblockelim.old (disjunctionExistblocks.existbl ex1)).or (notExistblockelim.old (disjunctionExistblocks.existbl ex2))
-
-  exact (notExistblockelim.old ex1).and (notExistblockelim.old ex2)
-
-lemma notExistblockelim.equiv {n : ℕ} (deb : disjunctionExistblocks (order_language[[@univ ℝ]]) (Fin 1) (n+1)) : notExistblockelim.old deb = notExistblockelim deb := by
-  induction' deb with r f1 f2 f1ih f2ih
-  induction' r with l l1 l2 l1ih l2ih
-  unfold notExistblockelim
-  unfold notExistblockelim.old
-  dsimp
-  unfold notExistblockelim
-  unfold notExistblockelim.old
-  dsimp
-  congr
-  unfold notExistblockelim
-  unfold notExistblockelim.old
-  dsimp
-  congr
 
 ------------------------------------------------------------------
 
@@ -371,7 +369,12 @@ lemma notExistblockelim.equiv {n : ℕ} (deb : disjunctionExistblocks (order_lan
 Sends ImpAllFreeFormula `φ` in the language of `(ℝ, <)` to a QFImpAllFreeFormula that is equivalent to it.
 -/
 def ImpAllFreeFormula.toQFImpAllFreeFormula  {n:ℕ } : ImpAllFreeFormula (order_language[[@univ ℝ]]) (Fin 1) (n) → QFImpAllFreeFormula (order_language[[@univ ℝ]]) (Fin 1) n :=
-  let rec helper {n} : ImpAllFreeFormula (order_language[[@univ ℝ]]) (Fin 1) n →
+  
+-- We first define a helper function that sends an ImpAllFreeFormula formula to a disjunction of existblocks. We only use this helper function
+-- whenever we have a formula of the form .exists. Normally, an existblock is thought of as being preceded by an exist, however, in the output of this function. it is eliminated. 
+-- We need that the output be an existblock instead of a Relblock, since we are allowing equal and not to be in the formulas. 
+
+let rec helper {n} : ImpAllFreeFormula (order_language[[@univ ℝ]]) (Fin 1) n →
       disjunctionExistblocks (order_language[[@univ ℝ]]) (Fin 1) n
     | .falsum => disjunctionExistblocks.existbl (Existblock.lit (Literal.truth.not))
     | .equal t1 t2 => disjunctionExistblocks.existbl (Existblock.lit (Literal.equal t1 t2))
