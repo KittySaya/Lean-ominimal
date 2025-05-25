@@ -39,6 +39,16 @@ def order_language : FirstOrder.Language where
   Functions := λ _ => Empty
   Relations := λ n => if n = 2 then ordsymbol else Empty
 
+
+/--
+The model `(ℚ, <)` of `order_language = (<₀)` equipped with
+the rational numbers and the standard `<`, i.e., `less than` order.
+-/
+@[simp]
+instance rational_order : order ℚ where
+  ord (f: Fin 2 → ℚ ) := f 0 < f 1
+
+
 noncomputable section reals
 /--
 The model `(ℝ, <)` of `order_language = (<₀)` equipped with

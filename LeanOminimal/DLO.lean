@@ -64,6 +64,19 @@ lemma no_right_extrema : ¬∃y : X, ∀z : X, y = z ∨ y >₀ z := by
 end DLO
 
 /--
+The model `(ℚ, <)` of rational numbers with the stadard order,
+is a dense linear order.
+-/
+@[simp]
+instance : DLO ℚ  where
+  irrefl := by intros x h; exact lt_irrefl x h
+  trans := by rintro x y z h1 h2; exact lt_trans h1 h2
+  total := by intros x y; exact lt_trichotomy x y
+  dense := by intros x y h; exact exists_between h
+  no_r_end := by intro x; exact ⟨x + 1, by simp⟩
+  no_l_end := by intro x; exact ⟨x - 1, by simp⟩
+
+/--
 The model `(ℝ, <)` of real numbers with the stadard order,
 is a dense linear order.
 -/
