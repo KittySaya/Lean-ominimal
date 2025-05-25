@@ -151,8 +151,8 @@ end order_language_ℝ
 section some_section
 
 /--
-This function will remove the ith member of the right type,
-and shuffle all others back one.
+This function takes two indices and a proposition that the indices are not equal. The function eliminates the variable indexed by i, if it is of type Fin (n+1)
+and shuffles all other variables accordingly, i.e., it shifts every element above i down by 1. If i is in Fin 1, we eliminate the variable indexed by a. 
 -/
 def reindex {n : ℕ} (i : Fin 1 ⊕ Fin (n + 1)) (a : Fin 1 ⊕ Fin (n + 1)) (h : i ≠ a) : Fin 1 ⊕ Fin n := by
   rcases i with ⟨inli, hypi⟩ | ⟨inli, hypi⟩
