@@ -8,7 +8,7 @@ open Language
 /--
 States that the quantifier-free formula `ψ v xs` is equivalent to a potential quantifier-having formula `φ v xs`.
 -/
-def is_quantifierfree_alternative {L : Language} {M : Type} [L.Structure M] {α : Type*} {n : ℕ} (v : α → M) (xs : Fin n → M) (φ : FirstOrder.Language.BoundedFormula L α n) (ψ : FirstOrder.Language.QFImpFreeFormula L α n) : Prop :=
+def is_quantifierfree_alternative {L : Language} {M : Type} [L.Structure M] {α : Type*} {n : ℕ} (v : α → M) (xs : Fin n → M) (φ : FirstOrder.Language.BoundedFormula L α n) (ψ : FirstOrder.Language.QFImpAllFreeFormula L α n) : Prop :=
   sorry
   -- φ.Realize v xs ↔ ψ.Realize v xs
   -- I worry that something is wrong here, mainly in confusing X and α.
@@ -17,10 +17,11 @@ def is_quantifierfree_alternative {L : Language} {M : Type} [L.Structure M] {α 
 /--
 States that a formula `φ v xs` has a quantifier-free alternative formula.
 -/
-def has_quantifierfreefromula {L : Language} {M : Type} [L.Structure M] {α : Type*} {n : ℕ} (φ : FirstOrder.Language.BoundedFormula L α n) (v : α → M) (xs : Fin n → M) :=
-  ∃ ψ : FirstOrder.Language.QFImpFreeFormula L α n,
-    is_quantifierfree_alternative v xs φ ψ
-    -- This definition needs to be better.
+def has_quantifierfreeformula {L : Language} {M : Type} [L.Structure M] {α : Type*} {n : ℕ} (φ : FirstOrder.Language.BoundedFormula L α n) (v : α → M) (xs : Fin n → M) :=
+  sorry
+  -- ∃ ψ : FirstOrder.Language.QFImpAllFreeFormula L α n,
+  --   is_quantifierfree_alternative v xs φ ψ
+  --   -- This definition needs to be better.
 
 def admits_quantifier_elimination (L : Language) (M : Type) [L.Structure M] (α : Type*) :=
   ∀n : ℕ, ∀v : α → M, ∀xs : Fin n → M, ∀ φ : FirstOrder.Language.BoundedFormula L α n, has_quantifierfreefromula φ v xs
