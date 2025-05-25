@@ -138,7 +138,7 @@ lemma is_finite_union_of_intervalsP.entire : is_finite_union_of_intervalsP (@uni
     exact empty
 
 /--
-Given a lowerbounded interval and a lowerbounded interval, their intersection
+Given a bounded interval and a lowerbounded interval, their intersection
 is a finite union of intervals.
 -/
 lemma intersection_bounded_lower {a b c : X} : is_finite_union_of_intervalsP (bounded a b ∩ lower c) := by
