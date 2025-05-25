@@ -137,6 +137,199 @@ lemma is_finite_union_of_intervalsP.entire : is_finite_union_of_intervalsP (@uni
     rw [<- empty_is_univ]
     exact empty
 
+/--
+Given a lowerbounded interval and a lowerbounded interval, their intersection
+is a finite union of intervals.
+-/
+lemma intersection_bounded_lower {a b c : X} : is_finite_union_of_intervalsP (bounded a b ∩ lower c) := by
+  rcases DLO.total a c with ac_less | ac_eq | ac_more
+  · rcases DLO.total b c with bc_less | bc_eq | bc_more
+    · -- a < c and b < c
+      have inter_empty : bounded a b ∩ lower c = ∅ := by
+        apply Subset.antisymm
+        · intro x h
+          exfalso
+          rcases h with ⟨inab, inc⟩
+          have xltc : x <₀ c := by
+            apply DLO.trans x b c
+            exact ((mem_bounded_iff x).1 inab).2
+            exact bc_less
+          have cltx : c <₀ x := by
+            exact (mem_lower_iff x).1 inc
+          apply DLO.irrefl x
+          exact DLO.trans x c x xltc cltx
+        · intro x h
+          exfalso
+          exact h
+      rw [inter_empty]
+      exact is_finite_union_of_intervalsP.empty
+    · -- a < c and b = c
+      have inter_empty : bounded a b ∩ lower c = ∅ := by
+        apply Subset.antisymm
+        · intro x h
+          exfalso
+          rcases h with ⟨xinab, xgtc⟩
+          have xltc : x <₀ c := by
+            rw [← bc_eq]
+            exact xinab.2
+          have cltx : c <₀ x := xgtc
+          apply DLO.irrefl x
+          exact DLO.trans x c x xltc cltx
+        · intro x h
+          exfalso
+          exact h
+      rw [inter_empty]
+      exact is_finite_union_of_intervalsP.empty
+    · -- a < c and b > c
+      have inter : bounded a b ∩ lower c = bounded c b := by
+        apply Subset.antisymm
+        · intro x h
+          apply (mem_bounded_iff x).2
+          exact ⟨(mem_lower_iff x).1 h.2, ((mem_bounded_iff x).1 h.1).2⟩
+        · intro x h
+          constructor
+          · constructor
+            · exact DLO.trans a c x ac_less h.1
+            · exact h.2
+          · exact h.1
+      rw [inter]
+      exact is_finite_union_of_intervalsP.bounded c b
+  · rcases DLO.total b c with bc_less | bc_eq | bc_more
+    · -- a = c and b < c
+      have : bounded a b ∩ lower c = ∅ := by
+        ext x
+        constructor
+        · intro h
+          exfalso
+          apply DLO.irrefl c
+          have cb_less : c <₀ b := by
+            rw [ac_eq] at h
+            rcases h with ⟨xincb, xgtc⟩
+            exact DLO.trans c x b xincb.1 xincb.2
+          exact DLO.trans c b c (cb_less) (bc_less)
+        · intro h
+          exfalso; assumption
+      rw [this]
+      exact is_finite_union_of_intervalsP.empty
+    · -- a = c and b = c
+      have inter_empty : bounded a b ∩ lower c = ∅ := by
+        apply Subset.antisymm
+        · intro x h
+          rcases h with ⟨xinab, xgtc⟩
+          exfalso
+          apply DLO.irrefl c
+          rw [ac_eq, bc_eq] at xinab
+          have : c <₀ x ∧ x <₀ c := xinab
+          exact DLO.trans _ _ _ this.1 this.2
+        · exact empty_subset (bounded a b ∩ lower c)
+      rw [inter_empty]
+      exact is_finite_union_of_intervalsP.empty
+    · -- a = c and b > c
+      have inter : bounded a b ∩ lower c = bounded a b := by
+        refine inter_eq_left.mpr ?_
+        intro x h
+        rw [ac_eq] at h
+        exact h.1
+      rw [inter]
+      exact is_finite_union_of_intervalsP.bounded a b
+  · -- ac_more
+    rcases DLO.total b c with bc_less | bc_eq | bc_more
+    · -- a > c and b < c
+      have : bounded a b ∩ lower c = ∅ := by
+        apply Subset.antisymm
+        · intro x h
+          rcases h with ⟨xinab, xgtc⟩
+          exfalso
+          apply DLO.irrefl c
+          exact DLO.trans c a c ac_more (DLO.trans a x c xinab.1 (DLO.trans x b c xinab.2 bc_less))
+        · exact empty_subset (bounded a b ∩ lower c)
+      rw [this]
+      exact is_finite_union_of_intervalsP.empty
+    · -- a > c and b = c
+      have : bounded a b ∩ lower c = ∅ := by
+        apply Subset.antisymm
+        · intro x h
+          rcases h with ⟨xinab, xgtc⟩
+          exfalso
+          apply DLO.irrefl c
+          apply DLO.trans c a c ac_more
+          rw [← bc_eq]
+          exact DLO.trans a x b xinab.1 xinab.2
+        · exact empty_subset (bounded a b ∩ lower c)
+      rw [this]
+      exact is_finite_union_of_intervalsP.empty
+    · -- a > c and b > c
+      have inter : bounded a b ∩ lower c = bounded a b := by
+        refine inter_eq_left.mpr ?_
+        exact fun x h ↦ DLO.trans c a x ac_more h.1
+      rw [inter]
+      exact is_finite_union_of_intervalsP.bounded a b
+
+/--
+Given a bounded interval and an upperbounded interval, their intersection
+is a finite union of intervals.
+-/
+lemma intersection_bounded_upper {a b c : X} : is_finite_union_of_intervalsP (bounded a b ∩ upper c) := by
+  rcases DLO.total b c with bc_less | bc_eq | bc_more
+  · -- c > b
+    have inter : bounded a b ∩ upper c = bounded a b := by
+      refine inter_eq_left.mpr ?_
+      exact fun x h ↦ DLO.trans x b c h.2 bc_less
+    exact inter.symm ▸ is_finite_union_of_intervalsP.bounded a b
+  · -- c = b
+    have inter : bounded a b ∩ upper c = bounded a b := by
+      refine inter_eq_left.mpr ?_
+      intro x h
+      rw [← bc_eq]
+      exact h.2
+    exact inter.symm ▸ is_finite_union_of_intervalsP.bounded a b
+  · rcases DLO.total c a with ac_more | ac_eq | ac_less
+    · -- c < b and c < a
+      have inter : bounded a b ∩ upper c = ∅ := by
+        apply Subset.antisymm
+        · intro x h
+          exfalso
+          apply DLO.irrefl c
+          exact DLO.trans c a c ac_more (DLO.trans a x c h.1.1 h.2)
+        · exact empty_subset (bounded a b ∩ upper c)
+      exact inter ▸ is_finite_union_of_intervalsP.empty
+    · -- c < b and c = a
+      have inter : bounded a b ∩ upper c = ∅ := by
+        rw [ac_eq]
+        apply Subset.antisymm
+        · intro x h
+          exfalso
+          apply DLO.irrefl a
+          exact DLO.trans a x a h.1.1 h.2
+        · exact empty_subset (bounded a b ∩ upper a)
+      exact inter ▸ is_finite_union_of_intervalsP.empty
+    · -- c < b and c > a
+      have inter : bounded a b ∩ upper c = bounded a c := by
+        apply Subset.antisymm
+        · exact fun _ h ↦ ⟨h.1.1, h.2⟩
+        · exact fun x h ↦ ⟨⟨h.1, DLO.trans x c b h.2 bc_more⟩, h.2⟩
+      exact inter.symm ▸ is_finite_union_of_intervalsP.bounded a c
+
+/--
+Given a lowerbounded interval and an upperbounded interval, their intersection
+is a finite union of intervals.
+-/
+lemma intersection_lower_upper {a b : X} : is_finite_union_of_intervalsP (lower a ∩ upper b) := by
+  rcases DLO.total a b with ab_less | ab_eq | ab_more
+  · have inter : lower a ∩ upper b = bounded a b := by
+      apply Subset.antisymm <;> exact fun _ h ↦ ⟨h.1, h.2⟩
+    exact inter ▸ is_finite_union_of_intervalsP.bounded a b
+  · have inter : lower a ∩ upper b = ∅ := by
+      rw [ab_eq]
+      apply Subset.antisymm
+      · exact fun x h ↦ False.elim ((DLO.irrefl b) (DLO.trans b x b h.1 h.2))
+      · exact empty_subset (lower b ∩ upper b)
+    exact inter ▸ is_finite_union_of_intervalsP.empty
+  · have inter : lower a ∩ upper b = ∅ := by
+      apply Subset.antisymm
+      · exact fun x h ↦ False.elim ((DLO.irrefl b) (DLO.trans b x b (DLO.trans b a x ab_more h.1) h.2))
+      · exact empty_subset (lower a ∩ upper b)
+    exact inter ▸ is_finite_union_of_intervalsP.empty
 
 /--
 Given two finite union of intervals `U` and `V`, their intersection
@@ -372,17 +565,47 @@ lemma is_finite_union_of_intervalsP.intersection {U V : Set X} (hU : is_finite_u
         rw [thiss]
         exact bounded a d
 
-  -- The rest of the cases are done through a similair process.
+  case bounded.lower => exact intersection_bounded_lower
+  case bounded.upper => exact intersection_bounded_upper
+  case lower.bounded => rw [inter_comm]; exact intersection_bounded_lower
+  case lower.lower =>
+    rcases DLO.total a c with ac_less | ac_eq | ac_more
+    · have inter : interval.lower a ∩ interval.lower c = interval.lower c := by
+        refine inter_eq_self_of_subset_right ?_
+        intro x h
+        exact DLO.trans a c x ac_less h
+      rw [inter]
+      exact lower c
+    · rw [ac_eq]
+      rw [inter_eq_self_of_subset_right (by rfl)]
+      exact lower c
+    · have inter : interval.lower a ∩ interval.lower c = interval.lower a := by
+        refine inter_eq_left.mpr ?_
+        intro x h
+        exact DLO.trans c a x ac_more h
+      rw [inter]
+      exact lower a
 
-  -- Note to self, use the commutativity of intersections
-  repeat1' sorry
-  -- The statement is largely obvious but tedious to implement.
-  -- Unless either of you is keen on proving all 30 different cases.
-  -- The other strategy is to proof it works for complement, and use
-  -- (U ∩ V) = (U ∩ V)ᶜᶜ = (Uᶜ ∪ Vᶜ)ᶜ
-  -- And use; it holds for U and V, so for Uᶜ and Vᶜ, so for their union, so for their complement.
-  -- But I couldn't find a way to prove it holds for the complement of a union
-  -- without proving it holds for an intersection.
+  case lower.upper => exact intersection_lower_upper
+  case upper.bounded => rw [inter_comm]; exact intersection_bounded_upper
+  case upper.lower => rw [inter_comm]; exact intersection_lower_upper
+  case upper.upper =>
+    rcases DLO.total a c with ac_less | ac_eq | ac_more
+    · have inter : interval.upper a ∩ interval.upper c = interval.upper a := by
+        refine inter_eq_left.mpr ?_
+        intro x h
+        exact DLO.trans x a c h ac_less
+      rw [inter]
+      exact upper a
+    · rw [ac_eq]
+      rw [inter_eq_self_of_subset_right (by rfl)]
+      exact upper c
+    · have inter : interval.upper a ∩ interval.upper c = interval.upper c := by
+        refine inter_eq_self_of_subset_right ?_
+        intro x h
+        exact DLO.trans x c a h ac_more
+      rw [inter]
+      exact upper c
 
 
 
