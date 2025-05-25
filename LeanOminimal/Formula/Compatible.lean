@@ -9,7 +9,10 @@ namespace FirstOrder
 namespace Language
 
 
--- Docstring missing
+/-- 
+Helper lemma to that shows that eliminating an exist from an existblock is compatible with .Realize of Mathlib. 
+That is, the formulas are equivalent. 
+-/
 @[simp]
 lemma compatible₁ (eb: Existblock (order_language[[@univ ℝ]]) (Fin 1) (1)) (x: Fin 1 → ℝ ) :
     eb.Realize x (fun i : (Fin 0) => nomatch i)
@@ -18,6 +21,9 @@ lemma compatible₁ (eb: Existblock (order_language[[@univ ℝ]]) (Fin 1) (1)) (
 
 
 @[simp]
+/--
+Important lemma that shows compatibility with .Realize of the function eliminating exists from every possible Boundedformula. 
+-/
 lemma compatible₂ (φ : BoundedFormula (order_language[[@univ ℝ]]) (Fin 1) 0 ) :
     ∀x:ℝ ,φ.Realize (fun i: Fin 1=> x) (fun i:Fin 0 => nomatch i)
      ↔ (QFImpAllFreeFormula.toBoundedFormula ((BoundedFormula.toImpAllFreeFormula φ).toQFImpAllFreeFormula)).Realize
