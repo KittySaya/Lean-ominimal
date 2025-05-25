@@ -92,7 +92,7 @@ lemma isDefinable_boundInterval (a b : ℝ) : isDefinable order_language (DLO.in
 
   use φ1 ⊓ φ2
   ext x
-  simp only [DLO.interval.bounded, order.lt, instDLOReal, real_order, Fin.isValue, ↓reduceIte, one_ne_zero,
+  simp only [DLO.interval.bounded, order.lt, Real_DLO, real_order, Fin.isValue, ↓reduceIte, one_ne_zero,
     mem_setOf_eq, order_language, top_eq_univ, Rstruc, ↓dreduceIte, Bool.false_eq_true,
     Formula.realize_inf]
 

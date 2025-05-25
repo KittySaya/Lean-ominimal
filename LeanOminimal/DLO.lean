@@ -68,7 +68,7 @@ The model `(ℚ, <)` of rational numbers with the stadard order,
 is a dense linear order.
 -/
 @[simp]
-instance : DLO ℚ  where
+instance Rational_DLO : DLO ℚ  where
   irrefl := by intros x h; exact lt_irrefl x h
   trans := by rintro x y z h1 h2; exact lt_trans h1 h2
   total := by intros x y; exact lt_trichotomy x y
@@ -81,7 +81,7 @@ The model `(ℝ, <)` of real numbers with the stadard order,
 is a dense linear order.
 -/
 @[simp]
-instance : DLO ℝ  where
+instance Real_DLO : DLO ℝ  where
   irrefl := by intros x h; exact lt_irrefl x h
   trans := by rintro x y z h1 h2; exact lt_trans h1 h2
   total := by intros x y; exact lt_trichotomy x y

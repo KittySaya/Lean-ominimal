@@ -11,7 +11,7 @@ open Set
 namespace Definability
 
 /--
-A proposition that states whenever a BoundedFormula can be written as a finite union of points and intervals. 
+A proposition that states whenever a BoundedFormula can be written as a finite union of points and intervals.
 -/
 @[simp]
 def BoundedFormula_setOf_is_FiniteUnion (ψ : BoundedFormula (order_language[[@univ ℝ]]) (Fin 1) 0) : Prop :=
@@ -20,10 +20,10 @@ def BoundedFormula_setOf_is_FiniteUnion (ψ : BoundedFormula (order_language[[@u
 alias Formulafiniteunion := BoundedFormula_setOf_is_FiniteUnion
 
 /--
-A QFImpAllFreeFormula is a finite union of intervals. 
+A QFImpAllFreeFormula is a finite union of intervals.
 -/
 @[simp]
-lemma QFImpAllFreeFormula_setOf_is_FiniteUnion (φ : QFImpAllFreeFormula (order_language[[@univ ℝ]]) (Fin 1) 0 ) :
+theorem QFImpAllFreeFormula_setOf_is_FiniteUnion (φ : QFImpAllFreeFormula (order_language[[@univ ℝ]]) (Fin 1) 0 ) :
     BoundedFormula_setOf_is_FiniteUnion φ.toBoundedFormula := by
 
   induction' φ with a b l R ts not_formula ih_not_formula or_left or_right orl_ih orr_ih and_left and_right andr_ih andl_ih
@@ -123,7 +123,7 @@ lemma QFImpAllFreeFormula_setOf_is_FiniteUnion (φ : QFImpAllFreeFormula (order_
 alias QFimpAllFreeFormulafiniteunion := QFImpAllFreeFormula_setOf_is_FiniteUnion
 
 /--
-Two formulas that are true precisely if the other is true define a finite union of intervals precisely when the other one does. 
+Two formulas that are true precisely if the other is true define a finite union of intervals precisely when the other one does.
 -/
 lemma formulaequiv (φ ψ : BoundedFormula (order_language[[@univ ℝ]]) (Fin 1) 0 ) : (∀ x:ℝ,  ψ.Realize (fun _: Fin 1=> x) (fun i:Fin 0 => nomatch i) ↔ φ.Realize (fun _: Fin 1=> x) (fun i:Fin 0 => nomatch i)) → (Formulafiniteunion φ ↔ Formulafiniteunion ψ) := by
   intro hyp
@@ -143,7 +143,7 @@ lemma formulaequiv (φ ψ : BoundedFormula (order_language[[@univ ℝ]]) (Fin 1)
     exact psi
 
 /--
-Type coercion from a Formula to a BoundedFormula. 
+Type coercion from a Formula to a BoundedFormula.
 -/
 def Formula_to_BoundedFormula  (φ : Formula (order_language[[@univ ℝ]]) (Fin 1)  ) : BoundedFormula (order_language[[@univ ℝ]]) (Fin 1) 0 :=
   (by simp : BoundedFormula (order_language[[@univ ℝ]]) (Fin 1) 0 = Formula (order_language[[@univ ℝ]]) (Fin 1)) ▸ φ
