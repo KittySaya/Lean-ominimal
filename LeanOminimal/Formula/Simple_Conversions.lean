@@ -281,4 +281,29 @@ lemma QFImpAllFree_Bounded_conversion_equivalence {L} {α} {n} (Rs : disjunction
 
 end disjunctionRelblocks
 
+
+def Atomicblock.toExistblock {L} {α} {n}: Atomicblock L α n → Existblock L α n
+| truth => Existblock.lit Literal.truth
+| falsum => Existblock.lit Literal.truth.not
+| .rel R f => Existblock.lit (Literal.rel R f)
+| .equal t1 t2 =>  Existblock.lit (Literal.equal t1 t2)
+| .and t1 t2 => t1.toExistblock.and t2.toExistblock
+
+def disjunctionAtomicblocks.todisjunctionExistblocks {L} {α} {n}: disjunctionAtomicblocks L α n→ disjunctionExistblocks L α n 
+  | .atom a => disjunctionExistblocks.existbl a.toExistblock
+  | .or f1 f2 =>  f1.todisjunctionExistblocks.or f2.todisjunctionExistblocks
+
+
+def Atomicblock.toBoundedFormula {L} {α} {n}: Atomicblock L α n→ BoundedFormula L α n
+  | truth => BoundedFormula.falsum.imp  BoundedFormula.falsum
+  | falsum => BoundedFormula.falsum
+  | .equal t₁ t₂ => .equal t₁ t₂
+  | .rel R ts => .rel R ts
+  | .and t₁ t₂ => t₁.toBoundedFormula ⊓ t₂.toBoundedFormula
+  
+
+def disjunctionAtomicblocks.toBoundedFormula {L} {α} {n}: disjunctionAtomicblocks L α n → BoundedFormula L α n
+  | atom a   => a.toBoundedFormula
+  | or f₁ f₂ => f₁.toBoundedFormula ⊔ f₂.toBoundedFormula
+
 ------------------------------------------------------
