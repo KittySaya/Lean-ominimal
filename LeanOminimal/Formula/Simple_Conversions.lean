@@ -124,15 +124,15 @@ namespace Existblock
 
 
 /--
-An existblock in particular is a QFImpAllFreeFormula. The function sends an existblock to its counterpart QFImpAllFreeFormula. 
+An existblock in particular is a QFImpAllFreeFormula. The function sends an existblock to its counterpart QFImpAllFreeFormula.
 -/
 def toQFImpAllFreeFormula {L} {α} {n}: Existblock L α (n ) → QFImpAllFreeFormula L α (n )
   | .lit l => l.toQFImpAllFreeFormula
   | .and l e => l.toQFImpAllFreeFormula.and e.toQFImpAllFreeFormula
 
 /--
-Whenever an existblock is preceded by an exist, we map it to the ImpAllFreeFormula 
-`∃x [Lit₁ ∧ Lit₂ ∧ Lit₃ ∧ Lit₄ ∧ ...]`, with the following function. 
+Whenever an existblock is preceded by an exist, we map it to the ImpAllFreeFormula
+`∃x [Lit₁ ∧ Lit₂ ∧ Lit₃ ∧ Lit₄ ∧ ...]`, with the following function.
 -/
 def toImpAllFreeFormula {L} {α} {n}: Existblock L α (n + 1) → ImpAllFreeFormula L α n :=
   fun φ => ImpAllFreeFormula.exists (φ.toQFImpAllFreeFormula.toImpAllFreeFormula)
@@ -231,7 +231,7 @@ lemma QFImpAllFree_Bounded_conversion_equivalence {L} {α} {n} (R : Relblock L �
 
 
 /--
-A Relblocks is a particular case of an Existblock. This function maps a Relblock to an Existblock. 
+A Relblocks is a particular case of an Existblock. This function maps a Relblock to an Existblock.
 -/
 def toExistblock {L} {α} {n}: Relblock L α n → Existblock L α n
 | truth      => Existblock.lit Literal.truth
@@ -260,7 +260,7 @@ def toQFImpAllFreeFormula  {L} {α} {n} : disjunctionRelblocks L α n → QFImpA
   | relb r   => r.toQFImpAllFreeFormula
   | or f₁ f₂ => f₁.toQFImpAllFreeFormula.or f₂.toQFImpAllFreeFormula
 
--- a disjunction of Relblocks to a disjunction of Existblocks.  
+-- a disjunction of Relblocks to a disjunction of Existblocks.
 def todisjunctionExistblocks {L} {α} {n}: disjunctionRelblocks L α n→ disjunctionExistblocks L α n
   | .relb r => disjunctionExistblocks.existbl r.toExistblock
   | .or f1 f2 =>  f1.todisjunctionExistblocks.or f2.todisjunctionExistblocks
@@ -289,18 +289,18 @@ def Atomicblock.toExistblock {L} {α} {n}: Atomicblock L α n → Existblock L �
 | .equal t1 t2 =>  Existblock.lit (Literal.equal t1 t2)
 | .and t1 t2 => t1.toExistblock.and t2.toExistblock
 
-def disjunctionAtomicblocks.todisjunctionExistblocks {L} {α} {n}: disjunctionAtomicblocks L α n→ disjunctionExistblocks L α n 
+def disjunctionAtomicblocks.todisjunctionExistblocks {L} {α} {n}: disjunctionAtomicblocks L α n→ disjunctionExistblocks L α n
   | .atom a => disjunctionExistblocks.existbl a.toExistblock
   | .or f1 f2 =>  f1.todisjunctionExistblocks.or f2.todisjunctionExistblocks
 
 
-def Atomicblock.toBoundedFormula {L} {α} {n}: Atomicblock L α n→ BoundedFormula L α n
-  | truth => BoundedFormula.falsum.imp  BoundedFormula.falsum
-  | falsum => BoundedFormula.falsum
-  | .equal t₁ t₂ => .equal t₁ t₂
-  | .rel R ts => .rel R ts
-  | .and t₁ t₂ => t₁.toBoundedFormula ⊓ t₂.toBoundedFormula
-  
+-- def Atomicblock.toBoundedFormula {L} {α} {n}: Atomicblock L α n→ BoundedFormula L α n
+--   | truth => BoundedFormula.falsum.imp  BoundedFormula.falsum
+--   | falsum => BoundedFormula.falsum
+--   | .equal t₁ t₂ => .equal t₁ t₂
+--   | .rel R ts => .rel R ts
+--   | .and t₁ t₂ => t₁.toBoundedFormula ⊓ t₂.toBoundedFormula
+
 
 def disjunctionAtomicblocks.toBoundedFormula {L} {α} {n}: disjunctionAtomicblocks L α n → BoundedFormula L α n
   | atom a   => a.toBoundedFormula

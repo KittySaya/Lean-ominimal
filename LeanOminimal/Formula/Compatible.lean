@@ -14,10 +14,10 @@ Helper lemma to that shows that eliminating an exist from an existblock is compa
 That is, the formulas are equivalent.
 -/
 @[simp]
-lemma compatible_1 (eb: Existblock (order_language[[ℝ]]) (Fin 1) (1)) (x: Fin 1 → ℝ ) :
+lemma compatible_1 (eb: Existblock (order_language[[@univ ℝ]]) (Fin 1) (1)) (x: Fin 1 → ℝ ) :
     eb.Realize x (fun i : (Fin 0) => nomatch i)
-      ↔ @eb.elim.toBoundedFormula.Realize (order_language[[ℝ]]) ℝ  _ _ _  x (fun i : Fin 0 => nomatch i) := by sorry
- 
+      ↔ @eb.elim.toBoundedFormula.Realize (order_language[[@univ ℝ]]) ℝ  _ _ _  x (fun i : Fin 0 => nomatch i) := by sorry
+
 
 
 /--
