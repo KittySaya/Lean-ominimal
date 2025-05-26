@@ -1,19 +1,16 @@
-FILE                           ; STATUS     ; DESCRIPTION
+FILE                           ; DESCRIPTION
 
-Basic                          ; Unknown    ; Forms a basis to be imported by all files.
+Basic                          ; Forms a basis to be imported by all files.
 
-dense_linear_orders            ; Deprecated ; The old one-file.
+ominimality                    ; Proves that real numbers are O Minimal.
+DLO                            ; Defines what a Dense Linear is, and proves that the real numbers are a dense linear order.
+intervals                      ; Defines the types of intervals, and the property that some subset is a finite union of intervals.
+BigAnd                         ; An implication of the and connective over a finite list of propositions.
 
-QuantifierEliminator           ; Incomplete ; Defines what it means to admit quantifier eliminations and proves that the real numbers admit that.
-ominimality                    ; Finished   ; Proves that real numbers are O Minimal.
-DLO                            ; Finished   ; Defines what a Dense Linear is, and proves that the real numbers are a dense linear order.
-intervals                      ; Unfinished ; Defines the types of intervals, and the property that some subset is a finite union of intervals.
-BigAnd                         ; Deprecated?    ; An implication of the and connective over a finite list of propositions.
+Definability.Right             ; Proves finite unions of intervals are definable.
+Definability.Left              ; Proves definable sets are finite unions of intervals.
+Definability.Definitions       ; Defines what it means to be definable.
 
-Definability.Right             ; Finished   ; Proves finite unions of intervals are definable.
-Definability.Left              ; Incomplete ; Proves definable sets are finite unions of intervals.
-Definability.Definitions       ; Finished  ; Defines what it means to be definable.
-
-Formula.Definitions            ; Finished   ; Contains the different instances of formula types.
-Formula.Conversions; WIP; Contains functions on how to move one formula type to another.
-Formula.Conversions; DOC MISSING; Misses some docstrings
+Formula.Definitions            ; Contains the different instances of formula types.
+Formula.Conversions            ; Contains functions on how to move one formula type to another.
+Formula.Conversions            ; Misses some docstrings
