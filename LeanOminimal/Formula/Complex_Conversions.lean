@@ -144,7 +144,7 @@ def varelimAtomicblock {n}  (ter : order_language[[@univ ℝ]].Term (Fin 1 ⊕ F
 /--
 This function takes in an atomicblock preceded by an existential quantifier, and eliminates the existential quantifier when it appears in an 
 equal term. Whenever the bounded variable does not appear in an equal term, the function does not do exactly what is needed. The existential 
-can then be eliminated by using the lemma proved in bigAnd.lean. However, we had too little time to properly define the corresponding elimination. 
+can then be eliminated by using the lemma proved in bigAnd.lean. However, we had too little time to define these cases.   
 -/
 
 
@@ -215,7 +215,7 @@ def Atomicblock.elim {n}(block : Atomicblock (order_language[[@univ ℝ]]) (Fin 
 
   rename_i a l R f
 
-  exact (Atomicblock.rel R f).elim.and a.elim
+  exact (Atomicblock.rel R f).elim.and a.elim -- To properly define this, we should perform cases on a here. 
   rename_i a1 a2 a3
   exact (a1.elim.and a2.elim).and a3.elim
 
