@@ -154,48 +154,15 @@ section some_section
 This function takes two indices and a proposition that the indices are not equal. The function eliminates the variable indexed by i, if it is of type Fin (n+1)
 and shuffles all other variables accordingly, i.e., it shifts every element above i down by 1. If i is in Fin 1, we eliminate the variable indexed by a. 
 -/
-def reindex {n : ℕ} (i : Fin 1 ⊕ Fin (n + 1)) (a : Fin 1 ⊕ Fin (n + 1)) (h : i ≠ a) : Fin 1 ⊕ Fin n := by
-  rcases i with ⟨inli, hypi⟩ | ⟨inli, hypi⟩
-  · rcases a with ⟨inla, hypa⟩
-    · exfalso
-      have i : inli = 0 := by linarith
-      have a : inla = 0 := by linarith
-      have eq: inli = inla := by
-        rw[i, a]
-      exfalso
-      apply h
-      simp
-      apply eq
-
-    · rename_i val
-      exact Sum.inl ⟨inli, hypi ⟩
-
-  · rcases a with ⟨inla, hypa⟩ | ⟨inla, hypa ⟩
-    · exact Sum.inl ⟨inla, hypa ⟩
-
-    · by_cases neq:  inla < inli
-      · have hypa': inla < n := by
-          linarith
-        exact Sum.inr ⟨inla, hypa' ⟩
-
-      · have eq:  inla=inli ∨ inla>inli := by
-          apply not_lt_iff_eq_or_lt.mp neq
-        simp at h
-        have temp: inla > inli := by
-          cases heq : eq
-          · rename_i h1
-            rw [h1.symm] at h
-            contradiction
-          · rename_i o
-            apply o
-
-        have  hypa' : inla-1 < n :=by
-          refine Nat.sub_one_lt_of_le ?_ ?_
-          linarith
-          linarith
-
-        exact Sum.inr ⟨inla-1, hypa'⟩
-
-
-
+def reindex {n : ℕ} (i : Fin 1 ⊕ Fin (n + 1))  (h : ¬ i=Sum.inr ⟨n, (by simp) ⟩) : Fin 1 ⊕ Fin n :=by
+rcases i with ⟨ inli ,hypi⟩ | ⟨inli,hypi ⟩
+exact Sum.inl ⟨inli, hypi ⟩ 
+simp at h
+have hypi': inli <n:= by 
+ by_contra con
+ push_neg at con
+ have : inli =n := by
+  linarith
+ contradiction 
+exact Sum.inr ⟨inli, hypi' ⟩ 
 end some_section
