@@ -297,11 +297,14 @@ exact (a1.elim.and a2.elim).and a3.elim
 
 /--
 Since an existential quantifier distributes over a disjunction, we extend the previous function to a function from a disjunction of Atomicblocks 
-to a disjunction of Relblocks. 
+to a disjunction of atomicblocks. 
 -/
-def disjunctionAtomicblocks.todisjunctionRelblocks {n} : disjunctionAtomicblocks (order_language[[@univ ℝ]]) (Fin 1) (n+1) → disjunctionRelblocks (order_language[[@univ ℝ]]) (Fin 1) (n)
-  | atom  a  => disjunctionRelblocks.relb (Atomicblock.toRelblock a)
-  | or f₁ f₂ => disjunctionRelblocks.or (f₁.todisjunctionRelblocks) (f₂.todisjunctionRelblocks)
+def disjunctionAtomicblocks.elim {n}:disjunctionAtomicblocks (order_language[[@univ ℝ]]) (Fin 1) (n+1)→ disjunctionAtomicblocks (order_language[[@univ ℝ]]) (Fin 1) (n):= by
+intro disA
+rcases disA with ⟨atom ⟩ | ⟨d1, d2 ⟩
+exact  disjunctionAtomicblocks.atom atom.elim
+exact  (d1.elim).or (d2.elim)
+
 
 -----------------------------------------------------------
 
