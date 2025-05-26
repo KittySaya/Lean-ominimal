@@ -151,8 +151,9 @@ end order_language_ℝ
 section some_section
 
 /--
-This function takes two indices and a proposition that the indices are not equal. The function eliminates the variable indexed by i, if it is of type Fin (n+1)
-and shuffles all other variables accordingly, i.e., it shifts every element above i down by 1. If i is in Fin 1, we eliminate the variable indexed by a. 
+This function takes an index and the proposition that it is not the variable that is being quantified. If i is fin 1, we send it to fin 1, 
+otherwise we use the fact that it is not n to coerce it to type Fin n. This reindexing will be used whenever we now the variable is not being
+quantified so we can reduce the formula to one with one less free variable. 
 -/
 def reindex {n : ℕ} (i : Fin 1 ⊕ Fin (n + 1))  (h : ¬ i=Sum.inr ⟨n, (by simp) ⟩) : Fin 1 ⊕ Fin n :=by
 rcases i with ⟨ inli ,hypi⟩ | ⟨inli,hypi ⟩
