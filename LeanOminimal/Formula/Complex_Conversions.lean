@@ -12,9 +12,8 @@ noncomputable section
 ----------------------------------------------------------
 
 /--
-Function that takes in a variable index and a term, and swaps every variable with that particular index for the term with one free variable less.
-The resulting function effectively eliminated the variables at the given index. We will only be using this function whenever our atomicblock is preceded by an
-existential quantifier.
+This function takes in a term and swaps the last variable for this term in the atomicblock, thereby eliminating the last variable and existential 
+quanitifier that comes before it. This function will only be used whenever we have an expression of the form  ∃ x=y∧ atom.
 -/
 
 
@@ -142,6 +141,11 @@ def varelimAtomicblock {n}  (ter : order_language[[@univ ℝ]].Term (Fin 1 ⊕ F
             apply g
 
 
+/--
+This function takes in an atomicblock preceded by an existential quantifier, and eliminates the existential quantifier when it appears in an 
+equal term. Whenever the bounded variable does not appear in an equal term, the function does not do exactly what is needed. The existential 
+can then be eliminated by using the lemma proved in bigAnd.lean. However, we had too little time to properly define the corresponding elimination. 
+-/
 
 
 def Atomicblock.elim {n}(block : Atomicblock (order_language[[@univ ℝ]]) (Fin 1) ((n+1))) : Atomicblock (order_language[[@univ ℝ]]) (Fin 1) n := by
@@ -221,20 +225,6 @@ alias Atomicblock.toRelblock := Atomicblock.elim
 ----------------------------------------------------------
 
 
-
--- /--
--- Function that takes an element of th e form \exists Atomicblock and sends it to a disjunction of Relblocks, thereby effectively eliminating the
--- existential quantifier. This function will only be used on a formula preceded by an existential quantifier.
--- -/
-
--- /--
--- Since an existential quantifier distributes over a disjunction, we extend the previous function to a function from a disjunction of Atomicblocks
--- to a disjunction of Relblocks.
--- -/
--- def disjunctionAtomicblocks.todisjunctionRelblocks {n} : disjunctionAtomicblocks (order_language[[@univ ℝ]]) (Fin 1) (n+1) → disjunctionRelblocks (order_language[[@univ ℝ]]) (Fin 1) (n)
---   | atom  a  => disjunctionRelblocks.relb (Atomicblock.toRelblock a)
---   | or f₁ f₂ => disjunctionRelblocks.or (f₁.todisjunctionRelblocks) (f₂.todisjunctionRelblocks)
-
 -----------------------------------------------------------
 
 /--
@@ -299,19 +289,6 @@ def Literal.todisjunctionAtomicblocks {n:ℕ }(l : Literal (order_language[[@uni
 
 
  exact f.todisjunctionAtomicblocks
-
-
-def reindex {n : ℕ} (i : Fin 1 ⊕ Fin (n + 1))  (h : ¬ i=Sum.inr ⟨n, (by simp) ⟩) : Fin 1 ⊕ Fin n :=by
-rcases i with ⟨ inli ,hypi⟩ | ⟨inli,hypi ⟩
-exact Sum.inl ⟨inli, hypi ⟩
-simp at h
-have hypi': inli <n:= by
- by_contra con
- push_neg at con
- have : inli =n := by
-  linarith
- contradiction
-exact Sum.inr ⟨inli, hypi' ⟩
 
 
 
